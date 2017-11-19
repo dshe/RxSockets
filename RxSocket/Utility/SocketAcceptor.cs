@@ -8,11 +8,15 @@ namespace RxSocket
     internal class SocketAcceptor
     {
         // Backlog specifies the number of pending connections allowed before a busy error is returned to the client.
-        public static int Backlog = 10;
+        private readonly int Backlog;
         private readonly Socket Socket;
         private int Listening;
 
-        internal SocketAcceptor(Socket socket) => Socket = socket ?? throw new ArgumentNullException(nameof(socket));
+        internal SocketAcceptor(Socket socket, int backlog = 10)
+        {
+            Socket = socket ?? throw new ArgumentNullException(nameof(socket));
+            Backlog = backlog;
+        }
 
         internal (SocketError error, Socket xsocket) Accept()
         {

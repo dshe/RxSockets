@@ -49,8 +49,8 @@ namespace RxSocket
 
                 if (socket.DisconnectAsync(args))
                     await semaphore.WaitAsync(ct).ConfigureAwait(false);
-                else
-                    ct.ThrowIfCancellationRequested();
+                else if (ct.IsCancellationRequested)
+                    return SocketError.TimedOut;
 
                 return args.SocketError;
             }

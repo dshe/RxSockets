@@ -21,10 +21,10 @@ namespace RxSocket
         private readonly SocketDisconnector Disconnector;
         public IObservable<IRxSocket> AcceptObservable { get; }
 
-        private RxSocketServer(Socket socket)
+        private RxSocketServer(Socket socket, int backlog)
         {
             Socket = socket;
-            SocketAcceptor = new SocketAcceptor(socket);
+            SocketAcceptor = new SocketAcceptor(socket, backlog);
             Disconnector = new SocketDisconnector(socket);
 
             AcceptObservable = Observable.Create<IRxSocket>(observer =>
@@ -60,8 +60,9 @@ namespace RxSocket
         public Task<SocketError> DisconnectAsync(int timeout) => Disconnector.DisconnectAsync(timeout);
 
         // static!
-        public static IRxSocketServer Create(int port) => Create(new IPEndPoint(IPAddress.IPv6Any, port));
-        public static IRxSocketServer Create(IPEndPoint endPoint)
+        public static IRxSocketServer Create(int port, int backlog = 10) =>
+            Create(new IPEndPoint(IPAddress.IPv6Any, port), backlog);
+        public static IRxSocketServer Create(IPEndPoint endPoint, int backlog = 10)
         {
             var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp)
             {
@@ -70,7 +71,10 @@ namespace RxSocket
 
             socket.Bind(endPoint ?? throw new ArgumentNullException(nameof(endPoint)));
 
-            return new RxSocketServer(socket);
+            if (backlog < 0)
+                throw new ArgumentOutOfRangeException(nameof(backlog));
+
+            return new RxSocketServer(socket, backlog);
         }
     }
 

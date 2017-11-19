@@ -46,7 +46,7 @@ namespace RxSocket
                         while (true)
                         {
                             int length = Socket.Receive(buffer);
-                            if (length == 0 || Disconnector.DisconnectRequested)
+                            if (length == 0)
                                 break;
                             for (int i = 0; i < length; i++)
                                 observer.OnNext(buffer[i]);
@@ -55,7 +55,10 @@ namespace RxSocket
                     }
                     catch (Exception e)
                     {
-                        observer.OnError(e);
+                        //if (Disconnector.DisconnectRequested)
+                        //    observer.OnCompleted();
+                        //else
+                            observer.OnError(e);
                     }
                 });
                 return Disposable.Empty;

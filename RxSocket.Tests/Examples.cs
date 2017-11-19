@@ -29,13 +29,15 @@ namespace RxSocket.Tests
             // Start a task to allow the server to accept the next client connection.
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
-            // Create a socket client after successfully connecting to the server.
+            // Create a socket client by successfully connecting to the server at EndPoint.
             (SocketError error, IRxSocket client) = await RxSocket.ConnectAsync(EndPoint);
             Assert.Equal(SocketError.Success, error);
 
+            // Get the client socket accepted buy the server.
             var accept = await acceptTask;
             Assert.True(accept.Connected && client.Connected);
 
+            // start a task to receive the first string from the server.
             var dataTask = client.ReceiveObservable.ToStrings().FirstAsync().ToTask();
 
             // The server sends a string to the client.
@@ -54,7 +56,7 @@ namespace RxSocket.Tests
             var accept = await acceptTask;
             Assert.True(accept.Connected && client.Connected);
 
-            client.ReceiveObservable.ToStrings().Subscribe(str =>
+            var subscription = client.ReceiveObservable.ToStrings().Subscribe(str =>
             {
                 Write(str);
             });
@@ -62,6 +64,7 @@ namespace RxSocket.Tests
             accept.Send("Welcome!".ToBytes());
             "Welcome Again!".ToBytes().SendTo(accept); // Note SendTo() extension method.
 
+            subscription.Dispose();
             await Task.WhenAll(client.DisconnectAsync(), accept.DisconnectAsync(), server.DisconnectAsync());
         }
 

@@ -10,10 +10,8 @@ namespace RxSocket
 {
     public static class ConsumingEnumerableEx
     {
-        public static ConsumingEnumerable<T> ToConsumingEnumerable<T>(this IObservable<T> source, CancellationToken ct = default)
-        {
-            return new ConsumingEnumerable<T>(source);
-        }
+        public static ConsumingEnumerable<T> ToConsumingEnumerable<T>(this IObservable<T> source)
+            => new ConsumingEnumerable<T>(source);
     }
 
     public class ConsumingEnumerable<T> : IEnumerable<T>, IDisposable

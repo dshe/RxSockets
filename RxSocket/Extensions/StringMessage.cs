@@ -66,6 +66,9 @@ namespace RxSocket
             });
         }
 
+        private static int GetMessageLength(MemoryStream ms)
+            => IPAddress.NetworkToHostOrder(BitConverter.ToInt32(ms.GetBuffer(), 0));
+
         private static string[] GetStrings(MemoryStream ms)
         {
             var position = (int)ms.Position;
@@ -79,8 +82,5 @@ namespace RxSocket
 
         private static string[] GetStrings(byte[] buffer, int index, int count)
             => Encoding.UTF8.GetString(buffer, index, count).Split('\0');
-
-        private static int GetMessageLength(MemoryStream ms)
-            => IPAddress.NetworkToHostOrder(BitConverter.ToInt32(ms.GetBuffer(), 0));
     }
 }
