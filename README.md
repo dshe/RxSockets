@@ -1,4 +1,4 @@
-# RxSocket&nbsp;&nbsp; [![release](https://img.shields.io/github/release/dshe/RxSocket/all.svg)](https://github.com/dshe/RxSocket/releases) [![Build status](https://ci.appveyor.com/api/projects/status/rfxxbpx2agq8r93n?svg=true)](https://ci.appveyor.com/project/dshe/rxsocket) [![License](https://img.shields.io/badge/license-Apache%202.0-7755BB.svg)](https://opensource.org/licenses/Apache-2.0)
+## RxSocket&nbsp;&nbsp; [![release](https://img.shields.io/github/release/dshe/RxSocket/all.svg)](https://github.com/dshe/RxSocket/releases) [![Build status](https://ci.appveyor.com/api/projects/status/rfxxbpx2agq8r93n?svg=true)](https://ci.appveyor.com/project/dshe/rxsocket) [![License](https://img.shields.io/badge/license-Apache%202.0-7755BB.svg)](https://opensource.org/licenses/Apache-2.0)
 
 **Minimal Reactive Socket Implementation**
 - observable receive and accept, asynchronous connect and disconnect, synchronous send
@@ -28,7 +28,7 @@ accept.Send("Welcome!".ToBytes());
 // Receive a string from the client.
 Assert.Equal("Hello", await accept.ReceiveObservable.ToStrings().FirstAsync();
 
-// Disconnect and dispose.
+// Disconnect and dispose the sockets.
 await Task.WhenAll(accept.DisconnectAsync(), server.DisconnectAsync());
 
 ```
@@ -54,6 +54,6 @@ Assert.Equal("Welcome!", await client.ReceiveObservable.ToStrings().FirstAsync()
 // Send a string to the server.
 client.Send("Hello".ToBytes());
 
-// Disconnect and dispose.
+// Disconnect and dispose the socket.
 await client.DisconnectAsync();
 ```
