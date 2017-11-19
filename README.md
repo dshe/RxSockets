@@ -7,31 +7,6 @@
 - tested
 - fast
 
-### client
-```csharp
-interface IRxSocket
-{
-    bool Connected { get; }
-    void Send(byte[] buffer, int offset, int length);
-    IObservable<byte> ReceiveObservable { get; }
-    Task DisconnectAsync(int timeout);
-}
-```
-```csharp
-// Create a socket client by successfully connecting to the server at EndPoint.
-(SocketError error, IRxSocket client) = await RxSocket.ConnectAsync(EndPoint);
-Assert.Equal(SocketError.Success, error);
-
-// Receive a string from the server.
-Assert.Equal("Welcome!", await client.ReceiveObservable.ToStrings().FirstAsync());
-
-// Send a string to the server.
-client.Send("Hello".ToBytes());
-
-// Disconnect and dispose.
-await client.DisconnectAsync();
-```
-
 ### server
 ```csharp
 public interface IRxSocketServer
@@ -41,8 +16,8 @@ public interface IRxSocketServer
 }
 ```
 ```csharp
-// Create a socket server at Endpoint.
-IRxSocketServer server = RxSocketServer.Create(EndPoint);
+// Create a socket server at IPEndpoint.
+IRxSocketServer server = RxSocketServer.Create(IPEndPoint);
 
 // Wait to accept a client connection.
 IRxSocket accept = await server.AcceptObservable.FirstAsync();
@@ -56,4 +31,29 @@ Assert.Equal("Hello", await accept.ReceiveObservable.ToStrings().FirstAsync();
 // Disconnect and dispose.
 await Task.WhenAll(accept.DisconnectAsync(), server.DisconnectAsync());
 
+```
+
+### client
+```csharp
+interface IRxSocket
+{
+    bool Connected { get; }
+    void Send(byte[] buffer, int offset, int length);
+    IObservable<byte> ReceiveObservable { get; }
+    Task DisconnectAsync(int timeout);
+}
+```
+```csharp
+// Create a socket client by successfully connecting to the server at IPEndPoint.
+(SocketError error, IRxSocket client) = await RxSocket.ConnectAsync(IPEndPoint);
+Assert.Equal(SocketError.Success, error);
+
+// Receive a string from the server.
+Assert.Equal("Welcome!", await client.ReceiveObservable.ToStrings().FirstAsync());
+
+// Send a string to the server.
+client.Send("Hello".ToBytes());
+
+// Disconnect and dispose.
+await client.DisconnectAsync();
 ```
