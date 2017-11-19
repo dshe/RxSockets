@@ -7,7 +7,7 @@
 - tested
 - fast
 
-#### client
+## client
 ```csharp
 interface IRxSocket
 {
@@ -25,14 +25,14 @@ Assert.Equal(SocketError.Success, error);
 // Receive a string from the server.
 Assert.Equal("Welcome!", await client.ReceiveObservable.ToStrings().FirstAsync());
 
-// Send a string to to the server.
+// Send a string to the server.
 client.Send("Hello".ToBytes());
 
 // Disconnect and dispose.
 await client.DisconnectAsync();
 ```
 
-#### server
+## server
 ```csharp
 public interface IRxSocketServer
 {
@@ -42,7 +42,7 @@ public interface IRxSocketServer
 ```
 ```csharp
 // Create a socket server at Endpoint.
-var server = RxSocketServer.Create(EndPoint);
+IRxSocketServer server = RxSocketServer.Create(EndPoint);
 
 // Wait to accept a client connection.
 IRxSocket accept = await server.AcceptObservable.FirstAsync();
