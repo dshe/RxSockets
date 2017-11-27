@@ -1,0 +1,75 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Text;
+
+namespace RxSocket
+{
+    public static class ConversionsEx
+    {
+        public static byte[] ToByteArray(this string s)
+        {
+            if (s == null)
+                throw new ArgumentNullException(nameof(s));
+            return Encoding.UTF8.GetBytes(s + "\0");
+        }
+
+        public static IEnumerable<string> ToStrings(this IEnumerable<byte> source)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            using (var ms = new MemoryStream())
+            {
+                foreach (var b in source)
+                {
+                    if (b == 0)
+                    {
+                        yield return GetString(ms);
+                        ms.SetLength(0);
+                    }
+                    else
+                        ms.WriteByte(b);
+                }
+                if (ms.Position != 0)
+                    throw new InvalidDataException("No termination.");
+                yield break;
+            }
+        }
+
+        public static IObservable<string> ToStrings(this IObservable<byte> source)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            var ms = new MemoryStream();
+
+            return Observable.Create<string>(observer =>
+            {
+                return source.Subscribe(b =>
+                {
+                    if (b == 0)
+                    {
+                        observer.OnNext(GetString(ms));
+                        ms.SetLength(0);
+                    }
+                    else
+                        ms.WriteByte(b);
+                }, e => observer.OnError(e), 
+                () => {
+                    if (ms.Position == 0)
+                        observer.OnCompleted();
+                    else
+                        observer.OnError(new InvalidDataException("No termination."));
+                });
+            });
+        }
+
+        private static string GetString(MemoryStream ms) =>
+            Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
+    }
+}

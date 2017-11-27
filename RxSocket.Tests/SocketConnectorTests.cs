@@ -8,7 +8,7 @@ using RxSocket.Tests.Utility;
 
 namespace RxSocket.Tests
 {
-    public class SocketConnectorTests
+    public class SocketConnectorTest
     {
         private readonly IPEndPoint EndPoint = new IPEndPoint(IPAddress.Loopback, NetworkUtility.GetRandomUnusedPort());
 
@@ -38,19 +38,12 @@ namespace RxSocket.Tests
         }
 
         [Fact]
-        public async Task T03_Timeout()
-        {
-            var (error, socket) = await SocketConnector.ConnectAsync(EndPoint, 0);
-            Assert.Equal(SocketError.TimedOut, error);
-        }
-
-        [Fact]
-        public async Task T04_Cancel()
+        public async Task T03_Cancel()
         {
             var cts = new CancellationTokenSource();
             cts.Cancel(true);
 
-            var (error, socket) = await SocketConnector.ConnectAsync(EndPoint , -1, cts.Token);
+            var (error, socket) = await SocketConnector.ConnectAsync(EndPoint , cts.Token);
             Assert.Equal(SocketError.OperationAborted, error);
         }
     }

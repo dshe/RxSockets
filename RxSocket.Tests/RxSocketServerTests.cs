@@ -12,7 +12,7 @@ using System.Reactive;
 
 namespace RxSocket.Tests
 {
-    public class XSocketServerTests
+    public class RxSocketServerTest
     {
         private readonly IPEndPoint EndPoint = new IPEndPoint(IPAddress.Loopback, NetworkUtility.GetRandomUnusedPort());
 
@@ -52,24 +52,18 @@ namespace RxSocket.Tests
         public async Task T03_DisconnectBeforeAccept()
         {
             var server = RxSocketServer.Create(EndPoint);
-
             await server.DisconnectAsync();
-
-            Assert.Equal(Notification.CreateOnCompleted<IRxSocket>(), await server.AcceptObservable.Materialize().FirstAsync().ToTask());
+            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await server.AcceptObservable.LastOrDefaultAsync());
         }
 
         [Fact]
         public async Task T04_DisconnectWhileAccept()
         {
             var server = RxSocketServer.Create(EndPoint);
-
-            var acceptTask = server.AcceptObservable.Materialize().FirstAsync().ToTask();
-
-            await Task.Delay(1);
-
+            var acceptTask = server.AcceptObservable.LastOrDefaultAsync().ToTask();
+            await Task.Yield();
             await server.DisconnectAsync();
-
-            Assert.Equal(Notification.CreateOnCompleted<IRxSocket>(), await acceptTask);
+            await acceptTask;
         }
 
     }

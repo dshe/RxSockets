@@ -41,14 +41,14 @@ namespace RxSocket.Tests
             var dataTask = client.ReceiveObservable.ToStrings().FirstAsync().ToTask();
 
             // The server sends a string to the client.
-            accept.Send("Welcome!".ToBytes());
+            accept.Send("Welcome!".ToByteArray());
             Assert.Equal("Welcome!", await dataTask);
 
             await Task.WhenAll(client.DisconnectAsync(), accept.DisconnectAsync(), server.DisconnectAsync());
         }
 
         [Fact]
-        public async Task T01_ReceiveObservable()
+        public async Task T10_ReceiveObservable()
         {
             var server = RxSocketServer.Create(EndPoint);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
@@ -61,8 +61,8 @@ namespace RxSocket.Tests
                 Write(str);
             });
 
-            accept.Send("Welcome!".ToBytes());
-            "Welcome Again!".ToBytes().SendTo(accept); // Note SendTo() extension method.
+            accept.Send("Welcome!".ToByteArray());
+            "Welcome Again!".ToByteArray().SendTo(accept); // Note SendTo() extension method.
 
             subscription.Dispose();
             await Task.WhenAll(client.DisconnectAsync(), accept.DisconnectAsync(), server.DisconnectAsync());
@@ -75,7 +75,7 @@ namespace RxSocket.Tests
 
             server.AcceptObservable.Subscribe(accepted =>
             {
-                "Welcome!".ToBytes().SendTo(accepted);
+                "Welcome!".ToByteArray().SendTo(accepted);
             });
 
             (SocketError error1, IRxSocket client1) = await RxSocket.ConnectAsync(EndPoint);
@@ -96,18 +96,18 @@ namespace RxSocket.Tests
 
             server.AcceptObservable.Subscribe(accepted =>
             {
-                "Welcome!".ToBytes().SendTo(accepted);
+                "Welcome!".ToByteArray().SendTo(accepted);
                 accepted
                     .ReceiveObservable
                     .ToStrings()
-                    .Subscribe(s => s.ToBytes().SendTo(accepted));
+                    .Subscribe(s => s.ToByteArray().SendTo(accepted));
             });
 
             var clients = Enumerable.Range(1, 100)
                 .Select(_ => RxSocket.ConnectAsync(EndPoint).Result.rxsocket)
                 .ToList();
 
-            clients.ForEach(c => c.Send("Hello".ToBytes()));
+            clients.ForEach(c => c.Send("Hello".ToByteArray()));
 
             foreach (var client in clients)
                 Assert.Equal("Hello", await client.ReceiveObservable.ToStrings().Skip(1).Take(1).FirstAsync());

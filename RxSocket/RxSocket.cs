@@ -6,18 +6,17 @@ using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.Reactive.Linq;
 using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
 
 [assembly: InternalsVisibleTo("RxSocket.Tests")]
 
 namespace RxSocket
 {
-    public interface IRxSocket
+    public interface IRxSocket : IDisposable
     {
         bool Connected { get; }
         void Send(byte[] buffer, int offset = 0, int length = 0);
         IObservable<byte> ReceiveObservable { get; }
-        Task<SocketError> DisconnectAsync(int timeout = -1);
+        Task<SocketError> DisconnectAsync(CancellationToken ct = default);
     }
 
     public class RxSocket : IRxSocket
@@ -34,60 +33,67 @@ namespace RxSocket
             if (!Socket.Connected)
                 throw new SocketException((int)SocketError.NotConnected);
             Disconnector = new SocketDisconnector(connectedSocket);
+            ReceiveObservable = CreateReceiveObservable();
+        }
 
-            ReceiveObservable = Observable.Create<byte>(observer =>
+        private IObservable<byte> CreateReceiveObservable()
+        {
+            var buffer = new byte[ReceiveBufferSize];
+            int length = 0, position = 0;
+
+            // supports a single observer
+            return Observable.Create<byte>(observer =>
             {
+                var cts = new CancellationTokenSource();
+
                 NewThreadScheduler.Default.Schedule(() =>
                 {
                     try
                     {
-                        var buffer = new byte[ReceiveBufferSize];
-
-                        while (true)
+                        while (!cts.IsCancellationRequested)
                         {
-                            int length = Socket.Receive(buffer);
+                            if (position < length)
+                            {
+                                observer.OnNext(buffer[position++]);
+                                continue;
+                            }
+                            length = Socket.Receive(buffer);
+                            position = 0;
                             if (length == 0)
-                                break;
-                            for (int i = 0; i < length; i++)
-                                observer.OnNext(buffer[i]);
+                            {
+                                observer.OnCompleted();
+                                return;
+                            }
                         }
-                        observer.OnCompleted();
                     }
                     catch (Exception e)
                     {
-                        //if (Disconnector.DisconnectRequested)
-                        //    observer.OnCompleted();
-                        //else
+                        if (Disconnector.DisconnectRequested)
+                            observer.OnCompleted();
+                        else
                             observer.OnError(e);
                     }
                 });
-                return Disposable.Empty;
+                return () => cts.Cancel();
             });
         }
 
-        public void Send(byte[] buffer, int offset, int length)
-        {
-            try
-            {
-                Socket.Send(buffer, offset, length > 0 ? length : buffer.Length, SocketFlags.None);
-            }
-            catch (Exception)
-            {
-                if (Disconnector.DisconnectRequested)
-                    throw new SocketException((int)SocketError.Disconnecting);
-                throw;
-            }
-        }
+        public void Send(byte[] buffer, int offset, int length) =>
+            Socket.Send(buffer, offset, length > 0 ? length : buffer.Length, SocketFlags.None);
 
-        public Task<SocketError> DisconnectAsync(int timeout) => Disconnector.DisconnectAsync(timeout);
+        public Task<SocketError> DisconnectAsync(CancellationToken ct) => Disconnector.DisconnectAsync(ct);
+
+        // pass an already cancelled token to skip waiting for disconnect
+        public void Dispose() => 
+            Disconnector.DisconnectAsync(new CancellationTokenSource(0).Token).GetAwaiter().GetResult();
 
         // static!
         public static async Task<(SocketError error, IRxSocket rxsocket)>
-            ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default) =>
-                await SocketConnector.ConnectAsync(endPoint, timeout, ct);
+            ConnectAsync(IPEndPoint endPoint, CancellationToken ct = default) =>
+                await SocketConnector.ConnectAsync(endPoint, ct);
     }
 
-    public static class XSocketEx
+    public static class RxSocketEx
     {
         public static void SendTo(this byte[] buffer, IRxSocket rxsocket) => rxsocket.Send(buffer);
     }

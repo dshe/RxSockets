@@ -10,7 +10,7 @@ namespace RxSocket
     internal static class SocketConnector
     {
         internal static async Task<(SocketError error, IRxSocket socket)> 
-            ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
+            ConnectAsync(IPEndPoint endPoint, CancellationToken ct = default)
         {
             var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp)
             {
@@ -18,23 +18,19 @@ namespace RxSocket
             };
 
             var semaphore = new SemaphoreSlim(0, 1);
-            var s = semaphore;
+
             var args = new SocketAsyncEventArgs
             {
                 RemoteEndPoint = endPoint ?? throw new ArgumentNullException(nameof(endPoint))
             };
-            void Handler(object _, SocketAsyncEventArgs a) => s.Release();
-            args.Completed += Handler;
+            args.Completed += (sender, a) => semaphore.Release();
 
             try
             {
                 if (socket.ConnectAsync(args)) // default timeout is ~20 seconds.
-                {
-                    if (!await s.WaitAsync(timeout, ct).ConfigureAwait(false))
-                        return CancelAndDispose(SocketError.TimedOut);
-                }
-                else
-                    ct.ThrowIfCancellationRequested();
+                    await semaphore.WaitAsync(ct).ConfigureAwait(false);
+                else if (ct.IsCancellationRequested)
+                    return CancelAndDispose(SocketError.OperationAborted);
 
                 if (args.SocketError == SocketError.Success)
                     return (SocketError.Success, new RxSocket(args.ConnectSocket));
@@ -57,11 +53,6 @@ namespace RxSocket
             {
                 Debug.WriteLine("SocketConnector Unhandled Exception: " + e.Message);
                 throw;
-            }
-            finally
-            {
-                args.Completed -= Handler;
-                args.Dispose();
             }
 
             // local

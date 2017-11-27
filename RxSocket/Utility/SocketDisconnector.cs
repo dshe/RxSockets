@@ -17,12 +17,9 @@ namespace RxSocket
         internal SocketDisconnector(Socket socket) =>
             Socket = socket ?? throw new ArgumentNullException(nameof(socket));
 
-        internal async Task<SocketError> DisconnectAsync(int timeout = -1)
+        internal async Task<SocketError> DisconnectAsync(CancellationToken ct = default)
         {
-            if (timeout == 0)
-                Cts.Cancel();
-            else if (timeout > 0)
-                Cts.CancelAfter(timeout);
+            ct.Register(Cts.Cancel);
 
             if (Interlocked.CompareExchange(ref disconnect, 1, 0) == 0)
                 Tcs.SetResult(await Disconnect(Socket, Cts.Token));
@@ -49,15 +46,14 @@ namespace RxSocket
 
                 if (socket.DisconnectAsync(args))
                     await semaphore.WaitAsync(ct).ConfigureAwait(false);
-                else if (ct.IsCancellationRequested)
-                    return SocketError.TimedOut;
+                if (ct.IsCancellationRequested)
+                    return SocketError.OperationAborted;
 
                 return args.SocketError;
             }
             catch (OperationCanceledException)
             {
-                // cancellation was actually caused by timeout
-                return SocketError.TimedOut;
+                return SocketError.OperationAborted;
             }
             catch (SocketException se)
             {
@@ -77,5 +73,6 @@ namespace RxSocket
                 socket.Dispose();
             }
         }
+
     }
 }

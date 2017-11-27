@@ -9,10 +9,12 @@ namespace RxSocket.Tests.Utility
     {
         private static Random Random = new Random();
 
-        public static Socket CreateSocket() => new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp)
-        {
-            DualMode = true, NoDelay = true
-        };
+        public static Socket CreateSocket() =>
+            new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp)
+            {
+                DualMode = true,
+                NoDelay = true
+            };
 
         public static int GetRandomUnusedPort()
         {

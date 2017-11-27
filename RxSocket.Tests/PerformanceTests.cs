@@ -11,14 +11,14 @@ using System.Diagnostics;
 
 namespace RxSocket.Tests
 {
-    public class TestPerformance : IAsyncLifetime
+    public class PerformanceTest : IAsyncLifetime
     {
         private readonly IPEndPoint EndPoint = new IPEndPoint(IPAddress.Loopback, NetworkUtility.GetRandomUnusedPort());
         private IRxSocketServer server;
         private IRxSocket client, accept;
 
         private readonly Action<string> Write;
-        public TestPerformance(ITestOutputHelper output) =>  Write = output.WriteLine;
+        public PerformanceTest(ITestOutputHelper output) =>  Write = output.WriteLine;
 
         public async Task InitializeAsync()
         {
@@ -33,16 +33,16 @@ namespace RxSocket.Tests
             await Task.WhenAll(client.DisconnectAsync(), accept.DisconnectAsync(), server.DisconnectAsync());
 
         [Fact]
-        public async Task T01_ReceiveString()
+        public async Task T01_ReceiveStrings()
         {
             var messages = 100_000;
 
-            var message = "Welcome!".ToBytes();
+            var message = "Welcome!".ToByteArray();
+
+            var countTask = client.ReceiveObservable.ToStrings().Count().ToTask();
 
             var watch = new Stopwatch();
             watch.Start();
-
-            var countTask = client.ReceiveObservable.ToStrings().Count().ToTask();
 
             for (var i = 0; i < messages; i++)
                 accept.Send(message);
@@ -54,10 +54,36 @@ namespace RxSocket.Tests
 
             Assert.Equal(messages, count);
 
-            var frequency = messages / watch.ElapsedMilliseconds * 1000D;
+            var frequency = Stopwatch.Frequency * messages / watch.ElapsedTicks;
 
-            Write($"{frequency} messages / second");
+            Write($"{frequency:#,##0} messages / second");
         }
 
+        [Fact]
+        public async Task T02_ReceiveStringsFromPrefixedBytes()
+        {
+            var messages = 100_000;
+
+            var message = new [] { "Welcome!" }.ToByteArrayWithLengthPrefix();
+
+            var countTask = client.ReceiveObservable.ToByteArrayOfLengthPrefix().ToStringArray().Count().ToTask();
+
+            var watch = new Stopwatch();
+            watch.Start();
+
+            for (var i = 0; i < messages; i++)
+                accept.Send(message);
+            await accept.DisconnectAsync();
+
+            var count = await countTask;
+
+            watch.Stop();
+
+            Assert.Equal(messages, count);
+
+            var frequency = Stopwatch.Frequency * messages / watch.ElapsedTicks;
+
+            Write($"{frequency:#,##0} messages / second");
+        }
     }
 }
