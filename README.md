@@ -12,7 +12,7 @@
 public interface IRxSocketServer
 {
     IObservable<IRxSocket> AcceptObservable { get; }
-    Task DisconnectAsync(int timeout);
+    Task<SocketError> DisconnectAsync(CancellationToken ct);
 }
 ```
 ```csharp
@@ -26,7 +26,7 @@ IRxSocket accept = await server.AcceptObservable.FirstAsync();
 accept.Send("Welcome!".ToBytes());
 
 // Receive a string from the client.
-Assert.Equal("Hello", await accept.ReceiveObservable.ToStrings().FirstAsync();
+Assert.Equal("Hello", await accept.ReceiveObservable.ToStrings().FirstAsync());
 
 // Disconnect and dispose the sockets.
 await Task.WhenAll(accept.DisconnectAsync(), server.DisconnectAsync());
@@ -40,7 +40,7 @@ interface IRxSocket
     bool Connected { get; }
     void Send(byte[] buffer, int offset, int length);
     IObservable<byte> ReceiveObservable { get; }
-    Task DisconnectAsync(int timeout);
+    Task<SocketError> DisconnectAsync(CancellationToken ct);
 }
 ```
 ```csharp
