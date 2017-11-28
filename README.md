@@ -12,7 +12,7 @@
 public interface IRxSocketServer
 {
     IObservable<IRxSocket> AcceptObservable { get; }
-    Task<SocketError> DisconnectAsync(CancellationToken ct);
+    Task DisconnectAsync(CancellationToken ct);
 }
 ```
 ```csharp
@@ -40,7 +40,7 @@ interface IRxSocket
     bool Connected { get; }
     void Send(byte[] buffer, int offset, int length);
     IObservable<byte> ReceiveObservable { get; }
-    Task<SocketError> DisconnectAsync(CancellationToken ct);
+    Task DisconnectAsync(CancellationToken ct);
 }
 ```
 ```csharp
