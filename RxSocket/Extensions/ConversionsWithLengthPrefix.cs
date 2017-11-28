@@ -66,7 +66,7 @@ namespace RxSocket
                         ms.SetLength(0);
                     }
                 }
-                if (ms.Position != -1)
+                if (ms.Position != 0)
                     throw new InvalidDataException("Incomplete.");
             }
         }

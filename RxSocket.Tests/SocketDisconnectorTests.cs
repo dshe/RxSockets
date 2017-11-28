@@ -37,7 +37,9 @@ namespace RxSocket.Tests
         {
             Assert.False(Socket.Connected);
             Assert.False(Disconnector.DisconnectRequested);
-            Assert.Equal(SocketError.NotConnected, await Disconnector.DisconnectAsync());
+            var ex = await Disconnector.DisconnectAsync();
+            var se = ex as SocketException;
+            Assert.Equal(SocketError.NotConnected, se.SocketErrorCode);
             Assert.True(Disconnector.DisconnectRequested);
         }
 
@@ -45,25 +47,31 @@ namespace RxSocket.Tests
         public async Task T02_DisconnectConnectedSocket()
         {
             Connect();
+            var ex = await Disconnector.DisconnectAsync();
+            var se = ex as SocketException;
+            Assert.Equal(SocketError.Success, se.SocketErrorCode);
 
-            Assert.Equal(SocketError.Success, await Disconnector.DisconnectAsync());
             Assert.True(Disconnector.DisconnectRequested);
-            Assert.Equal(SocketError.Success, await Disconnector.DisconnectAsync());
+
+            ex = await Disconnector.DisconnectAsync();
+            se = ex as SocketException;
+            Assert.Equal(SocketError.Success, se.SocketErrorCode);
         }
 
         [Fact]
         public async Task T03_Cancel()
         {
             Connect();
-            Assert.Equal(SocketError.OperationAborted, await Disconnector.DisconnectAsync(new CancellationToken(true)));
+            var ex = await Disconnector.DisconnectAsync(new CancellationToken(true));
+            Assert.IsType<TaskCanceledException>(ex);
         }
 
         [Fact]
         public async Task T04_DisconnectDisposedSocket()
         {
             Socket.Dispose();
-            Assert.Equal(SocketError.Shutdown, await Disconnector.DisconnectAsync());
-            Assert.True(Disconnector.DisconnectRequested);
+            var ex = await Disconnector.DisconnectAsync(new CancellationToken(true));
+            Assert.IsType<ObjectDisposedException>(ex);
         }
 
         /*

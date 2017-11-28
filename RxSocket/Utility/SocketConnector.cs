@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -29,40 +28,23 @@ namespace RxSocket
             {
                 if (socket.ConnectAsync(args)) // default timeout is ~20 seconds.
                     await semaphore.WaitAsync(ct).ConfigureAwait(false);
-                else if (ct.IsCancellationRequested)
-                    return CancelAndDispose(SocketError.OperationAborted);
+                else
+                    ct.ThrowIfCancellationRequested();
 
-                if (args.SocketError == SocketError.Success)
-                    return (SocketError.Success, new RxSocket(args.ConnectSocket));
-
-                return CancelAndDispose(args.SocketError);
-            }
-            catch (OperationCanceledException)
-            {
-                return CancelAndDispose(SocketError.OperationAborted);
+                return (args.SocketError, args.SocketError == SocketError.Success ? new RxSocket(args.ConnectSocket) : null);
             }
             catch (SocketException se)
             {
-                return CancelAndDispose(se.SocketErrorCode);
+                return (se.SocketErrorCode, null);
             }
-            catch (ObjectDisposedException)
+            finally
             {
-                return CancelAndDispose(SocketError.Shutdown);
+                if (args.SocketError != SocketError.Success)
+                {
+                    Socket.CancelConnectAsync(args);
+                    socket.Dispose();
+                }
             }
-            catch (Exception e)
-            {
-                Debug.WriteLine("SocketConnector Unhandled Exception: " + e.Message);
-                throw;
-            }
-
-            // local
-            (SocketError, IRxSocket) CancelAndDispose(SocketError error)
-            {
-                Socket.CancelConnectAsync(args);
-                socket.Dispose();
-                return (error, null);
-            }
-
         }
     }
 }

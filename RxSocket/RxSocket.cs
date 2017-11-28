@@ -16,7 +16,7 @@ namespace RxSocket
         bool Connected { get; }
         void Send(byte[] buffer, int offset = 0, int length = 0);
         IObservable<byte> ReceiveObservable { get; }
-        Task<SocketError> DisconnectAsync(CancellationToken ct = default);
+        Task DisconnectAsync(CancellationToken ct = default);
     }
 
     public class RxSocket : IRxSocket
@@ -81,7 +81,7 @@ namespace RxSocket
         public void Send(byte[] buffer, int offset, int length) =>
             Socket.Send(buffer, offset, length > 0 ? length : buffer.Length, SocketFlags.None);
 
-        public Task<SocketError> DisconnectAsync(CancellationToken ct) => Disconnector.DisconnectAsync(ct);
+        public Task DisconnectAsync(CancellationToken ct) => Disconnector.DisconnectAsync(ct);
 
         // pass an already cancelled token to skip waiting for disconnect
         public void Dispose() =>

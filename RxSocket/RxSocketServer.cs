@@ -11,7 +11,7 @@ namespace RxSocket
     public interface IRxSocketServer : IDisposable
     {
         IObservable<IRxSocket> AcceptObservable { get; }
-        Task<SocketError> DisconnectAsync(CancellationToken ct = default);
+        Task DisconnectAsync(CancellationToken ct = default);
     }
 
     public sealed class RxSocketServer : IRxSocketServer
@@ -59,7 +59,7 @@ namespace RxSocket
             });
         }
 
-        public Task<SocketError> DisconnectAsync(CancellationToken ct) => Disconnector.DisconnectAsync(ct);
+        public Task DisconnectAsync(CancellationToken ct) => Disconnector.DisconnectAsync(ct);
 
         // pass an already cancelled token to skip waiting for disconnect
         public void Dispose() =>
