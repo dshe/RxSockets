@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Reactive.Concurrency;
 using System.Threading.Tasks;
-using System.Reactive.Disposables;
 using System.Threading;
 
 namespace RxSocket
@@ -64,7 +63,7 @@ namespace RxSocket
 
         // pass an already cancelled token to skip waiting for disconnect
         public void Dispose() =>
-            Disconnector.DisconnectAsync(new CancellationTokenSource(0).Token).GetAwaiter().GetResult();
+            Disconnector.DisconnectAsync(new CancellationToken(true)).GetAwaiter().GetResult();
 
 
         // static!

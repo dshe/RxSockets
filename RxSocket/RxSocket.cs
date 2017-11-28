@@ -84,8 +84,8 @@ namespace RxSocket
         public Task<SocketError> DisconnectAsync(CancellationToken ct) => Disconnector.DisconnectAsync(ct);
 
         // pass an already cancelled token to skip waiting for disconnect
-        public void Dispose() => 
-            Disconnector.DisconnectAsync(new CancellationTokenSource(0).Token).GetAwaiter().GetResult();
+        public void Dispose() =>
+            Disconnector.DisconnectAsync(new CancellationToken(true)).GetAwaiter().GetResult();
 
         // static!
         public static async Task<(SocketError error, IRxSocket rxsocket)>

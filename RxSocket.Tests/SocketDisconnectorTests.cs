@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Xunit;
 using RxSocket.Tests.Utility;
+using System.Threading;
 
 namespace RxSocket.Tests
 {
@@ -50,14 +51,12 @@ namespace RxSocket.Tests
             Assert.Equal(SocketError.Success, await Disconnector.DisconnectAsync());
         }
 
-        /*
         [Fact]
         public async Task T03_Cancel()
         {
             Connect();
-            Assert.Equal(SocketError.OperationAborted, await Disconnector.DisconnectAsync(new CancellationTokenSource(0).Token));
+            Assert.Equal(SocketError.OperationAborted, await Disconnector.DisconnectAsync(new CancellationToken(true)));
         }
-        */
 
         [Fact]
         public async Task T04_DisconnectDisposedSocket()

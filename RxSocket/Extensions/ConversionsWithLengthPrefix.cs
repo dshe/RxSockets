@@ -50,22 +50,25 @@ namespace RxSocket
             var length = -1;
 
             using (var ms = new MemoryStream())
-            foreach (var b in source)
             {
-                ms.WriteByte(b);
-                if (length == -1 && ms.Position == 4)
+                foreach (var b in source)
                 {
-                    length = GetMessageLength(ms);
-                    ms.SetLength(0);
+                    ms.WriteByte(b);
+                    if (length == -1 && ms.Position == 4)
+                    {
+                        length = GetMessageLength(ms);
+                        ms.SetLength(0);
+                    }
+                    else if (ms.Length == length)
+                    {
+                        yield return ms.ToArray(); // array copy
+                        length = -1;
+                        ms.SetLength(0);
+                    }
                 }
-                else if (ms.Length == length)
-                {
-                    yield return ms.ToArray(); // array copy
-                    length = -1;
-                    ms.SetLength(0);
-                }
+                if (ms.Position != -1)
+                    throw new InvalidDataException("Incomplete.");
             }
-            yield break;
         }
 
         public static IObservable<byte[]> ToByteArrayOfLengthPrefix(this IObservable<byte> source)
@@ -78,21 +81,30 @@ namespace RxSocket
 
             return Observable.Create<byte[]>(observer =>
             {
-                return source.Subscribe(onNext: b =>
-                {
-                    ms.WriteByte(b);
-                    if (length == -1 && ms.Position == 4)
+                return source.Subscribe(
+                    onNext: b =>
                     {
-                        length = GetMessageLength(ms);
-                        ms.SetLength(0);
-                    }
-                    else if (length == ms.Length)
+                        ms.WriteByte(b);
+                        if (length == -1 && ms.Position == 4)
+                        {
+                            length = GetMessageLength(ms);
+                            ms.SetLength(0);
+                        }
+                        else if (length == ms.Length)
+                        {
+                            observer.OnNext(ms.ToArray()); // array copy
+                            length = -1;
+                            ms.SetLength(0);
+                        }
+                    }, 
+                    onError: observer.OnError, 
+                    onCompleted: () => 
                     {
-                        observer.OnNext(ms.ToArray()); // array copy
-                        length = -1;
-                        ms.SetLength(0);
-                    }
-                }, onError: observer.OnError, onCompleted: observer.OnCompleted);
+                        if (ms.Position == 0)
+                            observer.OnCompleted();
+                        else
+                            observer.OnError(new InvalidDataException("Incomplete."));
+                    });
             });
         }
 

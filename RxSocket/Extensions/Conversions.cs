@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 
@@ -37,7 +34,6 @@ namespace RxSocket
                 }
                 if (ms.Position != 0)
                     throw new InvalidDataException("No termination.");
-                yield break;
             }
         }
 
@@ -50,22 +46,25 @@ namespace RxSocket
 
             return Observable.Create<string>(observer =>
             {
-                return source.Subscribe(b =>
-                {
-                    if (b == 0)
+                return source.Subscribe(
+                    onNext: b =>
                     {
-                        observer.OnNext(GetString(ms));
-                        ms.SetLength(0);
-                    }
-                    else
-                        ms.WriteByte(b);
-                }, e => observer.OnError(e), 
-                () => {
-                    if (ms.Position == 0)
-                        observer.OnCompleted();
-                    else
-                        observer.OnError(new InvalidDataException("No termination."));
-                });
+                        if (b == 0)
+                        {
+                            observer.OnNext(GetString(ms));
+                            ms.SetLength(0);
+                        }
+                        else
+                            ms.WriteByte(b);
+                    },
+                    onError: observer.OnError,
+                    onCompleted: () =>
+                    {
+                        if (ms.Position == 0)
+                            observer.OnCompleted();
+                        else
+                            observer.OnError(new InvalidDataException("No termination."));
+                    });
             });
         }
 
