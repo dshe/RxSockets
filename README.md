@@ -45,7 +45,7 @@ interface IRxSocket
 ```
 ```csharp
 // Create a socket client by successfully connecting to the server at IPEndPoint.
-(SocketError error, IRxSocket client) = await RxSocket.ConnectAsync(IPEndPoint);
+(SocketError error, IRxSocket client) = await RxSocket.TryConnectAsync(IPEndPoint);
 Assert.Equal(SocketError.Success, error);
 
 // Receive a string from the server.
