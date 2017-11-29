@@ -1,7 +1,7 @@
 ## RxSocket&nbsp;&nbsp; [![release](https://img.shields.io/github/release/dshe/RxSocket/all.svg)](https://github.com/dshe/RxSocket/releases) [![Build status](https://ci.appveyor.com/api/projects/status/rfxxbpx2agq8r93n?svg=true)](https://ci.appveyor.com/project/dshe/rxsocket) [![License](https://img.shields.io/badge/license-Apache%202.0-7755BB.svg)](https://opensource.org/licenses/Apache-2.0)
 
 **Minimal Reactive Socket Implementation**
-- observable receive and accept, asynchronous connect and disconnect, synchronous send
+- observable receive and accept, asynchronous connect and disconnect
 - supports **.NET Standard 2.0**
 - simple and intuitive API
 - tested
@@ -12,7 +12,7 @@
 public interface IRxSocketServer
 {
     IObservable<IRxSocket> AcceptObservable { get; }
-    Task<SocketError> DisconnectAsync(CancellationToken ct);
+    Task DisconnectAsync(CancellationToken ct);
 }
 ```
 ```csharp
@@ -40,12 +40,12 @@ interface IRxSocket
     bool Connected { get; }
     void Send(byte[] buffer, int offset, int length);
     IObservable<byte> ReceiveObservable { get; }
-    Task<SocketError> DisconnectAsync(CancellationToken ct);
+    Task DisconnectAsync(CancellationToken ct);
 }
 ```
 ```csharp
 // Create a socket client by successfully connecting to the server at IPEndPoint.
-(SocketError error, IRxSocket client) = await RxSocket.ConnectAsync(IPEndPoint);
+(SocketError error, IRxSocket client) = await RxSocket.TryConnectAsync(IPEndPoint);
 Assert.Equal(SocketError.Success, error);
 
 // Receive a string from the server.
