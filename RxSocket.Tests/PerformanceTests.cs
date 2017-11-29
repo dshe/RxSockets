@@ -24,7 +24,7 @@ namespace RxSocket.Tests
         {
             server = RxSocketServer.Create(EndPoint);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
-            client = (await RxSocket.ConnectAsync(EndPoint)).rxsocket;
+            client = (await RxSocket.TryConnectAsync(EndPoint)).rxsocket;
             accept = await acceptTask;
             Assert.True(accept.Connected && client.Connected);
         }
@@ -56,7 +56,7 @@ namespace RxSocket.Tests
 
             var frequency = Stopwatch.Frequency * messages / watch.ElapsedTicks;
 
-            Write($"{frequency:#,##0} messages / second");
+            Write($"{frequency:N0} messages / second");
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace RxSocket.Tests
 
             var frequency = Stopwatch.Frequency * messages / watch.ElapsedTicks;
 
-            Write($"{frequency:#,##0} messages / second");
+            Write($"{frequency:N0} messages / second");
         }
     }
 }

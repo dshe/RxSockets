@@ -63,7 +63,7 @@ namespace RxSocket.Tests
         {
             Connect();
             var ex = await Disconnector.DisconnectAsync(new CancellationToken(true));
-            Assert.IsType<TaskCanceledException>(ex);
+            Assert.IsAssignableFrom<OperationCanceledException>(ex);
         }
 
         [Fact]
@@ -73,18 +73,5 @@ namespace RxSocket.Tests
             var ex = await Disconnector.DisconnectAsync(new CancellationToken(true));
             Assert.IsType<ObjectDisposedException>(ex);
         }
-
-        /*
-        [Fact]
-        public async Task T05_DisconnectRequested()
-        {
-            Connect();
-
-            Disconnector.DisconnectAsync(); // fire and forget
-            Assert.True(Disconnector.DisconnectRequested);
-
-            Assert.Equal(SocketError.Success, await Disconnector.DisconnectAsync());
-        }
-        */
     }
 }

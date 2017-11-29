@@ -12,6 +12,7 @@ using Xunit;
 using Xunit.Abstractions;
 using System.Diagnostics;
 using System.Reactive;
+using System.Threading;
 
 namespace RxSocket.Tests
 { 
@@ -26,7 +27,7 @@ namespace RxSocket.Tests
         {
             Server = RxSocketServer.Create(EndPoint);
             AcceptTask = Server.AcceptObservable.FirstAsync().ToTask();
-            Client = (await RxSocket.ConnectAsync(EndPoint)).rxsocket;
+            Client = (await RxSocket.TryConnectAsync(EndPoint)).rxsocket;
             Accept = await AcceptTask;
         }
 
@@ -38,28 +39,35 @@ namespace RxSocket.Tests
         }
 
         [Fact]
-        public async Task T00_DisconnectBeforeReceive()
+        public async Task T00_Cancel()
         {
-            await Client.DisconnectAsync();
-            await Client.ReceiveObservable.LastOrDefaultAsync();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async() => 
+                await RxSocket.TryConnectAsync(EndPoint, ct:new CancellationToken(true)));
         }
 
         [Fact]
-        public async Task T00_DisconnectDuringReceive()
+        public async Task T01_DisconnectBeforeReceive()
+        {
+            await Client.DisconnectAsync();
+            Assert.Empty(await Client.ReceiveObservable.ToList());
+        }
+
+        [Fact]
+        public async Task T02_DisconnectDuringReceive()
         {
             var receiveTask = Client.ReceiveObservable.LastOrDefaultAsync().ToTask();
             await Client.DisconnectAsync();
         }
 
         [Fact]
-        public async Task T00_ExternalDisconnectBeforeReceive()
+        public async Task T03_ExternalDisconnectBeforeReceive()
         {
             await Accept.DisconnectAsync();
             await Client.ReceiveObservable.LastOrDefaultAsync();
         }
 
         [Fact]
-        public async Task T00_ExternalDisconnectDuringReceive()
+        public async Task T04_ExternalDisconnectDuringReceive()
         {
             var receiveTask = Client.ReceiveObservable.FirstAsync().ToTask();
             await Accept.DisconnectAsync();
@@ -67,14 +75,14 @@ namespace RxSocket.Tests
         }
 
         [Fact]
-        public async Task T00_DisconnectBeforeSend()
+        public async Task T05_DisconnectBeforeSend()
         {
             await Client.DisconnectAsync();
             Assert.Throws<ObjectDisposedException>(() => Client.Send(new byte[] { 0 }));
         }
 
         [Fact]
-        public async Task T00_DisconnectDuringSend()
+        public async Task T06_DisconnectDuringSend()
         {
             var sendTask = Task.Run(() => Client.Send(new byte[100_000_000]));
             while (sendTask.Status != TaskStatus.Running)
@@ -86,7 +94,7 @@ namespace RxSocket.Tests
         }
 
         [Fact]
-        public async Task T00_ExternalDisconnectBeforeSend()
+        public async Task T07_ExternalDisconnectBeforeSend()
         {
             await Accept.DisconnectAsync();
             Client.Send(new byte[] { 0,1,2,3 });
@@ -94,7 +102,7 @@ namespace RxSocket.Tests
         }
 
         [Fact]
-        public async Task T00_ExternalDisconnectDuringSend()
+        public async Task T08_ExternalDisconnectDuringSend()
         {
             var sendTask = Task.Run(() => Client.Send(new byte[100_000_000]));
             while (sendTask.Status != TaskStatus.Running)

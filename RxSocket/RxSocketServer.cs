@@ -61,7 +61,7 @@ namespace RxSocket
 
         public Task DisconnectAsync(CancellationToken ct) => Disconnector.DisconnectAsync(ct);
 
-        // pass an already cancelled token to skip waiting for disconnect
+        // pass a cancelled token to skip waiting for disconnect
         public void Dispose() =>
             Disconnector.DisconnectAsync(new CancellationToken(true)).GetAwaiter().GetResult();
 
