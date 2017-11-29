@@ -25,7 +25,6 @@ namespace RxSocket.Tests
             Assert.True(Socket.Connected && !Disconnector.DisconnectRequested);
         }
 
-
         [Fact]
         public void T00_Null()
         {
@@ -70,7 +69,7 @@ namespace RxSocket.Tests
         public async Task T04_DisconnectDisposedSocket()
         {
             Socket.Dispose();
-            var ex = await Disconnector.DisconnectAsync(new CancellationToken(true));
+            var ex = await Disconnector.DisconnectAsync();
             Assert.IsType<ObjectDisposedException>(ex);
         }
     }

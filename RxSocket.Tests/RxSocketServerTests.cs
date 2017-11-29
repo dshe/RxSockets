@@ -25,7 +25,7 @@ namespace RxSocket.Tests
         [Fact]
         public void T01_InvalidEndPoint()
         {
-            var endPoint = new IPEndPoint(IPAddress.Parse("192.168.254.254"), 80);
+            var endPoint = new IPEndPoint(IPAddress.Parse("111.111.111.111"), 1111);
             Assert.Throws<SocketException>(() => RxSocketServer.Create(endPoint));
         }
 

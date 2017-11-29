@@ -3,15 +3,10 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
-using System.Diagnostics;
-using System.Reactive;
 using System.Threading;
 
 namespace RxSocket.Tests

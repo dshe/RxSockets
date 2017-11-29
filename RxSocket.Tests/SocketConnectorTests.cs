@@ -49,6 +49,9 @@ namespace RxSocket.Tests
 
             var (error, socket) = await SocketConnector.TryConnectAsync(EndPoint);
             Assert.Equal(SocketError.Success, error);
+
+            socket.Dispose();
+            serverSocket.Dispose();
         }
 
     }

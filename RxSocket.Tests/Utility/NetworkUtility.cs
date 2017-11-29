@@ -28,6 +28,6 @@ namespace RxSocket.Tests.Utility
 
         private static bool IsPortUsed(int port) =>
             IPGlobalProperties.GetIPGlobalProperties()
-              .GetActiveTcpListeners().Any(x => x.Port == port);
+              .GetActiveTcpListeners().Any(ep => ep.Port == port);
     }
 }

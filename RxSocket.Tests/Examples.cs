@@ -10,6 +10,7 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Collections.Generic;
 using System.Reactive.Threading.Tasks;
+using System.Reactive.Disposables;
 
 namespace RxSocket.Tests
 {
@@ -71,10 +72,14 @@ namespace RxSocket.Tests
         [Fact]
         public async Task T20_AcceptObservable()
         {
-             var server = RxSocketServer.Create(EndPoint);
+            var disposables = new CompositeDisposable();
+
+            var server = RxSocketServer.Create(EndPoint);
+            disposables.Add(server);
 
             server.AcceptObservable.Subscribe(accepted =>
             {
+                disposables.Add(accepted);
                 "Welcome!".ToByteArray().SendTo(accepted);
             });
 
@@ -86,17 +91,27 @@ namespace RxSocket.Tests
             Assert.Equal("Welcome!", await client2.ReceiveObservable.ToStrings().Take(1).FirstAsync());
             Assert.Equal("Welcome!", await client3.ReceiveObservable.ToStrings().Take(1).FirstAsync());
 
-            await Task.WhenAll(client1.DisconnectAsync(), client2.DisconnectAsync(), client3.DisconnectAsync(), server.DisconnectAsync());
+            disposables.Add(client1);
+            disposables.Add(client2);
+            disposables.Add(client3);
+
+            disposables.Dispose();
         }
 
         [Fact]
         public async Task T30_Both()
         {
+            var disposables = new CompositeDisposable();
+
             var server = RxSocketServer.Create(EndPoint);
+            disposables.Add(server);
 
             server.AcceptObservable.Subscribe(accepted =>
             {
+                disposables.Add(accepted);
+
                 "Welcome!".ToByteArray().SendTo(accepted);
+
                 accepted
                     .ReceiveObservable
                     .ToStrings()
@@ -111,6 +126,11 @@ namespace RxSocket.Tests
 
             foreach (var client in clients)
                 Assert.Equal("Hello", await client.ReceiveObservable.ToStrings().Skip(1).Take(1).FirstAsync());
+
+            foreach (var client in clients)
+                disposables.Add(client);
+
+            disposables.Dispose();
         }
 
     }
