@@ -23,7 +23,7 @@ namespace RxSockets.Tests
             return freq;
         }
 
-        [Fact]
+        //[Fact]
         public void Test()
         {
             var rate = Limit(50, 1);
