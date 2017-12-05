@@ -30,7 +30,7 @@ namespace RxSockets.Tests
             Assert.InRange(rate, 47, 51);
 
             rate = Limit(50, 1.5);
-            Assert.InRange(rate, 47, 51);
+            Assert.InRange(rate, 45, 51);
 
             rate = Limit(100, .5);
             Assert.InRange(rate, 98, 101);

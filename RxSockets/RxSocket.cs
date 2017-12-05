@@ -7,8 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Reactive.Linq;
 using System.Reactive.Concurrency;
 
-[assembly: InternalsVisibleTo("RxSocket.Tests")]
-
 namespace RxSockets
 {
     public interface IRxSocket : IDisposable
