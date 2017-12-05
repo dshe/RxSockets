@@ -4,13 +4,12 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using RxSocket.Tests.Utility;
 
-namespace RxSocket.Tests
+namespace RxSockets.Tests
 {
     public class SocketConnectorTest
     {
-        private readonly IPEndPoint EndPoint = new IPEndPoint(IPAddress.Loopback, NetworkUtility.GetRandomUnusedPort());
+        private readonly IPEndPoint EndPoint = NetworkUtility.GetEndPointOnLoopbackRandomPort();
 
         [Fact]
         public async Task T00_Null()

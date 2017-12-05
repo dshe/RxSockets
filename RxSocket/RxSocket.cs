@@ -9,7 +9,7 @@ using System.Reactive.Concurrency;
 
 [assembly: InternalsVisibleTo("RxSocket.Tests")]
 
-namespace RxSocket
+namespace RxSockets
 {
     public interface IRxSocket : IDisposable
     {
@@ -19,7 +19,7 @@ namespace RxSocket
         Task DisconnectAsync(CancellationToken ct = default);
     }
 
-    public class RxSocket : IRxSocket
+    public sealed class RxSocket : IRxSocket
     {
         public static int ReceiveBufferSize { get; set; } = 0x1000;
         private readonly Socket Socket;

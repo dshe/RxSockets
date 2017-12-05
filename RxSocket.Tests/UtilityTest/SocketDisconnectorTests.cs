@@ -3,14 +3,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Xunit;
-using RxSocket.Tests.Utility;
 using System.Threading;
 
-namespace RxSocket.Tests
+namespace RxSockets.Tests
 {
     public class SocketDisconnectorTest
     {
-        private readonly IPEndPoint EndPoint = new IPEndPoint(IPAddress.Loopback, NetworkUtility.GetRandomUnusedPort());
+        private readonly IPEndPoint EndPoint = NetworkUtility.GetEndPointOnLoopbackRandomPort();
         private readonly Socket ServerSocket = NetworkUtility.CreateSocket();
         private readonly Socket Socket = NetworkUtility.CreateSocket();
         private readonly SocketDisconnector Disconnector;

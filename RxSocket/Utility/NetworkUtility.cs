@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
-namespace RxSocket.Tests.Utility
+namespace RxSockets
 {
     public static class NetworkUtility
     {
         private static Random Random = new Random();
 
         public static Socket CreateSocket() =>
-            new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp)
-            {
-                DualMode = true,
-                NoDelay = true
-            };
+            new Socket(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
 
-        public static int GetRandomUnusedPort()
+        public static IPEndPoint GetEndPointOnLoopbackRandomPort() =>
+            new IPEndPoint(IPAddress.IPv6Loopback, GetRandomAvailablePort());
+
+        public static int GetRandomAvailablePort()
         {
             while (true)
             {

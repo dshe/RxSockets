@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reactive.Disposables;
 
-namespace RxSocket
+namespace RxSockets
 {
     public static class AddDisposableToEx
     {

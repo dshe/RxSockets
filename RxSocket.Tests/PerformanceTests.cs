@@ -4,16 +4,15 @@ using Xunit.Abstractions;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Net;
-using RxSocket.Tests.Utility;
 using System.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Diagnostics;
 
-namespace RxSocket.Tests
+namespace RxSockets.Tests
 {
     public class PerformanceTest : IAsyncLifetime
     {
-        private readonly IPEndPoint EndPoint = new IPEndPoint(IPAddress.Loopback, NetworkUtility.GetRandomUnusedPort());
+        private readonly IPEndPoint EndPoint = NetworkUtility.GetEndPointOnLoopbackRandomPort();
         private IRxSocketServer server;
         private IRxSocket client, accept;
 

@@ -4,17 +4,14 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RxSocket
+namespace RxSockets
 {
     internal static class SocketConnector
     {
         internal static async Task<(SocketError error, IRxSocket socket)> 
             TryConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
         {
-            var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp)
-            {
-                DualMode = true, NoDelay = true
-            };
+            var socket = NetworkUtility.CreateSocket();
 
             var semaphore = new SemaphoreSlim(0, 1);
 

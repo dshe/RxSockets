@@ -1,5 +1,4 @@
-﻿using RxSocket.Tests.Utility;
-using System;
+﻿using System;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -9,11 +8,11 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Threading;
 
-namespace RxSocket.Tests
+namespace RxSockets.Tests
 { 
     public class RxSocketTest : IAsyncLifetime
     {
-        private IPEndPoint EndPoint = new IPEndPoint(IPAddress.Loopback, NetworkUtility.GetRandomUnusedPort());
+        private readonly IPEndPoint EndPoint = NetworkUtility.GetEndPointOnLoopbackRandomPort();
         private IRxSocket Client, Accept;
         private IRxSocketServer Server;
         private Task<IRxSocket> AcceptTask;

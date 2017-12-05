@@ -12,11 +12,11 @@ using System.Collections.Generic;
 using System.Reactive.Threading.Tasks;
 using System.Reactive.Disposables;
 
-namespace RxSocket.Tests
+namespace RxSockets.Tests
 {
     public class Examples
     {
-        private IPEndPoint EndPoint = new IPEndPoint(IPAddress.Loopback, Utility.NetworkUtility.GetRandomUnusedPort());
+        private IPEndPoint EndPoint = NetworkUtility.GetEndPointOnLoopbackRandomPort();
 
         private readonly Action<string> Write;
         public Examples(ITestOutputHelper output) => Write = output.WriteLine;

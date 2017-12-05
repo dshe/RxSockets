@@ -6,7 +6,7 @@ using System.Reactive.Concurrency;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace RxSocket
+namespace RxSockets
 {
     public interface IRxSocketServer : IDisposable
     {
@@ -71,10 +71,7 @@ namespace RxSocket
             Create(new IPEndPoint(IPAddress.IPv6Any, port));
         public static IRxSocketServer Create(IPEndPoint endPoint)
         {
-            var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp)
-            {
-                DualMode = true, NoDelay = true
-            };
+            var socket = NetworkUtility.CreateSocket();
 
             socket.Bind(endPoint ?? throw new ArgumentNullException(nameof(endPoint)));
 

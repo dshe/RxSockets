@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace RxSocket.Tests
+namespace RxSockets.Tests
 {
     public class ConversionsTest
     {

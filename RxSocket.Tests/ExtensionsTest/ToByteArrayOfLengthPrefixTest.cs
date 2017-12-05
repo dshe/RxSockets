@@ -4,7 +4,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace RxSocket.Tests
+namespace RxSockets.Tests
 {
     public class ToByteArrayOfLengthPrefixTest
     {

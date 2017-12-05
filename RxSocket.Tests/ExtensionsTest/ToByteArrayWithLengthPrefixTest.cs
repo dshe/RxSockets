@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace RxSocket.Tests
+namespace RxSockets.Tests
 {
     public class ToByteArrayWithLengthPrefixTest
     {

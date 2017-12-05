@@ -4,7 +4,7 @@ using System.IO;
 using System.Reactive.Linq;
 using System.Text;
 
-namespace RxSocket
+namespace RxSockets
 {
     public static class ConversionsEx
     {

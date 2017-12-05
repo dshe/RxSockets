@@ -6,7 +6,7 @@ using System.Text;
 using System.Linq;
 using System.Reactive.Linq;
 
-namespace RxSocket
+namespace RxSockets
 {
     public static class ConversionsWithLengthPrefixEx
     {

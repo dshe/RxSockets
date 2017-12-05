@@ -1,6 +1,5 @@
 ﻿using System;
 using Xunit;
-using RxSocket.Tests.Utility;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Linq;
@@ -10,11 +9,11 @@ using Xunit.Abstractions;
 using System.Reactive.Threading.Tasks;
 using System.Reactive;
 
-namespace RxSocket.Tests
+namespace RxSockets.Tests
 {
     public class RxSocketServerTest
     {
-        private readonly IPEndPoint EndPoint = new IPEndPoint(IPAddress.Loopback, NetworkUtility.GetRandomUnusedPort());
+        private readonly IPEndPoint EndPoint = NetworkUtility.GetEndPointOnLoopbackRandomPort();
 
         [Fact]
         public void T00_Null()
