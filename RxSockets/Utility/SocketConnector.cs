@@ -11,7 +11,7 @@ namespace RxSockets
         internal static async Task<(SocketError error, IRxSocket socket)> 
             TryConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
         {
-            var socket = NetworkUtility.CreateSocket();
+            var socket = NetworkHelper.CreateSocket();
 
             var semaphore = new SemaphoreSlim(0, 1);
 

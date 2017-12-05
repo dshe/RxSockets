@@ -13,7 +13,7 @@ namespace RxSockets.Tests
 {
     public class RxSocketServerTest
     {
-        private readonly IPEndPoint EndPoint = NetworkUtility.GetEndPointOnLoopbackRandomPort();
+        private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
 
         [Fact]
         public void T00_Null()
@@ -35,7 +35,7 @@ namespace RxSockets.Tests
 
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
-            var clientSocket = NetworkUtility.CreateSocket();
+            var clientSocket = NetworkHelper.CreateSocket();
             clientSocket.Connect(EndPoint);
 
             var acceptedSocket = await acceptTask;

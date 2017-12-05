@@ -12,7 +12,7 @@ namespace RxSockets.Tests
 { 
     public class RxSocketTest : IAsyncLifetime
     {
-        private readonly IPEndPoint EndPoint = NetworkUtility.GetEndPointOnLoopbackRandomPort();
+        private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
         private IRxSocket Client, Accept;
         private IRxSocketServer Server;
         private Task<IRxSocket> AcceptTask;

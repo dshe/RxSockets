@@ -6,7 +6,7 @@ using System.Net.Sockets;
 
 namespace RxSockets
 {
-    public static class NetworkUtility
+    public static class NetworkHelper
     {
         private static Random Random = new Random();
 

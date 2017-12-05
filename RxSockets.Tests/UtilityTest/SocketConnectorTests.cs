@@ -9,7 +9,7 @@ namespace RxSockets.Tests
 {
     public class SocketConnectorTest
     {
-        private readonly IPEndPoint EndPoint = NetworkUtility.GetEndPointOnLoopbackRandomPort();
+        private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
 
         [Fact]
         public async Task T00_Null()
@@ -41,7 +41,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T99_Success()
         {
-            var serverSocket = NetworkUtility.CreateSocket();
+            var serverSocket = NetworkHelper.CreateSocket();
 
             serverSocket.Bind(EndPoint);
             serverSocket.Listen(10);

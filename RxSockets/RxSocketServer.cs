@@ -71,7 +71,7 @@ namespace RxSockets
             Create(new IPEndPoint(IPAddress.IPv6Any, port));
         public static IRxSocketServer Create(IPEndPoint endPoint)
         {
-            var socket = NetworkUtility.CreateSocket();
+            var socket = NetworkHelper.CreateSocket();
 
             socket.Bind(endPoint ?? throw new ArgumentNullException(nameof(endPoint)));
 

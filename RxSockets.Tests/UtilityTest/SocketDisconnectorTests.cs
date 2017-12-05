@@ -9,9 +9,9 @@ namespace RxSockets.Tests
 {
     public class SocketDisconnectorTest
     {
-        private readonly IPEndPoint EndPoint = NetworkUtility.GetEndPointOnLoopbackRandomPort();
-        private readonly Socket ServerSocket = NetworkUtility.CreateSocket();
-        private readonly Socket Socket = NetworkUtility.CreateSocket();
+        private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
+        private readonly Socket ServerSocket = NetworkHelper.CreateSocket();
+        private readonly Socket Socket = NetworkHelper.CreateSocket();
         private readonly SocketDisconnector Disconnector;
 
         public SocketDisconnectorTest() => Disconnector = new SocketDisconnector(Socket);
