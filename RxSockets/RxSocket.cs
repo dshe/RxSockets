@@ -24,7 +24,7 @@ namespace RxSockets
         public bool Connected => Socket.Connected;
         public IObservable<byte> ReceiveObservable { get; }
 
-        internal RxSocket(Socket connectedSocket)
+        public RxSocket(Socket connectedSocket)
         {
             Socket = connectedSocket ?? throw new ArgumentNullException(nameof(connectedSocket));
             if (!Socket.Connected)

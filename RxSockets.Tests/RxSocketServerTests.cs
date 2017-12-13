@@ -16,12 +16,6 @@ namespace RxSockets.Tests
         private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
 
         [Fact]
-        public void T00_Null()
-        {
-            Assert.Throws<ArgumentNullException>(() => RxSocketServer.Create(null));
-        }
-
-        [Fact]
         public void T01_InvalidEndPoint()
         {
             var endPoint = new IPEndPoint(IPAddress.Parse("111.111.111.111"), 1111);

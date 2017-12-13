@@ -8,9 +8,9 @@ using System.Reactive.Linq;
 
 namespace RxSockets
 {
+    // Encode strings with a 4 byte BigEndian integer length prefix.
     public static class ConversionsWithLengthPrefixEx
     {
-        // Encode strings with a 4 byte BigEndian integer length prefix.
         public static byte[] ToByteArrayWithLengthPrefix(this IEnumerable<string> source)
         {
             if (source == null)

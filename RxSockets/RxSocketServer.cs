@@ -25,7 +25,9 @@ namespace RxSockets
 
         private RxSocketServer(Socket socket)
         {
-            Socket = socket;
+            Socket = socket ?? throw new ArgumentNullException(nameof(socket));
+            if (socket.Connected)
+                throw new SocketException((int)SocketError.IsConnected);
             Disconnector = new SocketDisconnector(socket);
             AcceptObservable = CreateAcceptObservable();
         }
@@ -65,18 +67,19 @@ namespace RxSockets
         public void Dispose() =>
             Disconnector.DisconnectAsync(new CancellationToken(true)).GetAwaiter().GetResult();
 
-
         // static!
-        public static IRxSocketServer Create(int port) =>
-            Create(new IPEndPoint(IPAddress.IPv6Any, port));
+        public static IRxSocketServer Create(int port)
+        {
+            return Create(new IPEndPoint(IPAddress.IPv6Any, port));
+        }
+
         public static IRxSocketServer Create(IPEndPoint endPoint)
         {
             var socket = NetworkHelper.CreateSocket();
-
             socket.Bind(endPoint ?? throw new ArgumentNullException(nameof(endPoint)));
-
-            return new RxSocketServer(socket);
+            return Create(socket);
         }
-    }
 
+        public static IRxSocketServer Create(Socket socket) => new RxSocketServer(socket);
+    }
 }
