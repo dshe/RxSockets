@@ -31,7 +31,7 @@ namespace RxSockets
                 else
                     ct.ThrowIfCancellationRequested();
 
-                return (args.SocketError, args.SocketError == SocketError.Success ? new RxSocket(args.ConnectSocket) : null);
+                return (args.SocketError, args.SocketError == SocketError.Success ? RxSocket.Create(args.ConnectSocket) : null);
             }
             finally
             {

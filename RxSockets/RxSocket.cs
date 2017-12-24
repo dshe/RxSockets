@@ -24,7 +24,7 @@ namespace RxSockets
         public bool Connected => Socket.Connected;
         public IObservable<byte> ReceiveObservable { get; }
 
-        public RxSocket(Socket connectedSocket)
+        private RxSocket(Socket connectedSocket)
         {
             Socket = connectedSocket ?? throw new ArgumentNullException(nameof(connectedSocket));
             if (!Socket.Connected)
@@ -81,10 +81,11 @@ namespace RxSockets
         public Task DisconnectAsync(CancellationToken ct) => Disconnector.DisconnectAsync(ct);
 
         // pass a cancelled token to skip waiting for disconnect
-        public void Dispose() =>
-            Disconnector.DisconnectAsync(new CancellationToken(true)).GetAwaiter().GetResult();
+        public void Dispose() => DisconnectAsync(new CancellationToken(true)).GetAwaiter().GetResult();
 
         // static!
+        public static IRxSocket Create(Socket connectedSocket) => new RxSocket(connectedSocket);
+
         public static async Task<(SocketError error, IRxSocket rxsocket)>
             TryConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default) =>
                 await SocketConnector.TryConnectAsync(endPoint, timeout, ct);

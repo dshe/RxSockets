@@ -17,17 +17,17 @@ namespace RxSockets
     public sealed class RxSocketServer : IRxSocketServer
     {
         // Backlog specifies the number of pending connections allowed before a busy error is returned to the client.
-        public static int Backlog { get; set; } = 10;
+        private readonly int Backlog;
         private readonly Socket Socket;
         private readonly SocketDisconnector Disconnector;
         public IObservable<IRxSocket> AcceptObservable { get; }
-        private int Listening;
 
-        private RxSocketServer(Socket socket)
+        private RxSocketServer(Socket socket, int backLog)
         {
             Socket = socket ?? throw new ArgumentNullException(nameof(socket));
             if (socket.Connected)
                 throw new SocketException((int)SocketError.IsConnected);
+            Backlog = backLog;
             Disconnector = new SocketDisconnector(socket);
             AcceptObservable = CreateAcceptObservable();
         }
@@ -37,17 +37,14 @@ namespace RxSockets
             // supports a single observer
             return Observable.Create<IRxSocket>(observer =>
             {
-                if (Interlocked.CompareExchange(ref Listening, 1, 0) == 0)
-                    Socket.Listen(Backlog);
-
-                var cts = new CancellationTokenSource();
-
-                NewThreadScheduler.Default.Schedule(() =>
+                return NewThreadScheduler.Default.Schedule(() =>
                 {
                     try
                     {
-                        while (!cts.IsCancellationRequested)
-                            observer.OnNext(new RxSocket(Socket.Accept()));
+                        Socket.Listen(Backlog);
+
+                        while (true)
+                            observer.OnNext(RxSocket.Create(Socket.Accept()));
                     }
                     catch (Exception e)
                     {
@@ -57,29 +54,25 @@ namespace RxSockets
                             observer.OnError(e);
                     }
                 });
-                return () => cts.Cancel();
             });
         }
 
         public Task DisconnectAsync(CancellationToken ct) => Disconnector.DisconnectAsync(ct);
 
         // pass a cancelled token to skip waiting for disconnect
-        public void Dispose() =>
-            Disconnector.DisconnectAsync(new CancellationToken(true)).GetAwaiter().GetResult();
+        public void Dispose() => DisconnectAsync(new CancellationToken(true)).GetAwaiter().GetResult();
 
         // static!
-        public static IRxSocketServer Create(int port)
-        {
-            return Create(new IPEndPoint(IPAddress.IPv6Any, port));
-        }
+        public static IRxSocketServer Create(int port, int backLog = 10) =>
+            Create(new IPEndPoint(IPAddress.IPv6Any, port), backLog);
 
-        public static IRxSocketServer Create(IPEndPoint endPoint)
+        public static IRxSocketServer Create(IPEndPoint endPoint, int backLog = 10)
         {
             var socket = NetworkHelper.CreateSocket();
             socket.Bind(endPoint ?? throw new ArgumentNullException(nameof(endPoint)));
-            return Create(socket);
+            return Create(socket, backLog);
         }
 
-        public static IRxSocketServer Create(Socket socket) => new RxSocketServer(socket);
+        public static IRxSocketServer Create(Socket socket, int backLog = 10) => new RxSocketServer(socket, backLog);
     }
 }

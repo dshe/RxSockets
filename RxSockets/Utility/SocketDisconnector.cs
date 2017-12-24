@@ -14,8 +14,10 @@ namespace RxSockets
         private int disconnect;
         internal bool DisconnectRequested => disconnect == 1;
 
-        internal SocketDisconnector(Socket socket) =>
+        internal SocketDisconnector(Socket socket)
+        {
             Socket = socket ?? throw new ArgumentNullException(nameof(socket));
+        }
 
         internal async Task<Exception> DisconnectAsync(CancellationToken ct = default)
         {

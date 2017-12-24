@@ -79,7 +79,7 @@ namespace RxSockets.Tests
         public async Task T06_DisconnectDuringSend()
         {
             var sendTask = Task.Run(() => Client.Send(new byte[100_000_000]));
-            while (sendTask.Status != TaskStatus.Running)
+            while (sendTask.Status != TaskStatus.Running && sendTask.Status != TaskStatus.RanToCompletion)
                 await Task.Yield();
             await Client.DisconnectAsync();
             //await Assert.ThrowsAsync<ObjectDisposedException>(async () => await sendTask);
@@ -99,7 +99,7 @@ namespace RxSockets.Tests
         public async Task T08_ExternalDisconnectDuringSend()
         {
             var sendTask = Task.Run(() => Client.Send(new byte[100_000_000]));
-            while (sendTask.Status != TaskStatus.Running)
+            while (sendTask.Status != TaskStatus.Running && sendTask.Status != TaskStatus.RanToCompletion)
                 await Task.Yield();
             await Accept.DisconnectAsync();
             await sendTask;

@@ -46,7 +46,7 @@ namespace RxSockets.Tests
         {
             var server = RxSocketServer.Create(EndPoint);
             await server.DisconnectAsync();
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await server.AcceptObservable.LastOrDefaultAsync());
+            await server.AcceptObservable.LastOrDefaultAsync();
         }
 
         [Fact]

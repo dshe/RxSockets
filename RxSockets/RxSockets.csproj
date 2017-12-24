@@ -4,6 +4,13 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>RxSockets</AssemblyName>
     <RootNamespace>RxSockets</RootNamespace>
+    <Authors>DavidS</Authors>
+    <Company>DavidS</Company>
+    <Product>RxSockets</Product>
+    <PackageLicenseUrl></PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/dshe/RxSocket</PackageProjectUrl>
+    <PackageTags>socket sockets reactive reactive-extensions observable observable-socket network</PackageTags>
+    <Description>A minimal reactive socket implementation.</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

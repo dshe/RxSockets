@@ -34,7 +34,7 @@ namespace RxSockets.Tests
             (SocketError error, IRxSocket client) = await RxSocket.TryConnectAsync(EndPoint);
             Assert.Equal(SocketError.Success, error);
 
-            // Get the client socket accepted buy the server.
+            // Get the client socket accepted by the server.
             var accept = await acceptTask;
             Assert.True(accept.Connected && client.Connected);
 
@@ -74,7 +74,7 @@ namespace RxSockets.Tests
         {
             var disposables = new CompositeDisposable();
 
-            var server = RxSocketServer.Create(EndPoint);
+            var server = RxSocketServer.Create(EndPoint, 10);
             disposables.Add(server);
 
             server.AcceptObservable.Subscribe(accepted =>
@@ -103,35 +103,35 @@ namespace RxSockets.Tests
         {
             var disposables = new CompositeDisposable();
 
-            var server = RxSocketServer.Create(EndPoint);
-            disposables.Add(server);
+            var server = RxSocketServer.Create(EndPoint).AddDisposableTo(disposables);
 
             server.AcceptObservable.Subscribe(accepted =>
             {
-                disposables.Add(accepted);
-
                 "Welcome!".ToByteArray().SendTo(accepted);
 
                 accepted
+                    .AddDisposableTo(disposables)
                     .ReceiveObservable
                     .ToStrings()
                     .Subscribe(s => s.ToByteArray().SendTo(accepted));
             });
 
-            var clients = Enumerable.Range(1, 100)
-                .Select(_ => RxSocket.TryConnectAsync(EndPoint).Result.rxsocket)
-                .ToList();
-
-            clients.ForEach(c => c.Send("Hello".ToByteArray()));
+            List<IRxSocket> clients = new List<IRxSocket>();
+            for (var i = 0; i < 100; i++)
+            {
+                var (error, client) = await RxSocket.TryConnectAsync(EndPoint);
+                client.Send("Hello".ToByteArray());
+                clients.Add(client);
+                disposables.Add(client);
+            }
 
             foreach (var client in clients)
                 Assert.Equal("Hello", await client.ReceiveObservable.ToStrings().Skip(1).Take(1).FirstAsync());
-
-            foreach (var client in clients)
-                disposables.Add(client);
 
             disposables.Dispose();
         }
 
     }
+
 }
+

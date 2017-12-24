@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive.Disposables;
 
 namespace RxSockets
@@ -10,5 +11,13 @@ namespace RxSockets
             composite.Add(disposable);
             return disposable;
         }
+
+        public static CompositeDisposable Add(this CompositeDisposable composite, IEnumerable<IDisposable> disposables) 
+        {
+            foreach (var disposable in disposables)
+                composite.Add(disposable);
+            return composite;
+        }
+
     }
 }
