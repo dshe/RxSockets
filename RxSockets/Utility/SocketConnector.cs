@@ -8,8 +8,7 @@ namespace RxSockets
 {
     internal static class SocketConnector
     {
-        internal static async Task<(SocketError error, IRxSocket socket)> 
-            TryConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
+        internal static async Task<IRxSocket> TryConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
         {
             var socket = NetworkHelper.CreateSocket();
 
@@ -26,12 +25,15 @@ namespace RxSockets
                 if (socket.ConnectAsync(args)) // default timeout is ~20 seconds.
                 {
                     if (!await semaphore.WaitAsync(timeout, ct).ConfigureAwait(false))
-                        return (SocketError.TimedOut, null);
+                        throw new SocketException((int)SocketError.TimedOut);
                 }
                 else
                     ct.ThrowIfCancellationRequested();
 
-                return (args.SocketError, args.SocketError == SocketError.Success ? RxSocket.Create(args.ConnectSocket) : null);
+                if (args.SocketError != SocketError.Success)
+                    throw new SocketException((int)args.SocketError);
+
+                return RxSocket.Create(args.ConnectSocket);
             }
             finally
             {

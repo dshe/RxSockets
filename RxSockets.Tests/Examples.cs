@@ -31,8 +31,7 @@ namespace RxSockets.Tests
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
             // Create a socket client by successfully connecting to the server at EndPoint.
-            (SocketError error, IRxSocket client) = await RxSocket.TryConnectAsync(EndPoint);
-            Assert.Equal(SocketError.Success, error);
+            var client = await RxSocket.TryConnectAsync(EndPoint);
 
             // Get the client socket accepted by the server.
             var accept = await acceptTask;
@@ -53,7 +52,7 @@ namespace RxSockets.Tests
         {
             var server = RxSocketServer.Create(EndPoint);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
-            (SocketError error, IRxSocket client) = await RxSocket.TryConnectAsync(EndPoint);
+            var client = await RxSocket.TryConnectAsync(EndPoint);
             var accept = await acceptTask;
             Assert.True(accept.Connected && client.Connected);
 
@@ -83,9 +82,9 @@ namespace RxSockets.Tests
                 "Welcome!".ToByteArray().SendTo(accepted);
             });
 
-            (SocketError error1, IRxSocket client1) = await RxSocket.TryConnectAsync(EndPoint);
-            (SocketError error2, IRxSocket client2) = await RxSocket.TryConnectAsync(EndPoint);
-            (SocketError error3, IRxSocket client3) = await RxSocket.TryConnectAsync(EndPoint);
+            var client1 = await RxSocket.TryConnectAsync(EndPoint);
+            var client2 = await RxSocket.TryConnectAsync(EndPoint);
+            var client3 = await RxSocket.TryConnectAsync(EndPoint);
 
             Assert.Equal("Welcome!", await client1.ReceiveObservable.ToStrings().Take(1).FirstAsync());
             Assert.Equal("Welcome!", await client2.ReceiveObservable.ToStrings().Take(1).FirstAsync());
@@ -119,7 +118,7 @@ namespace RxSockets.Tests
             List<IRxSocket> clients = new List<IRxSocket>();
             for (var i = 0; i < 100; i++)
             {
-                var (error, client) = await RxSocket.TryConnectAsync(EndPoint);
+                var client = await RxSocket.TryConnectAsync(EndPoint);
                 client.Send("Hello".ToByteArray());
                 clients.Add(client);
                 disposables.Add(client);

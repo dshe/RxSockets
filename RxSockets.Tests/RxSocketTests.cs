@@ -21,7 +21,7 @@ namespace RxSockets.Tests
         {
             Server = RxSocketServer.Create(EndPoint);
             AcceptTask = Server.AcceptObservable.FirstAsync().ToTask();
-            Client = (await RxSocket.TryConnectAsync(EndPoint)).rxsocket;
+            Client = (await RxSocket.TryConnectAsync(EndPoint));
             Accept = await AcceptTask;
         }
 

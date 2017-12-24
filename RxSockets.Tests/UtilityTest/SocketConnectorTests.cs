@@ -20,15 +20,15 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T01_NoConnection()
         {
-            var (error, xsocket) = await SocketConnector.TryConnectAsync(EndPoint);
-            Assert.Equal(SocketError.ConnectionRefused, error);
+            var ex = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.TryConnectAsync(EndPoint));
+            Assert.Equal(SocketError.ConnectionRefused, ex.SocketErrorCode);
         }
 
         [Fact]
         public async Task T03_Timeout()
         {
-            var (error, socket) = await SocketConnector.TryConnectAsync(EndPoint, timeout: 0);
-            Assert.Equal(SocketError.TimedOut, error);
+            var ex = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.TryConnectAsync(EndPoint, timeout: 0));
+            Assert.Equal(SocketError.TimedOut, ex.SocketErrorCode);
         }
 
         [Fact]
@@ -46,8 +46,7 @@ namespace RxSockets.Tests
             serverSocket.Bind(EndPoint);
             serverSocket.Listen(10);
 
-            var (error, socket) = await SocketConnector.TryConnectAsync(EndPoint);
-            Assert.Equal(SocketError.Success, error);
+            var socket = await SocketConnector.TryConnectAsync(EndPoint);
 
             socket.Dispose();
             serverSocket.Dispose();

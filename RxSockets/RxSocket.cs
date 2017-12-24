@@ -86,9 +86,8 @@ namespace RxSockets
         // static!
         public static IRxSocket Create(Socket connectedSocket) => new RxSocket(connectedSocket);
 
-        public static async Task<(SocketError error, IRxSocket rxsocket)>
-            TryConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default) =>
-                await SocketConnector.TryConnectAsync(endPoint, timeout, ct);
+        public static async Task<IRxSocket> TryConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default) =>
+            await SocketConnector.TryConnectAsync(endPoint, timeout, ct);
     }
 
     public static class RxSocketEx
