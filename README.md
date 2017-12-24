@@ -9,7 +9,7 @@
 
 ### server
 ```csharp
-public interface IRxSocketServer
+interface IRxSocketServer
 {
     IObservable<IRxSocket> AcceptObservable { get; }
     Task DisconnectAsync(CancellationToken ct);
