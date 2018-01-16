@@ -32,7 +32,7 @@ server.AcceptObservable.Subscribe(acceptClient =>
         cts?.Cancel();
         cts = new CancellationTokenSource();
 
-        Task.Run(() =>
+        Task.Run(async () =>
         {
             while (true)
             {
@@ -40,7 +40,7 @@ server.AcceptObservable.Subscribe(acceptClient =>
                     acceptClient.Send("1.30".ToByteArray());
                 else if (message == "JPY/USD")
                     acceptClient.Send("110".ToByteArray());
-                Task.Delay(100, cts.Token);
+                await Task.Delay(100, cts.Token);
             }
         });
     },
