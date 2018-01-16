@@ -16,20 +16,36 @@ interface IRxSocketServer
 }
 ```
 ```csharp
-// Create a socket server at IPEndpoint.
-IRxSocketServer server = RxSocketServer.Create(IPEndPoint);
+// Create a socket server on the endpoint.
+var server = RxSocketServer.Create(IPEndPoint);
 
-// Wait to accept a client connection.
-IRxSocket accept = await server.AcceptObservable.FirstAsync();
+// Start accepting connections from clients.
+server.AcceptObservable.Subscribe(acceptClient =>
+{
+    acceptClient.Send("Welcome!".ToByteArray());
 
-// Send a string to the client.
-accept.Send("Welcome!".ToBytes());
+    CancellationTokenSource cts = null;
 
-// Receive a string from the client.
-Assert.Equal("Hello", await accept.ReceiveObservable.ToStrings().FirstAsync());
+    acceptClient.ReceiveObservable.ToStrings().Subscribe(
+    onNext: message =>
+    {
+        cts?.Cancel();
+        cts = new CancellationTokenSource();
 
-// Disconnect and dispose the sockets.
-await Task.WhenAll(accept.DisconnectAsync(), server.DisconnectAsync());
+        Task.Run(() =>
+        {
+            while (true)
+            {
+                if (message == "USD/EUR")
+                    acceptClient.Send("1.30".ToByteArray());
+                else if (message == "JPY/USD")
+                    acceptClient.Send("110".ToByteArray());
+                Task.Delay(100, cts.Token);
+            }
+        });
+    },
+    onCompleted: () => cts.Cancel());
+});
 
 ```
 
@@ -44,15 +60,20 @@ interface IRxSocket
 }
 ```
 ```csharp
-// Create a socket client by successfully connecting to the server at IPEndPoint.
-IRxSocket client = await RxSocket.TryConnectAsync(IPEndPoint);
+// Create a socket client by connecting to the server at EndPoint.
+var client = await RxSocket.TryConnectAsync(IPEndPoint);
 
-// Receive a string from the server.
 Assert.Equal("Welcome!", await client.ReceiveObservable.ToStrings().FirstAsync());
 
-// Send a string to the server.
-client.Send("Hello".ToBytes());
+client.Send("USD/EUR".ToByteArray());
 
-// Disconnect and dispose the socket.
+client.ReceiveObservable.ToStrings().Subscribe(message =>
+{
+    // Receive exchange rates stream from server.
+    Assert.Equal("1.30", message);
+});
+
+await Task.Delay(1000);
+
 await client.DisconnectAsync();
 ```
