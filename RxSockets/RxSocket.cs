@@ -92,7 +92,8 @@ namespace RxSockets
 
     public static class RxSocketEx
     {
-        public static void SendTo(this byte[] buffer, IRxSocket rxsocket) => rxsocket.Send(buffer);
+        public static void SendTo(this byte[] buffer, IRxSocket rxsocket) =>
+            rxsocket.Send(buffer);
     }
 
 }

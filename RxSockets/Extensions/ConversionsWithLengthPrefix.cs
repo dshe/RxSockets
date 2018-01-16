@@ -31,7 +31,7 @@ namespace RxSockets
             }
         }
 
-        private static byte[] GetBytes(MemoryStream ms)
+        private static byte[] GetBytes(in MemoryStream ms)
         {
             var length = Convert.ToInt32(ms.Position) - 4;
             var prefix = IPAddress.HostToNetworkOrder(length);
@@ -108,7 +108,7 @@ namespace RxSockets
             });
         }
 
-        private static int GetMessageLength(MemoryStream ms)
+        private static int GetMessageLength(in MemoryStream ms)
         {
             var length = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(ms.GetBuffer(), 0));
             if (length <= 0)
@@ -116,13 +116,13 @@ namespace RxSockets
             return length;
         }
 
-        public static IEnumerable<string[]> ToStringArray(this IEnumerable<byte[]> source)
-            => source.Select(buffer => GetStringArray(buffer));
+        public static IEnumerable<string[]> ToStringArray(this IEnumerable<byte[]> source) =>
+            source.Select(buffer => GetStringArray(buffer));
 
-        public static IObservable<string[]> ToStringArray(this IObservable<byte[]> source)
-            => source.Select(buffer => GetStringArray(buffer));
+        public static IObservable<string[]> ToStringArray(this IObservable<byte[]> source) =>
+            source.Select(buffer => GetStringArray(buffer));
 
-        private static string[] GetStringArray(byte[] buffer)
+        private static string[] GetStringArray(in byte[] buffer)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));

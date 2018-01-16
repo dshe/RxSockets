@@ -68,7 +68,7 @@ namespace RxSockets
             });
         }
 
-        private static string GetString(MemoryStream ms) =>
+        private static string GetString(in MemoryStream ms) =>
             Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
     }
 }

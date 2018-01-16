@@ -73,6 +73,7 @@ namespace RxSockets
             return Create(socket, backLog);
         }
 
-        public static IRxSocketServer Create(Socket socket, int backLog = 10) => new RxSocketServer(socket, backLog);
+        public static IRxSocketServer Create(Socket socket, int backLog = 10) =>
+            new RxSocketServer(socket, backLog);
     }
 }

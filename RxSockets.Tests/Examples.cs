@@ -16,22 +16,74 @@ namespace RxSockets.Tests
 {
     public class Examples
     {
-        private IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
-
+        private readonly IPEndPoint IPEndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
         private readonly Action<string> Write;
         public Examples(ITestOutputHelper output) => Write = output.WriteLine;
+
+        [Fact]
+        public async Task T00_Example()
+        {
+            // Create a socket server on the endpoint.
+            var server = RxSocketServer.Create(IPEndPoint);
+
+            // Start accepting connections from clients.
+            server.AcceptObservable.Subscribe(acceptClient =>
+            {
+                acceptClient.Send("Welcome!".ToByteArray());
+
+                CancellationTokenSource cts = null;
+
+                acceptClient.ReceiveObservable.ToStrings().Subscribe(
+                onNext: message =>
+                {
+                    cts?.Cancel();
+                    cts = new CancellationTokenSource();
+
+                    Task.Run(async () =>
+                    {
+                        while (true)
+                        {
+                            if (message == "USD/EUR")
+                                acceptClient.Send("1.30".ToByteArray());
+                            else if (message == "JPY/USD")
+                                acceptClient.Send("110".ToByteArray());
+                            await Task.Delay(100, cts.Token);
+                        }
+                    });
+
+                },
+                onCompleted: () => cts?.Cancel());
+            });
+
+            // Create a socket client by connecting to the server at EndPoint.
+            var client = await RxSocket.TryConnectAsync(IPEndPoint);
+
+            Assert.Equal("Welcome!", await client.ReceiveObservable.ToStrings().FirstAsync());
+
+            client.Send("USD/EUR".ToByteArray());
+
+            client.ReceiveObservable.ToStrings().Subscribe(message =>
+            {
+                // Receive exchange rates stream from server.
+                Assert.Equal("1.30", message);
+            });
+
+            await Task.Delay(1000);
+
+            await client.DisconnectAsync();
+        }
 
         [Fact]
         public async Task T00_SendAndReceiveStringMessage()
         {
             // Create a socket server on the endpoint.
-            var server = RxSocketServer.Create(EndPoint);
+            var server = RxSocketServer.Create(IPEndPoint);
 
             // Start a task to allow the server to accept the next client connection.
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
             // Create a socket client by successfully connecting to the server at EndPoint.
-            var client = await RxSocket.TryConnectAsync(EndPoint);
+            var client = await RxSocket.TryConnectAsync(IPEndPoint);
 
             // Get the client socket accepted by the server.
             var accept = await acceptTask;
@@ -50,9 +102,9 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T10_ReceiveObservable()
         {
-            var server = RxSocketServer.Create(EndPoint);
+            var server = RxSocketServer.Create(IPEndPoint);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
-            var client = await RxSocket.TryConnectAsync(EndPoint);
+            var client = await RxSocket.TryConnectAsync(IPEndPoint);
             var accept = await acceptTask;
             Assert.True(accept.Connected && client.Connected);
 
@@ -73,7 +125,7 @@ namespace RxSockets.Tests
         {
             var disposables = new CompositeDisposable();
 
-            var server = RxSocketServer.Create(EndPoint, 10);
+            var server = RxSocketServer.Create(IPEndPoint, 10);
             disposables.Add(server);
 
             server.AcceptObservable.Subscribe(accepted =>
@@ -82,9 +134,9 @@ namespace RxSockets.Tests
                 "Welcome!".ToByteArray().SendTo(accepted);
             });
 
-            var client1 = await RxSocket.TryConnectAsync(EndPoint);
-            var client2 = await RxSocket.TryConnectAsync(EndPoint);
-            var client3 = await RxSocket.TryConnectAsync(EndPoint);
+            var client1 = await RxSocket.TryConnectAsync(IPEndPoint);
+            var client2 = await RxSocket.TryConnectAsync(IPEndPoint);
+            var client3 = await RxSocket.TryConnectAsync(IPEndPoint);
 
             Assert.Equal("Welcome!", await client1.ReceiveObservable.ToStrings().Take(1).FirstAsync());
             Assert.Equal("Welcome!", await client2.ReceiveObservable.ToStrings().Take(1).FirstAsync());
@@ -102,7 +154,7 @@ namespace RxSockets.Tests
         {
             var disposables = new CompositeDisposable();
 
-            var server = RxSocketServer.Create(EndPoint).AddDisposableTo(disposables);
+            var server = RxSocketServer.Create(IPEndPoint).AddDisposableTo(disposables);
 
             server.AcceptObservable.Subscribe(accepted =>
             {
@@ -118,7 +170,7 @@ namespace RxSockets.Tests
             List<IRxSocket> clients = new List<IRxSocket>();
             for (var i = 0; i < 100; i++)
             {
-                var client = await RxSocket.TryConnectAsync(EndPoint);
+                var client = await RxSocket.TryConnectAsync(IPEndPoint);
                 client.Send("Hello".ToByteArray());
                 clients.Add(client);
                 disposables.Add(client);
