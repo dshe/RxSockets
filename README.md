@@ -44,7 +44,7 @@ server.AcceptObservable.Subscribe(acceptClient =>
             }
         });
     },
-    onCompleted: () => cts.Cancel());
+    onCompleted: () => cts?.Cancel());
 });
 
 ```
