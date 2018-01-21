@@ -24,7 +24,7 @@ server.AcceptObservable.Subscribe(acceptClient =>
 {
     acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
     {
-        // Echo each message received back to the client.
+        // Echo message received back to the client.
         acceptClient.Send(message.ToByteArray());
     });
 });
@@ -34,7 +34,7 @@ server.AcceptObservable.Subscribe(acceptClient =>
 interface IRxSocket
 {
     bool Connected { get; }
-    void Send(byte[] buffer, int offset = 0, int length= 0);
+    void Send(byte[] buffer, int offset = 0, int length = 0);
     IObservable<byte> ReceiveObservable { get; }
     Task DisconnectAsync(CancellationToken ct = default);
 }
@@ -45,12 +45,15 @@ var client = await RxSocket.TryConnectAsync(IPEndPoint);
 
 client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
 {
+    // Receive message from the server.
     Assert.Equal("Hello!", message);
 });
 
+// Send a message to the server.
 client.Send("Hello!".ToByteArray());
 
 await Task.Delay(100);
 
+// Wait for the message to be received from the server.
 await client.DisconnectAsync();
 ```
