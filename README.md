@@ -12,7 +12,7 @@
 interface IRxSocketServer
 {
     IObservable<IRxSocket> AcceptObservable { get; }
-    Task DisconnectAsync(CancellationToken ct);
+    Task DisconnectAsync(CancellationToken ct = default);
 }
 ```
 ```csharp
@@ -34,9 +34,9 @@ server.AcceptObservable.Subscribe(acceptClient =>
 interface IRxSocket
 {
     bool Connected { get; }
-    void Send(byte[] buffer, int offset, int length);
+    void Send(byte[] buffer, int offset = 0, int length= 0);
     IObservable<byte> ReceiveObservable { get; }
-    Task DisconnectAsync(CancellationToken ct);
+    Task DisconnectAsync(CancellationToken ct = default);
 }
 ```
 ```csharp
