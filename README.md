@@ -52,8 +52,8 @@ client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
 // Send a message to the server.
 client.Send("Hello!".ToByteArray());
 
+// Wait for the message to be received from the server.
 await Task.Delay(100);
 
-// Wait for the message to be received from the server.
 await client.DisconnectAsync();
 ```
