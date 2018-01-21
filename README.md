@@ -41,7 +41,7 @@ interface IRxSocket
 ```
 ```csharp
 // Create a socket client by connecting to the server at EndPoint.
-var client = await RxSocket.TryConnectAsync(IPEndPoint);
+var client = await RxSocket.ConnectAsync(IPEndPoint);
 
 client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
 {
