@@ -16,39 +16,20 @@ interface IRxSocketServer
 }
 ```
 ```csharp
-// Create a socket server on the endpoint.
+// Create a socket server on the Endpoint.
 var server = RxSocketServer.Create(IPEndPoint);
 
 // Start accepting connections from clients.
 server.AcceptObservable.Subscribe(acceptClient =>
 {
-    acceptClient.Send("Welcome!".ToByteArray());
-
-    CancellationTokenSource cts = null;
-
     acceptClient.ReceiveObservable.ToStrings().Subscribe(
     onNext: message =>
     {
-        cts?.Cancel();
-        cts = new CancellationTokenSource();
-
-        Task.Run(async () =>
-        {
-            while (true)
-            {
-                if (message == "USD/EUR")
-                    acceptClient.Send("1.30".ToByteArray());
-                else if (message == "JPY/USD")
-                    acceptClient.Send("110".ToByteArray());
-                await Task.Delay(100, cts.Token);
-            }
-        });
-    },
-    onCompleted: () => cts?.Cancel());
+        // Echo each message received back to the client.
+        acceptClient.Send(message.ToByteArray());
+    });
 });
-
 ```
-
 ### client
 ```csharp
 interface IRxSocket
@@ -63,17 +44,14 @@ interface IRxSocket
 // Create a socket client by connecting to the server at EndPoint.
 var client = await RxSocket.TryConnectAsync(IPEndPoint);
 
-Assert.Equal("Welcome!", await client.ReceiveObservable.ToStrings().FirstAsync());
-
-client.Send("USD/EUR".ToByteArray());
-
 client.ReceiveObservable.ToStrings().Subscribe(message =>
 {
-    // Receive exchange rates stream from server.
-    Assert.Equal("1.30", message);
+    Assert.Equal("Hello!", message);
 });
 
-await Task.Delay(1000);
+client.Send("Hello!".ToByteArray());
+
+await Task.Delay(100);
 
 await client.DisconnectAsync();
 ```
