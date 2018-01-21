@@ -22,8 +22,7 @@ var server = RxSocketServer.Create(IPEndPoint);
 // Start accepting connections from clients.
 server.AcceptObservable.Subscribe(acceptClient =>
 {
-    acceptClient.ReceiveObservable.ToStrings().Subscribe(
-    onNext: message =>
+    acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
     {
         // Echo each message received back to the client.
         acceptClient.Send(message.ToByteArray());
@@ -44,7 +43,7 @@ interface IRxSocket
 // Create a socket client by connecting to the server at EndPoint.
 var client = await RxSocket.TryConnectAsync(IPEndPoint);
 
-client.ReceiveObservable.ToStrings().Subscribe(message =>
+client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
 {
     Assert.Equal("Hello!", message);
 });
