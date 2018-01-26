@@ -20,7 +20,7 @@ interface IRxSocketServer
 IRxSocketServer server = RxSocketServer.Create(IPEndPoint);
 
 // Start accepting connections from clients.
-server.AcceptObservable.Subscribe(acceptClient =>
+server.AcceptObservable.Subscribe(onNext: acceptClient =>
 {
     acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
     {
