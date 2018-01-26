@@ -24,7 +24,7 @@ server.AcceptObservable.Subscribe(acceptClient =>
 {
     acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
     {
-        // Echo message received back to the client.
+        // Echo received messages back to the client.
         acceptClient.Send(message.ToByteArray());
     });
 });
@@ -52,7 +52,7 @@ client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
 // Send a message to the server.
 client.Send("Hello!".ToByteArray());
 
-// Wait for the message to be received from the server.
+// Wait for the message to be received by the server and sent back to the client.
 await Task.Delay(100);
 
 await client.DisconnectAsync();
