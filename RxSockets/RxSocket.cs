@@ -29,7 +29,7 @@ namespace RxSockets
             Socket = connectedSocket ?? throw new ArgumentNullException(nameof(connectedSocket));
             if (!Socket.Connected)
                 throw new SocketException((int)SocketError.NotConnected);
-            Disconnector = new SocketDisconnector(connectedSocket);
+            Disconnector = new SocketDisconnector(Socket);
             ReceiveObservable = CreateReceiveObservable();
         }
 
@@ -86,8 +86,8 @@ namespace RxSockets
         // static!
         public static IRxSocket Create(Socket connectedSocket) => new RxSocket(connectedSocket);
 
-        public static async Task<IRxSocket> TryConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default) =>
-            await SocketConnector.TryConnectAsync(endPoint, timeout, ct);
+        public static async Task<IRxSocket> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default) =>
+            await SocketConnector.ConnectAsync(endPoint, timeout, ct);
     }
 
     public static class RxSocketEx

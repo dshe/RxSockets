@@ -23,52 +23,30 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T00_Example()
         {
-            // Create a socket server on the endpoint.
+            // Create a socket server on the Endpoint.
             var server = RxSocketServer.Create(IPEndPoint);
 
             // Start accepting connections from clients.
             server.AcceptObservable.Subscribe(acceptClient =>
             {
-                acceptClient.Send("Welcome!".ToByteArray());
-
-                CancellationTokenSource cts = null;
-
-                acceptClient.ReceiveObservable.ToStrings().Subscribe(
-                onNext: message =>
+                acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
                 {
-                    cts?.Cancel();
-                    cts = new CancellationTokenSource();
-
-                    Task.Run(async () =>
-                    {
-                        while (true)
-                        {
-                            if (message == "USD/EUR")
-                                acceptClient.Send("1.30".ToByteArray());
-                            else if (message == "JPY/USD")
-                                acceptClient.Send("110".ToByteArray());
-                            await Task.Delay(100, cts.Token);
-                        }
-                    });
-
-                },
-                onCompleted: () => cts?.Cancel());
+                    // Echo each message received back to the client.
+                    acceptClient.Send(message.ToByteArray());
+                });
             });
 
             // Create a socket client by connecting to the server at EndPoint.
-            var client = await RxSocket.TryConnectAsync(IPEndPoint);
+            var client = await RxSocket.ConnectAsync(IPEndPoint);
 
-            Assert.Equal("Welcome!", await client.ReceiveObservable.ToStrings().FirstAsync());
-
-            client.Send("USD/EUR".ToByteArray());
-
-            client.ReceiveObservable.ToStrings().Subscribe(message =>
+            client.ReceiveObservable.ToStrings().Subscribe(onNext:message =>
             {
-                // Receive exchange rates stream from server.
-                Assert.Equal("1.30", message);
+                Assert.Equal("Hello!", message);
             });
 
-            await Task.Delay(1000);
+            client.Send("Hello!".ToByteArray());
+
+            await Task.Delay(100);
 
             await client.DisconnectAsync();
         }
@@ -83,7 +61,7 @@ namespace RxSockets.Tests
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
             // Create a socket client by successfully connecting to the server at EndPoint.
-            var client = await RxSocket.TryConnectAsync(IPEndPoint);
+            var client = await RxSocket.ConnectAsync(IPEndPoint);
 
             // Get the client socket accepted by the server.
             var accept = await acceptTask;
@@ -104,7 +82,7 @@ namespace RxSockets.Tests
         {
             var server = RxSocketServer.Create(IPEndPoint);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
-            var client = await RxSocket.TryConnectAsync(IPEndPoint);
+            var client = await RxSocket.ConnectAsync(IPEndPoint);
             var accept = await acceptTask;
             Assert.True(accept.Connected && client.Connected);
 
@@ -134,9 +112,9 @@ namespace RxSockets.Tests
                 "Welcome!".ToByteArray().SendTo(accepted);
             });
 
-            var client1 = await RxSocket.TryConnectAsync(IPEndPoint);
-            var client2 = await RxSocket.TryConnectAsync(IPEndPoint);
-            var client3 = await RxSocket.TryConnectAsync(IPEndPoint);
+            var client1 = await RxSocket.ConnectAsync(IPEndPoint);
+            var client2 = await RxSocket.ConnectAsync(IPEndPoint);
+            var client3 = await RxSocket.ConnectAsync(IPEndPoint);
 
             Assert.Equal("Welcome!", await client1.ReceiveObservable.ToStrings().Take(1).FirstAsync());
             Assert.Equal("Welcome!", await client2.ReceiveObservable.ToStrings().Take(1).FirstAsync());
@@ -170,7 +148,7 @@ namespace RxSockets.Tests
             List<IRxSocket> clients = new List<IRxSocket>();
             for (var i = 0; i < 100; i++)
             {
-                var client = await RxSocket.TryConnectAsync(IPEndPoint);
+                var client = await RxSocket.ConnectAsync(IPEndPoint);
                 client.Send("Hello".ToByteArray());
                 clients.Add(client);
                 disposables.Add(client);

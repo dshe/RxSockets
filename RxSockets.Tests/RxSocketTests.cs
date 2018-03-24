@@ -21,7 +21,7 @@ namespace RxSockets.Tests
         {
             Server = RxSocketServer.Create(EndPoint);
             AcceptTask = Server.AcceptObservable.FirstAsync().ToTask();
-            Client = (await RxSocket.TryConnectAsync(EndPoint));
+            Client = (await RxSocket.ConnectAsync(EndPoint));
             Accept = await AcceptTask;
         }
 
@@ -36,7 +36,7 @@ namespace RxSockets.Tests
         public async Task T00_Cancel()
         {
             await Assert.ThrowsAnyAsync<OperationCanceledException>(async() => 
-                await RxSocket.TryConnectAsync(EndPoint, ct:new CancellationToken(true)));
+                await RxSocket.ConnectAsync(EndPoint, ct:new CancellationToken(true)));
         }
 
         [Fact]
