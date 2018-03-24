@@ -1,7 +1,8 @@
 ## RxSocket&nbsp;&nbsp; [![release](https://img.shields.io/github/release/dshe/RxSocket/all.svg)](https://github.com/dshe/RxSocket/releases) [![Build status](https://ci.appveyor.com/api/projects/status/rfxxbpx2agq8r93n?svg=true)](https://ci.appveyor.com/project/dshe/rxsocket) [![License](https://img.shields.io/badge/license-Apache%202.0-7755BB.svg)](https://opensource.org/licenses/Apache-2.0)
 
 **Minimal Reactive Socket Implementation**
-- observable receive and accept, asynchronous connect and disconnect
+- asynchronous connect and disconnect
+- observable accept and receive
 - supports **.NET Standard 2.0**
 - simple and intuitive API
 - tested
@@ -12,68 +13,48 @@
 interface IRxSocketServer
 {
     IObservable<IRxSocket> AcceptObservable { get; }
-    Task DisconnectAsync(CancellationToken ct);
+    Task DisconnectAsync(CancellationToken ct = default);
 }
 ```
 ```csharp
-// Create a socket server on the endpoint.
-var server = RxSocketServer.Create(IPEndPoint);
+// Create a socket server on the Endpoint.
+IRxSocketServer server = RxSocketServer.Create(IPEndPoint);
 
 // Start accepting connections from clients.
-server.AcceptObservable.Subscribe(acceptClient =>
+server.AcceptObservable.Subscribe(onNext: acceptClient =>
 {
-    acceptClient.Send("Welcome!".ToByteArray());
-
-    CancellationTokenSource cts = null;
-
-    acceptClient.ReceiveObservable.ToStrings().Subscribe(
-    onNext: message =>
+    acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
     {
-        cts?.Cancel();
-        cts = new CancellationTokenSource();
-
-        Task.Run(async () =>
-        {
-            while (true)
-            {
-                if (message == "USD/EUR")
-                    acceptClient.Send("1.30".ToByteArray());
-                else if (message == "JPY/USD")
-                    acceptClient.Send("110".ToByteArray());
-                await Task.Delay(100, cts.Token);
-            }
-        });
-    },
-    onCompleted: () => cts?.Cancel());
+        // Echo received messages back to the client.
+        acceptClient.Send(message.ToByteArray());
+    });
 });
-
 ```
-
 ### client
 ```csharp
 interface IRxSocket
 {
     bool Connected { get; }
-    void Send(byte[] buffer, int offset, int length);
+    void Send(byte[] buffer, int offset = 0, int length = 0);
     IObservable<byte> ReceiveObservable { get; }
-    Task DisconnectAsync(CancellationToken ct);
+    Task DisconnectAsync(CancellationToken ct = default);
 }
 ```
 ```csharp
 // Create a socket client by connecting to the server at EndPoint.
-var client = await RxSocket.TryConnectAsync(IPEndPoint);
+IRxSocket client = await RxSocket.ConnectAsync(IPEndPoint);
 
-Assert.Equal("Welcome!", await client.ReceiveObservable.ToStrings().FirstAsync());
-
-client.Send("USD/EUR".ToByteArray());
-
-client.ReceiveObservable.ToStrings().Subscribe(message =>
+client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
 {
-    // Receive exchange rates stream from server.
-    Assert.Equal("1.30", message);
+    // Receive message from the server.
+    Assert.Equal("Hello!", message);
 });
 
-await Task.Delay(1000);
+// Send a message to the server.
+client.Send("Hello!".ToByteArray());
+
+// Wait for the message to be received by the server and sent back to the client.
+await Task.Delay(100);
 
 await client.DisconnectAsync();
 ```
