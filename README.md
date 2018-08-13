@@ -4,6 +4,7 @@
 - asynchronous connect and disconnect
 - observable accept and receive
 - supports **.NET Standard 2.0**
+- dependencies: Reactive Extensions 4
 - simple and intuitive API
 - tested
 - fast
