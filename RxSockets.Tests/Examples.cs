@@ -17,6 +17,7 @@ namespace RxSockets.Tests
     public class Examples
     {
         private readonly IPEndPoint IPEndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
+
         private readonly Action<string> Write;
         public Examples(ITestOutputHelper output) => Write = output.WriteLine;
 
