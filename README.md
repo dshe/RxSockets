@@ -4,7 +4,7 @@
 - asynchronous connect and disconnect
 - **observable** accept and receive
 - supports **.NET Standard 2.0**
-- dependencies: Reactive Extensions 4.0
+- dependencies: Reactive Extensions 4
 - simple and intuitive API
 - tested
 - fast
@@ -33,7 +33,7 @@ server.AcceptObservable.Subscribe(onNext: acceptClient =>
 ```
 ### client
 ```csharp
-interface IRxSocket
+interface IRxSocketClient
 {
     bool Connected { get; }
     void Send(byte[] buffer, int offset = 0, int length = 0);
@@ -43,7 +43,7 @@ interface IRxSocket
 ```
 ```csharp
 // Create a socket client by connecting to the server at EndPoint.
-IRxSocket client = await RxSocket.ConnectAsync(IPEndPoint);
+IRxSocketClient client = await RxSocketClient.ConnectAsync(IPEndPoint);
 
 client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
 {
