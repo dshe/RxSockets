@@ -4,6 +4,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
+#nullable enable
+
 namespace RxSockets
 {
     internal class SocketDisconnector
@@ -14,10 +16,7 @@ namespace RxSockets
         private int disconnect;
         internal bool DisconnectRequested => disconnect == 1;
 
-        internal SocketDisconnector(Socket socket)
-        {
-            Socket = socket ?? throw new ArgumentNullException(nameof(socket));
-        }
+        internal SocketDisconnector(Socket socket) => Socket = socket;
 
         internal async Task<Exception> DisconnectAsync(CancellationToken ct = default)
         {
@@ -34,7 +33,7 @@ namespace RxSockets
         {
             Debug.WriteLine("Disconnecting socket.");
 
-            var args = new SocketAsyncEventArgs
+            var args = new SocketAsyncEventArgs()
             {
                 DisconnectReuseSocket = false
             };

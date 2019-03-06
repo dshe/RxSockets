@@ -11,8 +11,6 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T01()
         {
-            Assert.Throws<ArgumentNullException>(() => ConversionsWithLengthPrefixEx.ToByteArrayOfLengthPrefix((byte[])null).ToList());
-
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await (new byte[] { 0, 0, 0, 0, 0 }).ToObservable().ToByteArrayOfLengthPrefix().FirstOrDefaultAsync());
         }

@@ -4,22 +4,16 @@ using System.IO;
 using System.Reactive.Linq;
 using System.Text;
 
+#nullable enable
+
 namespace RxSockets
 {
     public static class ConversionsEx
     {
-        public static byte[] ToByteArray(this string s)
-        {
-            if (s == null)
-                throw new ArgumentNullException(nameof(s));
-            return Encoding.UTF8.GetBytes(s + "\0");
-        }
+        public static byte[] ToByteArray(this string s) => Encoding.UTF8.GetBytes(s + "\0");
 
         public static IEnumerable<string> ToStrings(this IEnumerable<byte> source)
         {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
             using (var ms = new MemoryStream())
             {
                 foreach (var b in source)
@@ -39,9 +33,6 @@ namespace RxSockets
 
         public static IObservable<string> ToStrings(this IObservable<byte> source)
         {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
             var ms = new MemoryStream();
 
             return Observable.Create<string>(observer =>

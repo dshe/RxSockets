@@ -6,6 +6,8 @@ using System.Reactive.Concurrency;
 using System.Threading.Tasks;
 using System.Threading;
 
+#nullable enable
+
 namespace RxSockets
 {
     public interface IRxSocketServer : IDisposable
@@ -24,7 +26,7 @@ namespace RxSockets
 
         private RxSocketServer(Socket socket, int backLog)
         {
-            Socket = socket ?? throw new ArgumentNullException(nameof(socket));
+            Socket = socket;
             if (socket.Connected)
                 throw new SocketException((int)SocketError.IsConnected);
             Backlog = backLog;
@@ -44,7 +46,7 @@ namespace RxSockets
                         Socket.Listen(Backlog);
 
                         while (true)
-                            observer.OnNext(RxSocket.Create(Socket.Accept()));
+                            observer.OnNext(RxSocketClient.Create(Socket.Accept()));
                     }
                     catch (Exception e)
                     {
@@ -70,7 +72,7 @@ namespace RxSockets
         public static IRxSocketServer Create(IPEndPoint endPoint, int backLog = 10)
         {
             var socket = NetworkHelper.CreateSocket();
-            socket.Bind(endPoint ?? throw new ArgumentNullException(nameof(endPoint)));
+            socket.Bind(endPoint);
             return Create(socket, backLog);
         }
 

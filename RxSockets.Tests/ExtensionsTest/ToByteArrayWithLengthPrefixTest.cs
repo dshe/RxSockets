@@ -2,16 +2,12 @@
 using System.Collections.Generic;
 using Xunit;
 
+#nullable enable
+
 namespace RxSockets.Tests
 {
     public class ToByteArrayWithLengthPrefixTest
     {
-        [Fact]
-        public void T01()
-        {
-            Assert.Throws<ArgumentNullException>(() => ConversionsWithLengthPrefixEx.ToByteArrayWithLengthPrefix(null));
-        }
-
         [Theory]
         [InlineData(new byte[] { 0, 0, 0, 0 }, new string[] { })]
         [InlineData(new byte[] { 0, 0, 0, 1, 0 }, new[] { "" })]

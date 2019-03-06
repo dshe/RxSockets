@@ -4,6 +4,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
+#nullable enable
+
 namespace RxSockets
 {
     internal static class SocketConnector
@@ -16,7 +18,7 @@ namespace RxSockets
 
             var args = new SocketAsyncEventArgs
             {
-                RemoteEndPoint = endPoint ?? throw new ArgumentNullException(nameof(endPoint))
+                RemoteEndPoint = endPoint
             };
             args.Completed += (sender, a) => semaphore.Release();
 
@@ -33,7 +35,7 @@ namespace RxSockets
                 if (args.SocketError != SocketError.Success)
                     throw new SocketException((int)args.SocketError);
 
-                return RxSocket.Create(args.ConnectSocket);
+                return RxSocketClient.Create(args.ConnectSocket);
             }
             finally
             {

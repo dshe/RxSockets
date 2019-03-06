@@ -38,7 +38,7 @@ namespace RxSockets.Tests
             });
 
             // Create a socket client by connecting to the server at EndPoint.
-            var client = await RxSocket.ConnectAsync(IPEndPoint);
+            var client = await RxSocketClient.ConnectAsync(IPEndPoint);
 
             client.ReceiveObservable.ToStrings().Subscribe(onNext:message =>
             {
@@ -62,7 +62,7 @@ namespace RxSockets.Tests
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
             // Create a socket client by successfully connecting to the server at EndPoint.
-            var client = await RxSocket.ConnectAsync(IPEndPoint);
+            var client = await RxSocketClient.ConnectAsync(IPEndPoint);
 
             // Get the client socket accepted by the server.
             var accept = await acceptTask;
@@ -83,7 +83,7 @@ namespace RxSockets.Tests
         {
             var server = RxSocketServer.Create(IPEndPoint);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
-            var client = await RxSocket.ConnectAsync(IPEndPoint);
+            var client = await RxSocketClient.ConnectAsync(IPEndPoint);
             var accept = await acceptTask;
             Assert.True(accept.Connected && client.Connected);
 
@@ -113,9 +113,9 @@ namespace RxSockets.Tests
                 "Welcome!".ToByteArray().SendTo(accepted);
             });
 
-            var client1 = await RxSocket.ConnectAsync(IPEndPoint);
-            var client2 = await RxSocket.ConnectAsync(IPEndPoint);
-            var client3 = await RxSocket.ConnectAsync(IPEndPoint);
+            var client1 = await RxSocketClient.ConnectAsync(IPEndPoint);
+            var client2 = await RxSocketClient.ConnectAsync(IPEndPoint);
+            var client3 = await RxSocketClient.ConnectAsync(IPEndPoint);
 
             Assert.Equal("Welcome!", await client1.ReceiveObservable.ToStrings().Take(1).FirstAsync());
             Assert.Equal("Welcome!", await client2.ReceiveObservable.ToStrings().Take(1).FirstAsync());
@@ -149,7 +149,7 @@ namespace RxSockets.Tests
             List<IRxSocket> clients = new List<IRxSocket>();
             for (var i = 0; i < 100; i++)
             {
-                var client = await RxSocket.ConnectAsync(IPEndPoint);
+                var client = await RxSocketClient.ConnectAsync(IPEndPoint);
                 client.Send("Hello".ToByteArray());
                 clients.Add(client);
                 disposables.Add(client);

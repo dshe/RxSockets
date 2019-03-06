@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Threading;
 
+#nullable enable
+
 namespace RxSockets.Tests
 {
     public class SocketDisconnectorTest
@@ -25,19 +27,13 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public void T00_Null()
-        {
-            Assert.Throws<ArgumentNullException>(() => new SocketDisconnector(null));
-        }
-
-        [Fact]
         public async Task T01_DisconnectNotConnectedSocket()
         {
             Assert.False(Socket.Connected);
             Assert.False(Disconnector.DisconnectRequested);
             var ex = await Disconnector.DisconnectAsync();
             var se = ex as SocketException;
-            Assert.Equal(SocketError.NotConnected, se.SocketErrorCode);
+            Assert.Equal(SocketError.NotConnected, se?.SocketErrorCode);
             Assert.True(Disconnector.DisconnectRequested);
         }
 
@@ -47,13 +43,13 @@ namespace RxSockets.Tests
             Connect();
             var ex = await Disconnector.DisconnectAsync();
             var se = ex as SocketException;
-            Assert.Equal(SocketError.Success, se.SocketErrorCode);
+            Assert.Equal(SocketError.Success, se?.SocketErrorCode);
 
             Assert.True(Disconnector.DisconnectRequested);
 
             ex = await Disconnector.DisconnectAsync();
             se = ex as SocketException;
-            Assert.Equal(SocketError.Success, se.SocketErrorCode);
+            Assert.Equal(SocketError.Success, se?.SocketErrorCode);
         }
 
         [Fact]

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 
+#nullable enable
+
 namespace RxSockets
 {
     public static class AddDisposableToEx

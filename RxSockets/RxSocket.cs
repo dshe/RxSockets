@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Reactive.Linq;
 using System.Reactive.Concurrency;
 
+#nullable enable
+
 namespace RxSockets
 {
     public interface IRxSocket : IDisposable
@@ -16,7 +18,7 @@ namespace RxSockets
         Task DisconnectAsync(CancellationToken ct = default);
     }
 
-    public sealed class RxSocket : IRxSocket
+    public sealed class RxSocketClient : IRxSocket
     {
         public static int ReceiveBufferSize { get; set; } = 0x1000;
         private readonly Socket Socket;
@@ -24,9 +26,9 @@ namespace RxSockets
         public bool Connected => Socket.Connected;
         public IObservable<byte> ReceiveObservable { get; }
 
-        private RxSocket(Socket connectedSocket)
+        private RxSocketClient(Socket connectedSocket)
         {
-            Socket = connectedSocket ?? throw new ArgumentNullException(nameof(connectedSocket));
+            Socket = connectedSocket;
             if (!Socket.Connected)
                 throw new SocketException((int)SocketError.NotConnected);
             Disconnector = new SocketDisconnector(Socket);
@@ -84,7 +86,7 @@ namespace RxSockets
         public void Dispose() => DisconnectAsync(new CancellationToken(true)).GetAwaiter().GetResult();
 
         // static!
-        public static IRxSocket Create(Socket connectedSocket) => new RxSocket(connectedSocket);
+        public static IRxSocket Create(Socket connectedSocket) => new RxSocketClient(connectedSocket);
 
         public static async Task<IRxSocket> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default) =>
             await SocketConnector.ConnectAsync(endPoint, timeout, ct);

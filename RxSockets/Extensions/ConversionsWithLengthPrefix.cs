@@ -6,6 +6,8 @@ using System.Text;
 using System.Linq;
 using System.Reactive.Linq;
 
+#nullable enable
+
 namespace RxSockets
 {
     // Encode strings with a 4 byte BigEndian integer length prefix.
@@ -13,14 +15,11 @@ namespace RxSockets
     {
         public static byte[] ToByteArrayWithLengthPrefix(this IEnumerable<string> source)
         {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
             using (var ms = new MemoryStream() { Position = 4 })
             {
                 foreach (var s in source)
                 {
-                    if (!String.IsNullOrEmpty(s))
+                    if (!string.IsNullOrEmpty(s))
                     {
                         var buffer = Encoding.UTF8.GetBytes(s);
                         ms.Write(buffer, 0, buffer.Length);
@@ -44,9 +43,6 @@ namespace RxSockets
 
         public static IEnumerable<byte[]> ToByteArrayOfLengthPrefix(this IEnumerable<byte> source)
         {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
             var length = -1;
 
             using (var ms = new MemoryStream())
@@ -73,9 +69,6 @@ namespace RxSockets
 
         public static IObservable<byte[]> ToByteArrayOfLengthPrefix(this IObservable<byte> source)
         {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
             var length = -1;
             var ms = new MemoryStream();
 
@@ -124,8 +117,6 @@ namespace RxSockets
 
         private static string[] GetStringArray(in byte[] buffer)
         {
-            if (buffer == null)
-                throw new ArgumentNullException(nameof(buffer));
             var length = buffer.Length;
             if (buffer[length - 1] != 0)
                 throw new InvalidDataException("No termination.");

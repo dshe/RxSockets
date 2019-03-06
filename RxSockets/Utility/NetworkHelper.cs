@@ -4,6 +4,8 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
+#nullable enable
+
 namespace RxSockets
 {
     public static class NetworkHelper

@@ -1,0 +1,43 @@
+                                  Accept                      Receive                          Send
+call disconnect before            OnComplete()                InvalidOperationException        SocketException
+call disconnect during            OnComplete()                InvalidOperationException        SocketException
+
+external disconnect before         -                          InvalidOperationException        (none)
+external disconnect during         -                          InvalidOperationException        (none)
+
+
+
+Materialize().ToEnumerablle()
+
+Encoding.GetString() seems to decode whiole buffer, regardless of nulls
+https://docs.microsoft.com/en-us/dotnet/api/system.text.encoding.getstring?view=netframework-4.7.1#System_Text_Encoding_GetString_System_Byte___System_Int32_System_Int32_
+maybe use the Decoder or the Encoder provided by the GetDecoder method or the GetEncoder me
+
+Enumerable.Repeat(0x20,100).ToArray();
+
+EnumerableEx:
+
+
+System.Interactive.dll. 
+To install InteractiveExtensions we will need only package name Ix-Main that is available on nuget.org.
+The IEnumerable interface represents a pull based collection.
+System.Interactive.Async
+IsEmpty - determines whether an enumerable sequence is empty.
+
+folder: IntegratonTests, with only main.cs
+Throw
+
+IAsyncDisposable
+
+put RxSocket in another namespace!!
+
+ public interface IAsyncDisposable : IDisposable
+    {
+        /// <summary>
+        /// Asynchronous Dispose
+        /// </summary>
+        /// <returns>task object for asynchronous operation</returns>
+        Task DisposeAsync();
+
+        event Func<string, Task> Disposing;
+}
