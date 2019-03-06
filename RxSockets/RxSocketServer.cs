@@ -12,7 +12,7 @@ namespace RxSockets
 {
     public interface IRxSocketServer : IDisposable
     {
-        IObservable<IRxSocket> AcceptObservable { get; }
+        IObservable<IRxSocketClient> AcceptObservable { get; }
         Task DisconnectAsync(CancellationToken ct = default);
     }
 
@@ -22,7 +22,7 @@ namespace RxSockets
         private readonly int Backlog;
         private readonly Socket Socket;
         private readonly SocketDisconnector Disconnector;
-        public IObservable<IRxSocket> AcceptObservable { get; }
+        public IObservable<IRxSocketClient> AcceptObservable { get; }
 
         private RxSocketServer(Socket socket, int backLog)
         {
@@ -34,10 +34,10 @@ namespace RxSockets
             AcceptObservable = CreateAcceptObservable();
         }
 
-        private IObservable<IRxSocket> CreateAcceptObservable()
+        private IObservable<IRxSocketClient> CreateAcceptObservable()
         {
             // supports a single observer
-            return Observable.Create<IRxSocket>(observer =>
+            return Observable.Create<IRxSocketClient>(observer =>
             {
                 return NewThreadScheduler.Default.Schedule(() =>
                 {

@@ -10,7 +10,7 @@ namespace RxSockets
 {
     internal static class SocketConnector
     {
-        internal static async Task<IRxSocket> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
+        internal static async Task<IRxSocketClient> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
         {
             var socket = NetworkHelper.CreateSocket();
 

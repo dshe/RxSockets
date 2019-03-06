@@ -10,7 +10,7 @@ using System.Reactive.Concurrency;
 
 namespace RxSockets
 {
-    public interface IRxSocket : IDisposable
+    public interface IRxSocketClient : IDisposable
     {
         bool Connected { get; }
         void Send(byte[] buffer, int offset = 0, int length = 0);
@@ -18,7 +18,7 @@ namespace RxSockets
         Task DisconnectAsync(CancellationToken ct = default);
     }
 
-    public sealed class RxSocketClient : IRxSocket
+    public sealed class RxSocketClient : IRxSocketClient
     {
         public static int ReceiveBufferSize { get; set; } = 0x1000;
         private readonly Socket Socket;
@@ -86,15 +86,15 @@ namespace RxSockets
         public void Dispose() => DisconnectAsync(new CancellationToken(true)).GetAwaiter().GetResult();
 
         // static!
-        public static IRxSocket Create(Socket connectedSocket) => new RxSocketClient(connectedSocket);
+        public static IRxSocketClient Create(Socket connectedSocket) => new RxSocketClient(connectedSocket);
 
-        public static async Task<IRxSocket> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default) =>
+        public static async Task<IRxSocketClient> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default) =>
             await SocketConnector.ConnectAsync(endPoint, timeout, ct);
     }
 
     public static class RxSocketEx
     {
-        public static void SendTo(this byte[] buffer, IRxSocket rxsocket) =>
+        public static void SendTo(this byte[] buffer, IRxSocketClient rxsocket) =>
             rxsocket.Send(buffer);
     }
 

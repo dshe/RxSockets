@@ -14,7 +14,7 @@ namespace RxSockets.Tests
     {
         private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
         private IRxSocketServer server;
-        private IRxSocket client, accept;
+        private IRxSocketClient client, accept;
 
         private readonly Action<string> Write;
         public PerformanceTest(ITestOutputHelper output) =>  Write = output.WriteLine;

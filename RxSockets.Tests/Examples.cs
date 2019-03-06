@@ -146,7 +146,7 @@ namespace RxSockets.Tests
                     .Subscribe(s => s.ToByteArray().SendTo(accepted));
             });
 
-            List<IRxSocket> clients = new List<IRxSocket>();
+            List<IRxSocketClient> clients = new List<IRxSocketClient>();
             for (var i = 0; i < 100; i++)
             {
                 var client = await RxSocketClient.ConnectAsync(IPEndPoint);

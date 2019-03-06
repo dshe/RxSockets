@@ -13,9 +13,9 @@ namespace RxSockets.Tests
     public class RxSocketTest : IAsyncLifetime
     {
         private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
-        private IRxSocket Client, Accept;
+        private IRxSocketClient Client, Accept;
         private IRxSocketServer Server;
-        private Task<IRxSocket> AcceptTask;
+        private Task<IRxSocketClient> AcceptTask;
 
         public async Task InitializeAsync()
         {
