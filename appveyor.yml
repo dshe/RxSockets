@@ -10,4 +10,4 @@ build:
 test_script:
 - ps: dotnet test .\RxSockets.Tests\RxSockets.Tests.csproj
 artifacts:
-- path: "**\*.nupkg"
+- path: '**\*.nupkg'
