@@ -5,17 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
+#nullable enable
+
 namespace RxSockets.Tests
 {
     public class SocketConnectorTest
     {
         private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
-
-        [Fact]
-        public async Task T00_Null()
-        {
-            await Assert.ThrowsAsync<ArgumentNullException>(async () => await SocketConnector.ConnectAsync(null));
-        }
 
         [Fact]
         public async Task T01_NoConnection()

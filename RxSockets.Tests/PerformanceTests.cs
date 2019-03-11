@@ -8,13 +8,15 @@ using System.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Diagnostics;
 
+#nullable enable
+
 namespace RxSockets.Tests
 {
     public class PerformanceTest : IAsyncLifetime
     {
         private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
-        private IRxSocketServer server;
-        private IRxSocketClient client, accept;
+        private IRxSocketServer? server;
+        private IRxSocketClient? client, accept;
 
         private readonly Action<string> Write;
         public PerformanceTest(ITestOutputHelper output) =>  Write = output.WriteLine;
@@ -23,17 +25,20 @@ namespace RxSockets.Tests
         {
             server = RxSocketServer.Create(EndPoint);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
-            client = (await RxSocketClient.ConnectAsync(EndPoint));
+            client = await RxSocketClient.ConnectAsync(EndPoint);
             accept = await acceptTask;
             Assert.True(accept.Connected && client.Connected);
         }
 
         public async Task DisposeAsync() =>
-            await Task.WhenAll(client.DisconnectAsync(), accept.DisconnectAsync(), server.DisconnectAsync());
+            await Task.WhenAll(client?.DisconnectAsync(), accept?.DisconnectAsync(), server?.DisconnectAsync());
 
         [Fact]
         public async Task T01_ReceiveStrings()
         {
+            if (accept == null || client == null)
+                throw new Exception("Accept and/or Client is null.");
+
             var messages = 100_000;
 
             var message = "Welcome!".ToByteArray();
@@ -61,6 +66,10 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T02_ReceiveStringsFromPrefixedBytes()
         {
+            if (accept == null || client == null)
+                throw new Exception("Accept and/or Client is null.");
+
+
             var messages = 100_000;
 
             var message = new [] { "Welcome!" }.ToByteArrayWithLengthPrefix();

@@ -7,16 +7,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
+#nullable enable
+
 namespace RxSockets.Tests
 {
     public class ConversionsTest
     {
-        [Fact]
-        public void T01_ToByteArray()
-        {
-            Assert.Throws<ArgumentNullException>(() => ConversionsEx.ToByteArray(null));
-        }
-
         [Theory]
         [InlineData(new byte[] { 0 }, "" )]
         [InlineData(new byte[] { 0, 0 }, "\0" )]
@@ -32,9 +28,10 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T01_ToStrings()
         {
-            Assert.Throws<ArgumentNullException>(() => ConversionsEx.ToStrings((byte[])null).ToList());
+            byte[]? xxx = null;
+            Assert.Throws<ArgumentNullException>(() => ConversionsEx.ToStrings(xxx).ToList());
             await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-                await ((byte[])null).ToObservable().ToStrings().ToList());
+                await ((byte[]?)null).ToObservable().ToStrings().ToList());
 
             // no termination
             Assert.Throws<InvalidDataException>(() => new byte[] { 65 }.ToStrings().ToList());

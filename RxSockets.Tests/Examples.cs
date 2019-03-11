@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Reactive.Threading.Tasks;
 using System.Reactive.Disposables;
 
+#nullable enable
+
 namespace RxSockets.Tests
 {
     public class Examples

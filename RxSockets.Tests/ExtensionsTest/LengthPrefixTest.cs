@@ -5,6 +5,8 @@ using System.Net;
 using System.Text;
 using Xunit;
 
+#nullable enable
+
 namespace RxSockets.Tests
 {
     public class LengthPrefixTest

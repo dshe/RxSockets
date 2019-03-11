@@ -9,6 +9,8 @@ using Xunit.Abstractions;
 using System.Reactive.Threading.Tasks;
 using System.Reactive;
 
+#nullable enable
+
 namespace RxSockets.Tests
 {
     public class RxSocketServerTest

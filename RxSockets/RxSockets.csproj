@@ -11,15 +11,18 @@
     <PackageProjectUrl>https://github.com/dshe/RxSocket</PackageProjectUrl>
     <PackageTags>socket sockets reactive reactive-extensions observable observable-socket network</PackageTags>
     <Description>A minimal reactive socket implementation.</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Version>1.5.0</Version>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <LangVersion>preview</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <NullableContextOptions>enable</NullableContextOptions>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <LangVersion>preview</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <NullableContextOptions>enable</NullableContextOptions>
   </PropertyGroup>
 

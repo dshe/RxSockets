@@ -4,6 +4,8 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
+#nullable enable
+
 namespace RxSockets.Tests
 {
     public class ToByteArrayOfLengthPrefixTest

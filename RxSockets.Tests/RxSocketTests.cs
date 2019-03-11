@@ -8,14 +8,16 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Threading;
 
+#nullable enable
+
 namespace RxSockets.Tests
 { 
     public class RxSocketTest : IAsyncLifetime
     {
         private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
-        private IRxSocketClient Client, Accept;
-        private IRxSocketServer Server;
-        private Task<IRxSocketClient> AcceptTask;
+        private IRxSocketClient? Client, Accept;
+        private IRxSocketServer? Server;
+        private Task<IRxSocketClient>? AcceptTask;
 
         public async Task InitializeAsync()
         {
@@ -42,6 +44,8 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T01_DisconnectBeforeReceive()
         {
+            if (Client == null)
+                throw new Exception("Client is null.");
             await Client.DisconnectAsync();
             Assert.Empty(await Client.ReceiveObservable.ToList());
         }
@@ -49,6 +53,8 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T02_DisconnectDuringReceive()
         {
+            if (Client == null)
+                throw new Exception("Client is null.");
             var receiveTask = Client.ReceiveObservable.LastOrDefaultAsync().ToTask();
             await Client.DisconnectAsync();
         }
@@ -56,6 +62,8 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T03_ExternalDisconnectBeforeReceive()
         {
+            if (Client == null || Accept == null)
+                throw new Exception("Accept or Client is null.");
             await Accept.DisconnectAsync();
             await Client.ReceiveObservable.LastOrDefaultAsync();
         }
@@ -63,6 +71,8 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T04_ExternalDisconnectDuringReceive()
         {
+            if (Client == null || Accept == null)
+                throw new Exception("Accept or Client is null.");
             var receiveTask = Client.ReceiveObservable.FirstAsync().ToTask();
             await Accept.DisconnectAsync();
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await receiveTask);
@@ -71,14 +81,20 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T05_DisconnectBeforeSend()
         {
+            if (Client == null)
+                throw new Exception("Client is null.");
+            IRxSocketClient client = Client;
             await Client.DisconnectAsync();
-            Assert.Throws<ObjectDisposedException>(() => Client.Send(new byte[] { 0 }));
+            Assert.Throws<ObjectDisposedException>(() => client.Send(new byte[] { 0 }));
         }
 
         [Fact]
         public async Task T06_DisconnectDuringSend()
         {
-            var sendTask = Task.Run(() => Client.Send(new byte[100_000_000]));
+            if (Client == null)
+                throw new Exception("Client is null.");
+            IRxSocketClient client = Client;
+            var sendTask = Task.Run(() => client.Send(new byte[100_000_000]));
             while (sendTask.Status != TaskStatus.Running && sendTask.Status != TaskStatus.RanToCompletion)
                 await Task.Yield();
             await Client.DisconnectAsync();
@@ -90,6 +106,8 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T07_ExternalDisconnectBeforeSend()
         {
+            if (Client == null || Accept == null)
+                throw new Exception("Client or Accept is null.");
             await Accept.DisconnectAsync();
             Client.Send(new byte[] { 0,1,2,3 });
             //Assert.Throws<SocketException>(() => Client.Send(new byte[] { 0,1,2,3 }));
@@ -98,12 +116,16 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T08_ExternalDisconnectDuringSend()
         {
-            var sendTask = Task.Run(() => Client.Send(new byte[100_000_000]));
+            if (Client == null || Accept == null)
+                throw new Exception("Client is null.");
+            IRxSocketClient client = Client;
+
+            var sendTask = Task.Run(() => client.Send(new byte[100_000_000]));
             while (sendTask.Status != TaskStatus.Running && sendTask.Status != TaskStatus.RanToCompletion)
                 await Task.Yield();
             await Accept.DisconnectAsync();
             await sendTask;
-            Assert.Throws<SocketException>(() => Client.Send(new byte[] { 0 }));
+            Assert.Throws<SocketException>(() => client.Send(new byte[] { 0 }));
         }
     }
 }
