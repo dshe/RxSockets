@@ -28,7 +28,7 @@ namespace RxSockets
 
         private RxSocketClient(Socket connectedSocket)
         {
-            Socket = connectedSocket;
+            Socket = connectedSocket ?? throw new ArgumentNullException(nameof(connectedSocket));
             if (!Socket.Connected)
                 throw new SocketException((int)SocketError.NotConnected);
             Disconnector = new SocketDisconnector(Socket);
@@ -94,8 +94,7 @@ namespace RxSockets
 
     public static class RxSocketEx
     {
-        public static void SendTo(this byte[] buffer, IRxSocketClient rxsocket) =>
-            rxsocket.Send(buffer);
+        public static void SendTo(this byte[] buffer, IRxSocketClient rxsocket) => rxsocket.Send(buffer);
     }
 
 }

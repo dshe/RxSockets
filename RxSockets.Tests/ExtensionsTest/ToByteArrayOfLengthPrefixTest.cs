@@ -3,6 +3,8 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using RxSockets;
+using System.IO;
 
 #nullable enable
 
@@ -27,5 +29,23 @@ namespace RxSockets.Tests
             Assert.Equal(result, await bytes.ToObservable().ToByteArrayOfLengthPrefix());
         }
 
+
+        [Fact]
+        public void T03()
+        {
+            Assert.Throws<InvalidDataException>(() => ConversionsWithLengthPrefixEx.GetStringArray(new byte[] { }));
+            Assert.Throws<InvalidDataException>(() => ConversionsWithLengthPrefixEx.GetStringArray(new byte[] { 65 }));
+            Assert.Throws<InvalidDataException>(() => ConversionsWithLengthPrefixEx.GetStringArray(new byte[] { 65, 0, 65 }));
+        }
+
+        [Theory]
+        [InlineData(new byte[] { 0 }, new[] { "" })]
+        [InlineData(new byte[] { 0, 0 }, new[] { "", "" })]
+        [InlineData(new byte[] { 65, 0 }, new[] { "A" })]
+        [InlineData(new byte[] { 65, 0, 65, 0, 0 }, new[] { "A", "A", "" })]
+        public void T04(byte[] bytes, string[] strings)
+        {
+            Assert.Equal(strings, ConversionsWithLengthPrefixEx.GetStringArray(bytes));
+        }
     }
 }

@@ -26,7 +26,7 @@ namespace RxSockets
 
         private RxSocketServer(Socket socket, int backLog)
         {
-            Socket = socket;
+            Socket = socket ?? throw new ArgumentNullException(nameof(socket));
             if (socket.Connected)
                 throw new SocketException((int)SocketError.IsConnected);
             Backlog = backLog;

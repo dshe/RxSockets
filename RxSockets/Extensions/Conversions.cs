@@ -36,6 +36,9 @@ namespace RxSockets
 
         public static IObservable<string> ToStrings(this IObservable<byte> source)
         {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
             var ms = new MemoryStream();
 
             return Observable.Create<string>(observer =>

@@ -29,9 +29,10 @@ namespace RxSockets.Tests
         public async Task T01_ToStrings()
         {
             byte[]? xxx = null;
-            Assert.Throws<ArgumentNullException>(() => ConversionsEx.ToStrings(xxx).ToList());
+            Assert.Throws<ArgumentNullException>(() => ConversionsEx.ToStrings(xxx).ToList()); // should have warning?
+
             await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-                await ((byte[]?)null).ToObservable().ToStrings().ToList());
+                await ((byte[]?)null).ToObservable().ToStrings().ToList()); // should have warning?
 
             // no termination
             Assert.Throws<InvalidDataException>(() => new byte[] { 65 }.ToStrings().ToList());

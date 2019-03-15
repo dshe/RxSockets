@@ -15,6 +15,9 @@ namespace RxSockets
     {
         public static byte[] ToByteArrayWithLengthPrefix(this IEnumerable<string> source)
         {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
             using (var ms = new MemoryStream() { Position = 4 })
             {
                 foreach (var s in source)
@@ -24,7 +27,7 @@ namespace RxSockets
                         var buffer = Encoding.UTF8.GetBytes(s);
                         ms.Write(buffer, 0, buffer.Length);
                     }
-                    ms.WriteByte(0);
+                    ms.WriteByte(0); // null or empty
                 }
                 return GetBytes(ms);
             }
@@ -32,6 +35,8 @@ namespace RxSockets
 
         private static byte[] GetBytes(in MemoryStream ms)
         {
+            if (ms == null)
+                throw new ArgumentNullException(nameof(ms));
             var length = Convert.ToInt32(ms.Position) - 4;
             var prefix = IPAddress.HostToNetworkOrder(length);
             ms.Position = 0;
@@ -43,6 +48,9 @@ namespace RxSockets
 
         public static IEnumerable<byte[]> ToByteArrayOfLengthPrefix(this IEnumerable<byte> source)
         {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
             var length = -1;
 
             using (var ms = new MemoryStream())
@@ -69,6 +77,9 @@ namespace RxSockets
 
         public static IObservable<byte[]> ToByteArrayOfLengthPrefix(this IObservable<byte> source)
         {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
             var length = -1;
             var ms = new MemoryStream();
 
@@ -115,10 +126,12 @@ namespace RxSockets
         public static IObservable<string[]> ToStringArray(this IObservable<byte[]> source) =>
             source.Select(buffer => GetStringArray(buffer));
 
-        private static string[] GetStringArray(in byte[] buffer)
+        internal static string[] GetStringArray(in byte[] buffer) // internal for testing
         {
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
             var length = buffer.Length;
-            if (buffer[length - 1] != 0)
+            if (length == 0 || buffer[length - 1] != 0)
                 throw new InvalidDataException("No termination.");
             return Encoding.UTF8.GetString(buffer, 0, length - 1).Split('\0');
         }

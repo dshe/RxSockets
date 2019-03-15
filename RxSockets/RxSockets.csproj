@@ -5,15 +5,16 @@
     <AssemblyName>RxSockets</AssemblyName>
     <RootNamespace>RxSockets</RootNamespace>
     <Authors>DavidS</Authors>
-    <Company>DavidS</Company>
+    <Company></Company>
     <Product>RxSockets</Product>
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/dshe/RxSocket</PackageProjectUrl>
     <PackageTags>socket sockets reactive reactive-extensions observable observable-socket network</PackageTags>
     <Description>A minimal reactive socket implementation.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <Version>1.5.0</Version>
+    <Version>1.5.1</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageIconUrl>https://github.com/dshe.png</PackageIconUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
