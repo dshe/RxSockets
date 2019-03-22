@@ -48,8 +48,8 @@ namespace RxSockets.Tests
         {
             var server = RxSocketServer.Create(EndPoint);
             await server.DisconnectAsync();
-            await Task.Yield();
-            await server.AcceptObservable.LastOrDefaultAsync();
+            //await Task.Yield();
+            //await server.AcceptObservable.LastOrDefaultAsync();
         }
 
         [Fact]
