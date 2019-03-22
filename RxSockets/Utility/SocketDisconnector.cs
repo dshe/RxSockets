@@ -10,17 +10,22 @@ namespace RxSockets
 {
     internal class SocketDisconnector
     {
+        private readonly CancellationToken Ct;
         private readonly Socket Socket;
         private readonly CancellationTokenSource Cts = new CancellationTokenSource();
         private readonly TaskCompletionSource<Exception> Tcs = new TaskCompletionSource<Exception>();
         private int disconnect;
         internal bool DisconnectRequested => disconnect == 1;
 
-        internal SocketDisconnector(Socket socket) => Socket = socket;
-
-        internal async Task<Exception> DisconnectAsync(CancellationToken ct = default)
+        internal SocketDisconnector(Socket socket, CancellationToken ct)
         {
-            using (var registration = ct.Register(Cts.Cancel))
+            Ct = ct;
+            Socket = socket;
+        }
+
+        internal async Task<Exception> DisconnectAsync()
+        {
+            using (var registration = Ct.Register(Cts.Cancel))
             {
                 if (Interlocked.CompareExchange(ref disconnect, 1, 0) == 0)
                     Tcs.SetResult(await Disconnect(Socket, Cts.Token));

@@ -13,9 +13,7 @@ namespace RxSockets
         internal static async Task<IRxSocketClient> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
         {
             var socket = NetworkHelper.CreateSocket();
-
             var semaphore = new SemaphoreSlim(0, 1);
-
             var args = new SocketAsyncEventArgs
             {
                 RemoteEndPoint = endPoint
@@ -35,7 +33,7 @@ namespace RxSockets
                 if (args.SocketError != SocketError.Success)
                     throw new SocketException((int)args.SocketError);
 
-                return RxSocketClient.Create(args.ConnectSocket);
+                return RxSocketClient.Create(args.ConnectSocket, ct);
             }
             finally
             {

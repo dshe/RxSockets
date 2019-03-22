@@ -61,6 +61,7 @@ namespace RxSockets
                             observer.OnCompleted();
                         else
                             observer.OnError(new InvalidDataException("No termination."));
+                        ms.Close();
                     });
             });
         }

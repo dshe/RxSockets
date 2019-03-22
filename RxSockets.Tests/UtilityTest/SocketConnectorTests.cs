@@ -44,7 +44,7 @@ namespace RxSockets.Tests
 
             var socket = await SocketConnector.ConnectAsync(EndPoint);
 
-            socket.Dispose();
+            await socket.DisconnectAsync();
             serverSocket.Dispose();
         }
 

@@ -83,7 +83,7 @@ namespace RxSockets.Tests
                 accept.Send(message);
             await accept.DisconnectAsync();
 
-            var count = await countTask;
+            int count = await countTask;
 
             watch.Stop();
 

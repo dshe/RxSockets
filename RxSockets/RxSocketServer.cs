@@ -3,17 +3,16 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Reactive.Concurrency;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 
 #nullable enable
 
 namespace RxSockets
 {
-    public interface IRxSocketServer : IDisposable
+    public interface IRxSocketServer: IAsyncDisconnectable
     {
         IObservable<IRxSocketClient> AcceptObservable { get; }
-        Task DisconnectAsync(CancellationToken ct = default);
     }
 
     public sealed class RxSocketServer : IRxSocketServer
@@ -24,13 +23,13 @@ namespace RxSockets
         private readonly SocketDisconnector Disconnector;
         public IObservable<IRxSocketClient> AcceptObservable { get; }
 
-        private RxSocketServer(Socket socket, int backLog)
+        private RxSocketServer(Socket socket, int backLog, CancellationToken ct)
         {
             Socket = socket ?? throw new ArgumentNullException(nameof(socket));
             if (socket.Connected)
                 throw new SocketException((int)SocketError.IsConnected);
             Backlog = backLog;
-            Disconnector = new SocketDisconnector(socket);
+            Disconnector = new SocketDisconnector(socket, ct);
             AcceptObservable = CreateAcceptObservable();
         }
 
@@ -59,24 +58,20 @@ namespace RxSockets
             });
         }
 
-        public Task DisconnectAsync(CancellationToken ct) => Disconnector.DisconnectAsync(ct);
-
-        // pass a cancelled token to skip waiting for disconnect
-        // GetAwaiter().GetResult() is used rather then Wait()
-        public void Dispose() => DisconnectAsync(new CancellationToken(true)).GetAwaiter().GetResult();
+        public async Task DisconnectAsync() => await Disconnector.DisconnectAsync().ConfigureAwait(false);
 
         // static!
-        public static IRxSocketServer Create(int port, int backLog = 10) =>
-            Create(new IPEndPoint(IPAddress.IPv6Any, port), backLog);
+        public static IRxSocketServer Create(int port, int backLog = 10, CancellationToken ct = default) =>
+            Create(new IPEndPoint(IPAddress.IPv6Any, port), backLog, ct);
 
-        public static IRxSocketServer Create(IPEndPoint endPoint, int backLog = 10)
+        public static IRxSocketServer Create(IPEndPoint endPoint, int backLog = 10, CancellationToken ct = default)
         {
             var socket = NetworkHelper.CreateSocket();
             socket.Bind(endPoint);
-            return Create(socket, backLog);
+            return Create(socket, backLog, ct);
         }
 
-        public static IRxSocketServer Create(Socket socket, int backLog = 10) =>
-            new RxSocketServer(socket, backLog);
+        public static IRxSocketServer Create(Socket socket, int backLog = 10, CancellationToken ct = default) =>
+            new RxSocketServer(socket, backLog, ct);
     }
 }

@@ -10,12 +10,11 @@ using System.Reactive.Concurrency;
 
 namespace RxSockets
 {
-    public interface IRxSocketClient : IDisposable
+    public interface IRxSocketClient: IAsyncDisconnectable
     {
         bool Connected { get; }
         void Send(byte[] buffer, int offset = 0, int length = 0);
         IObservable<byte> ReceiveObservable { get; }
-        Task DisconnectAsync(CancellationToken ct = default);
     }
 
     public sealed class RxSocketClient : IRxSocketClient
@@ -26,12 +25,12 @@ namespace RxSockets
         public bool Connected => Socket.Connected;
         public IObservable<byte> ReceiveObservable { get; }
 
-        private RxSocketClient(Socket connectedSocket)
+        private RxSocketClient(Socket connectedSocket, CancellationToken ct)
         {
             Socket = connectedSocket ?? throw new ArgumentNullException(nameof(connectedSocket));
             if (!Socket.Connected)
                 throw new SocketException((int)SocketError.NotConnected);
-            Disconnector = new SocketDisconnector(Socket);
+            Disconnector = new SocketDisconnector(Socket, ct);
             ReceiveObservable = CreateReceiveObservable();
         }
 
@@ -80,16 +79,12 @@ namespace RxSockets
         public void Send(byte[] buffer, int offset, int length) =>
             Socket.Send(buffer, offset, length > 0 ? length : buffer.Length, SocketFlags.None);
 
-        public Task DisconnectAsync(CancellationToken ct) => Disconnector.DisconnectAsync(ct);
-
-        // pass a cancelled token to skip waiting for disconnect
-        public void Dispose() => DisconnectAsync(new CancellationToken(true)).GetAwaiter().GetResult();
+        public async Task DisconnectAsync() => await Disconnector.DisconnectAsync().ConfigureAwait(false);
 
         // static!
-        public static IRxSocketClient Create(Socket connectedSocket) => new RxSocketClient(connectedSocket);
-
         public static async Task<IRxSocketClient> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default) =>
             await SocketConnector.ConnectAsync(endPoint, timeout, ct);
+        public static IRxSocketClient Create(Socket connectedSocket, CancellationToken ct = default) => new RxSocketClient(connectedSocket, ct);
     }
 
     public static class RxSocketEx

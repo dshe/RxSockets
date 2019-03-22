@@ -104,45 +104,42 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T20_AcceptObservable()
         {
-            var disposables = new CompositeDisposable();
+            var disconnectables = new List<IAsyncDisconnectable>();
 
-            var server = RxSocketServer.Create(IPEndPoint, 10);
-            disposables.Add(server);
+            var server = RxSocketServer.Create(IPEndPoint, 10).AddDisconnectableTo(disconnectables);
 
             server.AcceptObservable.Subscribe(accepted =>
             {
-                disposables.Add(accepted);
                 "Welcome!".ToByteArray().SendTo(accepted);
+                disconnectables.Add(accepted);
             });
 
             var client1 = await RxSocketClient.ConnectAsync(IPEndPoint);
             var client2 = await RxSocketClient.ConnectAsync(IPEndPoint);
             var client3 = await RxSocketClient.ConnectAsync(IPEndPoint);
+            disconnectables.AddRange(new[] { client1, client2, client3 });
 
             Assert.Equal("Welcome!", await client1.ReceiveObservable.ToStrings().Take(1).FirstAsync());
             Assert.Equal("Welcome!", await client2.ReceiveObservable.ToStrings().Take(1).FirstAsync());
             Assert.Equal("Welcome!", await client3.ReceiveObservable.ToStrings().Take(1).FirstAsync());
 
-            disposables.Add(client1);
-            disposables.Add(client2);
-            disposables.Add(client3);
-
-            disposables.Dispose();
+            var tasks = disconnectables.Select(d => d.DisconnectAsync());
+            await Task.WhenAll(tasks);
         }
 
         [Fact]
         public async Task T30_Both()
         {
-            var disposables = new CompositeDisposable();
+            List<IAsyncDisconnectable> disconnectables = new List<IAsyncDisconnectable>();
 
-            var server = RxSocketServer.Create(IPEndPoint).AddDisposableTo(disposables);
+            var server = RxSocketServer.Create(IPEndPoint).AddDisconnectableTo(disconnectables);
 
             server.AcceptObservable.Subscribe(accepted =>
             {
                 "Welcome!".ToByteArray().SendTo(accepted);
 
                 accepted
-                    .AddDisposableTo(disposables)
+                    .AddDisconnectableTo(disconnectables)
                     .ReceiveObservable
                     .ToStrings()
                     .Subscribe(s => s.ToByteArray().SendTo(accepted));
@@ -154,16 +151,15 @@ namespace RxSockets.Tests
                 var client = await RxSocketClient.ConnectAsync(IPEndPoint);
                 client.Send("Hello".ToByteArray());
                 clients.Add(client);
-                disposables.Add(client);
+                disconnectables.Add(client);
             }
 
             foreach (var client in clients)
                 Assert.Equal("Hello", await client.ReceiveObservable.ToStrings().Skip(1).Take(1).FirstAsync());
 
-            disposables.Dispose();
+            var tasks = disconnectables.Select(d => d.DisconnectAsync());
+            await Task.WhenAll(tasks);
         }
-
     }
-
 }
 
