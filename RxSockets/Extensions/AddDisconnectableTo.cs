@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace RxSockets
 {
-    public static class Extensions
+    public static class AddDisconnectableToEx
     {
         public static T AddDisconnectableTo<T>(this T source, IList<IAsyncDisconnectable> list) where T : IAsyncDisconnectable
         {

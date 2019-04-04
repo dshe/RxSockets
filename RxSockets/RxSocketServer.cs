@@ -58,7 +58,7 @@ namespace RxSockets
             });
         }
 
-        public async Task DisconnectAsync(CancellationToken ct = default) =>
+        public async Task<Exception> DisconnectAsync(CancellationToken ct = default) =>
             await Disconnector.DisconnectAsync(ct).ConfigureAwait(false);
 
         // static!

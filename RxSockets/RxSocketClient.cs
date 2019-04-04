@@ -79,7 +79,7 @@ namespace RxSockets
         public void Send(byte[] buffer, int offset, int length) =>
             Socket.Send(buffer, offset, length > 0 ? length : buffer.Length, SocketFlags.None);
 
-        public async Task DisconnectAsync(CancellationToken ct) =>
+        public async Task<Exception> DisconnectAsync(CancellationToken ct) =>
             await Disconnector.DisconnectAsync(ct).ConfigureAwait(false);
 
         // static!
@@ -89,10 +89,4 @@ namespace RxSockets
         internal static IRxSocketClient Create(Socket connectedSocket) =>
             new RxSocketClient(connectedSocket);
     }
-
-    public static class RxSocketEx
-    {
-        public static void SendTo(this byte[] buffer, IRxSocketClient rxsocket) => rxsocket.Send(buffer);
-    }
-
 }

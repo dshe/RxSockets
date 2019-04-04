@@ -1,4 +1,5 @@
 ﻿using Xunit;
+using System;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Net;
@@ -43,9 +44,11 @@ namespace RxSockets.Tests
         public async Task T03_DisconnectBeforeAccept()
         {
             var server = RxSocketServer.Create(EndPoint);
-            await server.DisconnectAsync();
-            await Task.Yield();
-            await server.AcceptObservable.LastOrDefaultAsync();
+            var se = await server.DisconnectAsync() as SocketException;
+            Assert.Equal(SocketError.Success, se!.SocketErrorCode);
+            await Task.Delay(100);
+            var result = await server.AcceptObservable.LastOrDefaultAsync().ToTask();
+            Assert.Null(result);
         }
 
         [Fact]
@@ -53,9 +56,11 @@ namespace RxSockets.Tests
         {
             var server = RxSocketServer.Create(EndPoint);
             var acceptTask = server.AcceptObservable.LastOrDefaultAsync().ToTask();
-            await Task.Yield();
-            await server.DisconnectAsync();
-            await acceptTask;
+            await Task.Delay(100);
+            var se = await server.DisconnectAsync() as SocketException;
+            Assert.Equal(SocketError.Success, se!.SocketErrorCode);
+            var result = await acceptTask;
+            Assert.Null(result);
         }
 
     }

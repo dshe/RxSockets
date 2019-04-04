@@ -38,8 +38,11 @@ namespace RxSockets
             {
                 if (args.SocketError != SocketError.Success)
                 {
-                    Socket.CancelConnectAsync(args);
+                    if (socket.Connected)
+                        Socket.CancelConnectAsync(args);
+                    socket.Dispose();
                     args.Dispose();
+                    semaphore.Dispose();
                     socket.Dispose();
                 }
             }

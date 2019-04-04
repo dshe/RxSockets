@@ -33,7 +33,7 @@ namespace RxSockets.Tests
             Assert.False(Disconnector.DisconnectRequested);
             var ex = await Disconnector.DisconnectAsync();
             var se = ex as SocketException;
-            Assert.Equal(SocketError.NotConnected, se?.SocketErrorCode);
+            Assert.Equal(SocketError.Success, se?.SocketErrorCode);
             Assert.True(Disconnector.DisconnectRequested);
         }
 
@@ -64,8 +64,8 @@ namespace RxSockets.Tests
         public async Task T04_DisconnectDisposedSocket()
         {
             Socket.Dispose();
-            var ex = await Disconnector.DisconnectAsync();
-            Assert.IsType<ObjectDisposedException>(ex);
+            var se = await Disconnector.DisconnectAsync() as SocketException;
+            Assert.Equal(SocketError.Success, se!.SocketErrorCode);
         }
     }
 }

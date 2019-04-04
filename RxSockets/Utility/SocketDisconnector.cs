@@ -41,14 +41,19 @@ namespace RxSockets
 
             try
             {
-                if (Socket.Connected)
-                    Socket.Shutdown(SocketShutdown.Both); // never blocks
-
-                if (Socket.DisconnectAsync(args))
-                    await semaphore.WaitAsync(ct).ConfigureAwait(false);
-
                 if (ct.IsCancellationRequested)
                     return new OperationCanceledException();
+
+                if (Socket.Connected)
+                {
+                    Socket.Shutdown(SocketShutdown.Both); // never blocks
+
+                    if (Socket.DisconnectAsync(args))
+                        await semaphore.WaitAsync(ct).ConfigureAwait(false);
+
+                    if (ct.IsCancellationRequested)
+                        return new OperationCanceledException();
+                }
 
                 return new SocketException((int)args.SocketError);
             }
@@ -63,6 +68,5 @@ namespace RxSockets
                 semaphore.Dispose();
             }
         }
-
     }
 }
