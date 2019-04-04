@@ -11,13 +11,12 @@ namespace RxSockets.Tests
 {
     public class SocketDisconnectorTest
     {
-        private readonly CancellationTokenSource Cts = new CancellationTokenSource();
-        private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
-        private readonly Socket ServerSocket = NetworkHelper.CreateSocket();
-        private readonly Socket Socket = NetworkHelper.CreateSocket();
+        private readonly IPEndPoint EndPoint = Utilities.GetEndPointOnLoopbackRandomPort();
+        private readonly Socket ServerSocket = Utilities.CreateSocket();
+        private readonly Socket Socket = Utilities.CreateSocket();
         private readonly SocketDisconnector Disconnector;
 
-        public SocketDisconnectorTest() => Disconnector = new SocketDisconnector(Socket, Cts.Token);
+        public SocketDisconnectorTest() => Disconnector = new SocketDisconnector(Socket);
 
         private void Connect()
         {
@@ -56,9 +55,8 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T03_Cancel()
         {
-            Connect();
-            Cts.Cancel();
-            var ex = await Disconnector.DisconnectAsync();
+            var token = new CancellationToken(true);
+            var ex = await Disconnector.DisconnectAsync(token);
             Assert.IsAssignableFrom<OperationCanceledException>(ex);
         }
 

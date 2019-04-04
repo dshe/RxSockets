@@ -23,13 +23,13 @@ namespace RxSockets
         private readonly SocketDisconnector Disconnector;
         public IObservable<IRxSocketClient> AcceptObservable { get; }
 
-        private RxSocketServer(Socket socket, int backLog, CancellationToken ct)
+        private RxSocketServer(Socket socket, int backLog)
         {
             Socket = socket ?? throw new ArgumentNullException(nameof(socket));
             if (socket.Connected)
                 throw new SocketException((int)SocketError.IsConnected);
-            Backlog = backLog;
-            Disconnector = new SocketDisconnector(socket, ct);
+            Backlog = backLog > 0 ? backLog : throw new Exception($"Invalid backLog: {backLog}.");
+            Disconnector = new SocketDisconnector(socket);
             AcceptObservable = CreateAcceptObservable();
         }
 
@@ -58,20 +58,17 @@ namespace RxSockets
             });
         }
 
-        public async Task DisconnectAsync() => await Disconnector.DisconnectAsync().ConfigureAwait(false);
+        public async Task DisconnectAsync(CancellationToken ct = default) =>
+            await Disconnector.DisconnectAsync(ct).ConfigureAwait(false);
 
         // static!
-        public static IRxSocketServer Create(int port, int backLog = 10, CancellationToken ct = default) =>
-            Create(new IPEndPoint(IPAddress.IPv6Any, port), backLog, ct);
-
-        public static IRxSocketServer Create(IPEndPoint endPoint, int backLog = 10, CancellationToken ct = default)
+        public static IRxSocketServer Create(IPEndPoint endPoint, int backLog = 10)
         {
-            var socket = NetworkHelper.CreateSocket();
+            if (endPoint == null)
+                throw new ArgumentNullException(nameof(endPoint));
+            var socket = Utilities.CreateSocket();
             socket.Bind(endPoint);
-            return Create(socket, backLog, ct);
+            return new RxSocketServer(socket, backLog);
         }
-
-        public static IRxSocketServer Create(Socket socket, int backLog = 10, CancellationToken ct = default) =>
-            new RxSocketServer(socket, backLog, ct);
     }
 }

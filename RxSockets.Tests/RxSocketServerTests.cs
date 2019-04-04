@@ -1,13 +1,9 @@
-﻿using System;
-using Xunit;
+﻿using Xunit;
 using System.Threading.Tasks;
 using System.Net.Sockets;
-using System.Linq;
 using System.Net;
 using System.Reactive.Linq;
-using Xunit.Abstractions;
 using System.Reactive.Threading.Tasks;
-using System.Reactive;
 
 #nullable enable
 
@@ -15,7 +11,7 @@ namespace RxSockets.Tests
 {
     public class RxSocketServerTest
     {
-        private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
+        private readonly IPEndPoint EndPoint = Utilities.GetEndPointOnLoopbackRandomPort();
 
         [Fact]
         public void T01_InvalidEndPoint()
@@ -31,7 +27,7 @@ namespace RxSockets.Tests
 
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
-            var clientSocket = NetworkHelper.CreateSocket();
+            var clientSocket = Utilities.CreateSocket();
             clientSocket.Connect(EndPoint);
 
             var acceptedSocket = await acceptTask;
@@ -48,8 +44,8 @@ namespace RxSockets.Tests
         {
             var server = RxSocketServer.Create(EndPoint);
             await server.DisconnectAsync();
-            //await Task.Yield();
-            //await server.AcceptObservable.LastOrDefaultAsync();
+            await Task.Yield();
+            await server.AcceptObservable.LastOrDefaultAsync();
         }
 
         [Fact]

@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+
+#nullable enable
 
 namespace RxSockets
 {
-    public interface IAsyncDisconnectable
-    {
-        Task DisconnectAsync();
-    }
-
-    public static class AddDisconnectableToEx
+    public static class Extensions
     {
         public static T AddDisconnectableTo<T>(this T source, IList<IAsyncDisconnectable> list) where T : IAsyncDisconnectable
         {

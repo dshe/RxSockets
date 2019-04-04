@@ -11,7 +11,7 @@ namespace RxSockets.Tests
 {
     public class SocketConnectorTest
     {
-        private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
+        private readonly IPEndPoint EndPoint = Utilities.GetEndPointOnLoopbackRandomPort();
 
         [Fact]
         public async Task T01_NoConnection()
@@ -23,28 +23,30 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T03_Timeout()
         {
-            var ex = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.ConnectAsync(EndPoint, timeout: 0));
-            Assert.Equal(SocketError.TimedOut, ex.SocketErrorCode);
+            var cts = new CancellationTokenSource(0);
+            var ex = await Assert.ThrowsAsync<OperationCanceledException>(async () => await SocketConnector.ConnectAsync(EndPoint, cts.Token));
         }
 
         [Fact]
         public async Task T04_Cancel()
         {
+            var ct = new CancellationToken(true);
             await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => 
-                await SocketConnector.ConnectAsync(EndPoint , ct:new CancellationToken(true)));
+                await SocketConnector.ConnectAsync(EndPoint , ct));
         }
 
         [Fact]
         public async Task T99_Success()
         {
-            var serverSocket = NetworkHelper.CreateSocket();
+            var serverSocket = Utilities.CreateSocket();
 
             serverSocket.Bind(EndPoint);
             serverSocket.Listen(10);
 
             var socket = await SocketConnector.ConnectAsync(EndPoint);
 
-            await socket.DisconnectAsync();
+            var sd = new SocketDisconnector(socket);
+            await sd.DisconnectAsync();
             serverSocket.Dispose();
         }
 

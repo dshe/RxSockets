@@ -14,7 +14,7 @@ namespace RxSockets.Tests
 { 
     public class RxSocketTest : IAsyncLifetime
     {
-        private readonly IPEndPoint EndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
+        private readonly IPEndPoint EndPoint = Utilities.GetEndPointOnLoopbackRandomPort();
         private IRxSocketClient? Client, Accept;
         private IRxSocketServer? Server;
         private Task<IRxSocketClient>? AcceptTask;
@@ -23,7 +23,7 @@ namespace RxSockets.Tests
         {
             Server = RxSocketServer.Create(EndPoint);
             AcceptTask = Server.AcceptObservable.FirstAsync().ToTask();
-            Client = (await RxSocketClient.ConnectAsync(EndPoint));
+            Client = await RxSocketClient.ConnectAsync(EndPoint);
             Accept = await AcceptTask;
         }
 

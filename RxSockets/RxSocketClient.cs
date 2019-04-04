@@ -25,12 +25,12 @@ namespace RxSockets
         public bool Connected => Socket.Connected;
         public IObservable<byte> ReceiveObservable { get; }
 
-        private RxSocketClient(Socket connectedSocket, CancellationToken ct)
+        private RxSocketClient(Socket connectedSocket)
         {
             Socket = connectedSocket ?? throw new ArgumentNullException(nameof(connectedSocket));
             if (!Socket.Connected)
                 throw new SocketException((int)SocketError.NotConnected);
-            Disconnector = new SocketDisconnector(Socket, ct);
+            Disconnector = new SocketDisconnector(Socket);
             ReceiveObservable = CreateReceiveObservable();
         }
 
@@ -79,12 +79,15 @@ namespace RxSockets
         public void Send(byte[] buffer, int offset, int length) =>
             Socket.Send(buffer, offset, length > 0 ? length : buffer.Length, SocketFlags.None);
 
-        public async Task DisconnectAsync() => await Disconnector.DisconnectAsync().ConfigureAwait(false);
+        public async Task DisconnectAsync(CancellationToken ct) =>
+            await Disconnector.DisconnectAsync(ct).ConfigureAwait(false);
 
         // static!
-        public static async Task<IRxSocketClient> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default) =>
-            await SocketConnector.ConnectAsync(endPoint, timeout, ct);
-        public static IRxSocketClient Create(Socket connectedSocket, CancellationToken ct = default) => new RxSocketClient(connectedSocket, ct);
+        public static async Task<IRxSocketClient> ConnectAsync(IPEndPoint endPoint, CancellationToken ct = default) =>
+            Create(await SocketConnector.ConnectAsync(endPoint, ct).ConfigureAwait(false));
+
+        internal static IRxSocketClient Create(Socket connectedSocket) =>
+            new RxSocketClient(connectedSocket);
     }
 
     public static class RxSocketEx

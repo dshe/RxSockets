@@ -4,13 +4,9 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reactive.Concurrency;
 using Xunit.Abstractions;
-using System.Threading;
-using System.Net.Sockets;
 using System.Collections.Generic;
 using System.Reactive.Threading.Tasks;
-using System.Reactive.Disposables;
 
 #nullable enable
 
@@ -18,7 +14,7 @@ namespace RxSockets.Tests
 {
     public class Examples
     {
-        private readonly IPEndPoint IPEndPoint = NetworkHelper.GetEndPointOnLoopbackRandomPort();
+        private readonly IPEndPoint IPEndPoint = Utilities.GetEndPointOnLoopbackRandomPort();
 
         private readonly Action<string> Write;
         public Examples(ITestOutputHelper output) => Write = output.WriteLine;

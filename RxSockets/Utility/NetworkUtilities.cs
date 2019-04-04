@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -8,9 +9,9 @@ using System.Net.Sockets;
 
 namespace RxSockets
 {
-    public static class NetworkHelper
+    public static class Utilities
     {
-        private static Random Random = new Random();
+        private static readonly Random Random = new Random();
 
         public static Socket CreateSocket() =>
             new Socket(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };

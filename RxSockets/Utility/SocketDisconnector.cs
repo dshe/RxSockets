@@ -10,31 +10,24 @@ namespace RxSockets
 {
     internal class SocketDisconnector
     {
-        private readonly CancellationToken Ct;
         private readonly Socket Socket;
-        private readonly CancellationTokenSource Cts = new CancellationTokenSource();
-        private readonly TaskCompletionSource<Exception> Tcs = new TaskCompletionSource<Exception>();
-        private int disconnect;
-        internal bool DisconnectRequested => disconnect == 1;
-
-        internal SocketDisconnector(Socket socket, CancellationToken ct)
+        private Task<Exception>? task = null;
+        internal bool DisconnectRequested => task != null;
+        internal SocketDisconnector(Socket socket)
         {
-            Ct = ct;
-            Socket = socket;
-        }
-
-        internal async Task<Exception> DisconnectAsync()
-        {
-            using (var registration = Ct.Register(Cts.Cancel))
-            {
-                if (Interlocked.CompareExchange(ref disconnect, 1, 0) == 0)
-                    Tcs.SetResult(await Disconnect(Socket, Cts.Token));
-                return await Tcs.Task;
-            }
+            Socket = socket ?? throw new ArgumentNullException(nameof(socket));
         }
 
         // return Exception to enable testing
-        private static async Task<Exception> Disconnect(Socket socket, CancellationToken ct)
+        internal Task<Exception> DisconnectAsync(CancellationToken ct = default)
+        {
+            lock (Socket)
+            {
+                return task ??= Disconnect(ct);
+            }
+        }
+
+        private async Task<Exception> Disconnect(CancellationToken ct)
         {
             Debug.WriteLine("Disconnecting socket.");
 
@@ -48,13 +41,14 @@ namespace RxSockets
 
             try
             {
-                if (socket.Connected)
-                    socket.Shutdown(SocketShutdown.Both);
+                if (Socket.Connected)
+                    Socket.Shutdown(SocketShutdown.Both); // never blocks
 
-                if (socket.DisconnectAsync(args))
+                if (Socket.DisconnectAsync(args))
                     await semaphore.WaitAsync(ct).ConfigureAwait(false);
-                else
-                    ct.ThrowIfCancellationRequested();
+
+                if (ct.IsCancellationRequested)
+                    return new OperationCanceledException();
 
                 return new SocketException((int)args.SocketError);
             }
@@ -64,7 +58,9 @@ namespace RxSockets
             }
             finally
             {
-                socket.Dispose();
+                Socket.Dispose();
+                args.Dispose();
+                semaphore.Dispose();
             }
         }
 
