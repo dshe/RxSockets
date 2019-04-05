@@ -95,9 +95,9 @@ namespace RxSockets.Tests
                 throw new Exception("Client is null.");
             IRxSocketClient client = Client;
             var sendTask = Task.Run(() => client.Send(new byte[100_000_000]));
-            while (sendTask.Status != TaskStatus.Running && sendTask.Status != TaskStatus.RanToCompletion)
+            while (sendTask.Status != TaskStatus.Running)
                 await Task.Yield();
-            await Client.DisconnectAsync();
+            //await Client.DisconnectAsync();
             //await Assert.ThrowsAsync<ObjectDisposedException>(async () => await sendTask);
             //await Assert.ThrowsAsync<SocketException>(async () => await sendTask);
             //await Assert.ThrowsAsync<Exception>(async () => await sendTask);
