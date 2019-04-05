@@ -11,20 +11,22 @@ namespace RxSockets
     internal class SocketDisconnector
     {
         private readonly Socket Socket;
-        private Task<Exception>? task = null;
-        internal bool DisconnectRequested => task != null;
-        internal SocketDisconnector(Socket socket)
-        {
+        private readonly TaskCompletionSource<Exception> Tcs = new TaskCompletionSource<Exception>();
+        private int disconnectRequested = 0;
+        internal bool DisconnectRequested => disconnectRequested == 1;
+
+        internal SocketDisconnector(Socket socket) =>
             Socket = socket ?? throw new ArgumentNullException(nameof(socket));
-        }
 
         // return Exception to enable testing
-        internal Task<Exception> DisconnectAsync(int timeout = -1, CancellationToken ct = default)
+        internal async Task<Exception> DisconnectAsync(int timeout = -1, CancellationToken ct = default)
         {
-            lock (Socket)
+            if (Interlocked.CompareExchange(ref disconnectRequested, 1, 0) == 0)
             {
-                return task ??= Disconnect(timeout, ct);
+                var result = await Disconnect(timeout, ct).ConfigureAwait(false);
+                Tcs.SetResult(result);
             }
+            return await Tcs.Task.ConfigureAwait(false);
         }
 
         private async Task<Exception> Disconnect(int timeout, CancellationToken ct)
@@ -44,6 +46,9 @@ namespace RxSockets
                 if (ct.IsCancellationRequested)
                     return new OperationCanceledException();
 
+                if (timeout == 0)
+                    return new SocketException((int)SocketError.TimedOut);
+
                 if (Socket.Connected)
                 {
                     Socket.Shutdown(SocketShutdown.Both); // never blocks
@@ -51,9 +56,6 @@ namespace RxSockets
                     if (Socket.DisconnectAsync(args))
                         if (!await semaphore.WaitAsync(timeout, ct).ConfigureAwait(false))
                             return new SocketException((int)SocketError.TimedOut);
-
-                    if (ct.IsCancellationRequested)
-                        return new OperationCanceledException();
                 }
 
                 return new SocketException((int)args.SocketError);
@@ -66,7 +68,6 @@ namespace RxSockets
             {
                 Socket.Dispose();
                 args.Dispose();
-                semaphore.Dispose();
             }
         }
     }
