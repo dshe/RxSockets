@@ -53,16 +53,27 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public async Task T03_Cancel()
+        public async Task T04_Timeout()
         {
+            Connect();
+            var ex = await Disconnector.DisconnectAsync(0);
+            var se = ex as SocketException;
+            Assert.Equal(SocketError.TimedOut, se?.SocketErrorCode);
+        }
+
+        [Fact]
+        public async Task T05_Cancel()
+        {
+            Connect();
             var token = new CancellationToken(true);
-            var ex = await Disconnector.DisconnectAsync(token);
+            var ex = await Disconnector.DisconnectAsync(-1, token);
             Assert.IsAssignableFrom<OperationCanceledException>(ex);
         }
 
         [Fact]
-        public async Task T04_DisconnectDisposedSocket()
+        public async Task T05_DisconnectDisposedSocket()
         {
+            Connect();
             Socket.Dispose();
             var se = await Disconnector.DisconnectAsync() as SocketException;
             Assert.Equal(SocketError.Success, se!.SocketErrorCode);

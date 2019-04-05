@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -79,12 +80,18 @@ namespace RxSockets
         public void Send(byte[] buffer, int offset, int length) =>
             Socket.Send(buffer, offset, length > 0 ? length : buffer.Length, SocketFlags.None);
 
-        public async Task<Exception> DisconnectAsync(CancellationToken ct) =>
-            await Disconnector.DisconnectAsync(ct).ConfigureAwait(false);
+        public async Task<Exception> DisconnectAsync(int timeout = -1, CancellationToken ct = default) =>
+            await Disconnector.DisconnectAsync(timeout, ct).ConfigureAwait(false);
 
         // static!
-        public static async Task<IRxSocketClient> ConnectAsync(IPEndPoint endPoint, CancellationToken ct = default) =>
-            Create(await SocketConnector.ConnectAsync(endPoint, ct).ConfigureAwait(false));
+        public static async Task<(IRxSocketClient?, Exception?)> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
+        {
+            (Socket? socket, Exception? exception) = await SocketConnector.ConnectAsync(endPoint, timeout, ct).ConfigureAwait(false);
+            if (exception != null)
+                return (null, exception);
+            Debug.Assert(socket != null);
+            return (Create(socket), null);
+        }
 
         internal static IRxSocketClient Create(Socket connectedSocket) =>
             new RxSocketClient(connectedSocket);

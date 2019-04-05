@@ -36,7 +36,9 @@ namespace RxSockets.Tests
             });
 
             // Create a socket client by connecting to the server at EndPoint.
-            var client = await RxSocketClient.ConnectAsync(IPEndPoint);
+            var (client, exception) = await RxSocketClient.ConnectAsync(IPEndPoint);
+            if (client == null)
+                throw exception;
 
             client.ReceiveObservable.ToStrings().Subscribe(onNext:message =>
             {
@@ -60,7 +62,9 @@ namespace RxSockets.Tests
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
             // Create a socket client by successfully connecting to the server at EndPoint.
-            var client = await RxSocketClient.ConnectAsync(IPEndPoint);
+            var (client, exception) = await RxSocketClient.ConnectAsync(IPEndPoint);
+            if (client == null)
+                throw exception;
 
             // Get the client socket accepted by the server.
             var accept = await acceptTask;
@@ -81,7 +85,9 @@ namespace RxSockets.Tests
         {
             var server = RxSocketServer.Create(IPEndPoint);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
-            var client = await RxSocketClient.ConnectAsync(IPEndPoint);
+            var (client, exception) = await RxSocketClient.ConnectAsync(IPEndPoint);
+            if (client == null)
+                throw exception;
             var accept = await acceptTask;
             Assert.True(accept.Connected && client.Connected);
 
@@ -110,14 +116,14 @@ namespace RxSockets.Tests
                 disconnectables.Add(accepted);
             });
 
-            var client1 = await RxSocketClient.ConnectAsync(IPEndPoint);
-            var client2 = await RxSocketClient.ConnectAsync(IPEndPoint);
-            var client3 = await RxSocketClient.ConnectAsync(IPEndPoint);
+            var (client1, _) = await RxSocketClient.ConnectAsync(IPEndPoint);
+            var (client2, _) = await RxSocketClient.ConnectAsync(IPEndPoint);
+            var (client3, _) = await RxSocketClient.ConnectAsync(IPEndPoint);
             disconnectables.AddRange(new[] { client1, client2, client3 });
 
-            Assert.Equal("Welcome!", await client1.ReceiveObservable.ToStrings().Take(1).FirstAsync());
-            Assert.Equal("Welcome!", await client2.ReceiveObservable.ToStrings().Take(1).FirstAsync());
-            Assert.Equal("Welcome!", await client3.ReceiveObservable.ToStrings().Take(1).FirstAsync());
+            Assert.Equal("Welcome!", await client1!.ReceiveObservable.ToStrings().Take(1).FirstAsync());
+            Assert.Equal("Welcome!", await client2!.ReceiveObservable.ToStrings().Take(1).FirstAsync());
+            Assert.Equal("Welcome!", await client3!.ReceiveObservable.ToStrings().Take(1).FirstAsync());
 
             var tasks = disconnectables.Select(d => d.DisconnectAsync());
             await Task.WhenAll(tasks);
@@ -144,8 +150,8 @@ namespace RxSockets.Tests
             List<IRxSocketClient> clients = new List<IRxSocketClient>();
             for (var i = 0; i < 100; i++)
             {
-                var client = await RxSocketClient.ConnectAsync(IPEndPoint);
-                client.Send("Hello".ToByteArray());
+                var(client, _) = await RxSocketClient.ConnectAsync(IPEndPoint);
+                client!.Send("Hello".ToByteArray());
                 clients.Add(client);
                 disconnectables.Add(client);
             }

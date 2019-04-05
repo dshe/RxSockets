@@ -8,6 +8,6 @@ namespace RxSockets
 {
     public interface IAsyncDisconnectable
     {
-        Task<Exception> DisconnectAsync(CancellationToken ct = default);
+        Task<Exception> DisconnectAsync(int timeout = -1, CancellationToken ct = default);
     }
 }

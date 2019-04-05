@@ -16,23 +16,25 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T01_NoConnection()
         {
-            var ex = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.ConnectAsync(EndPoint));
-            Assert.Equal(SocketError.ConnectionRefused, ex.SocketErrorCode);
+            var (_, exception) = await SocketConnector.ConnectAsync(EndPoint);
+            var se = Assert.IsType<SocketException>(exception);
+            Assert.Equal(SocketError.ConnectionRefused, se.SocketErrorCode);
         }
 
         [Fact]
         public async Task T03_Timeout()
         {
-            var cts = new CancellationTokenSource(0);
-            var ex = await Assert.ThrowsAsync<OperationCanceledException>(async () => await SocketConnector.ConnectAsync(EndPoint, cts.Token));
+            var (_, exception) = await SocketConnector.ConnectAsync(EndPoint, 0);
+            var se = Assert.IsType<SocketException>(exception);
+            Assert.Equal(SocketError.TimedOut, se.SocketErrorCode);
         }
 
         [Fact]
         public async Task T04_Cancel()
         {
             var ct = new CancellationToken(true);
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => 
-                await SocketConnector.ConnectAsync(EndPoint , ct));
+            var (_, exception) = await SocketConnector.ConnectAsync(EndPoint, -1, ct);
+            Assert.IsType<OperationCanceledException>(exception);
         }
 
         [Fact]
@@ -43,9 +45,9 @@ namespace RxSockets.Tests
             serverSocket.Bind(EndPoint);
             serverSocket.Listen(10);
 
-            var socket = await SocketConnector.ConnectAsync(EndPoint);
+            var (socket, _) = await SocketConnector.ConnectAsync(EndPoint);
 
-            var sd = new SocketDisconnector(socket);
+            var sd = new SocketDisconnector(socket!);
             await sd.DisconnectAsync();
             serverSocket.Dispose();
         }

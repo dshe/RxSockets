@@ -25,9 +25,9 @@ namespace RxSockets.Tests
         {
             server = RxSocketServer.Create(EndPoint);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
-            client = await RxSocketClient.ConnectAsync(EndPoint);
+            (client, _) = await RxSocketClient.ConnectAsync(EndPoint);
             accept = await acceptTask;
-            Assert.True(accept.Connected && client.Connected);
+            Assert.True(accept.Connected && client!.Connected);
         }
 
         public async Task DisposeAsync() =>

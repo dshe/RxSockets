@@ -58,8 +58,8 @@ namespace RxSockets
             });
         }
 
-        public async Task<Exception> DisconnectAsync(CancellationToken ct = default) =>
-            await Disconnector.DisconnectAsync(ct).ConfigureAwait(false);
+        public async Task<Exception> DisconnectAsync(int timeout = -1, CancellationToken ct = default) =>
+            await Disconnector.DisconnectAsync(timeout, ct).ConfigureAwait(false);
 
         // static!
         public static IRxSocketServer Create(IPEndPoint endPoint, int backLog = 10)

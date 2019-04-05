@@ -19,15 +19,15 @@ namespace RxSockets
         }
 
         // return Exception to enable testing
-        internal Task<Exception> DisconnectAsync(CancellationToken ct = default)
+        internal Task<Exception> DisconnectAsync(int timeout = -1, CancellationToken ct = default)
         {
             lock (Socket)
             {
-                return task ??= Disconnect(ct);
+                return task ??= Disconnect(timeout, ct);
             }
         }
 
-        private async Task<Exception> Disconnect(CancellationToken ct)
+        private async Task<Exception> Disconnect(int timeout, CancellationToken ct)
         {
             Debug.WriteLine("Disconnecting socket.");
 
@@ -49,7 +49,8 @@ namespace RxSockets
                     Socket.Shutdown(SocketShutdown.Both); // never blocks
 
                     if (Socket.DisconnectAsync(args))
-                        await semaphore.WaitAsync(ct).ConfigureAwait(false);
+                        if (!await semaphore.WaitAsync(timeout, ct).ConfigureAwait(false))
+                            return new SocketException((int)SocketError.TimedOut);
 
                     if (ct.IsCancellationRequested)
                         return new OperationCanceledException();
@@ -57,7 +58,7 @@ namespace RxSockets
 
                 return new SocketException((int)args.SocketError);
             }
-            catch (Exception e)
+            catch (OperationCanceledException e)
             {
                 return e;
             }

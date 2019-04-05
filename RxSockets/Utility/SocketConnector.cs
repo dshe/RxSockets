@@ -10,7 +10,7 @@ namespace RxSockets
 {
     internal static class SocketConnector
     {
-        internal static async Task<Socket> ConnectAsync(IPEndPoint endPoint, CancellationToken ct = default)
+        internal static async Task<(Socket?,Exception?)> ConnectAsync(IPEndPoint endPoint, int ms = -1, CancellationToken ct = default)
         {
             var socket = Utilities.CreateSocket();
             var semaphore = new SemaphoreSlim(0, 1);
@@ -22,17 +22,21 @@ namespace RxSockets
 
             try
             {
-                ct.ThrowIfCancellationRequested();
+                if (ct.IsCancellationRequested)
+                    return (null, new OperationCanceledException());
 
-                if (socket.ConnectAsync(args)) // default timeout is ~20 seconds.
-                    await semaphore.WaitAsync(ct).ConfigureAwait(false);
-
-                ct.ThrowIfCancellationRequested();
+                if (socket.ConnectAsync(args))
+                    if (!await semaphore.WaitAsync(ms, ct).ConfigureAwait(false))
+                        return (null, new SocketException((int)SocketError.TimedOut));
 
                 if (args.SocketError != SocketError.Success)
-                    throw new SocketException((int)args.SocketError);
+                    return (null, new SocketException((int)args.SocketError));
 
-                return args.ConnectSocket;
+                return (socket, null);
+            }
+            catch (OperationCanceledException e)
+            {
+                return (null, e);
             }
             finally
             {
@@ -41,10 +45,9 @@ namespace RxSockets
                     if (socket.Connected)
                         Socket.CancelConnectAsync(args);
                     socket.Dispose();
-                    args.Dispose();
-                    semaphore.Dispose();
-                    socket.Dispose();
                 }
+                args.Dispose();
+                semaphore.Dispose();
             }
         }
     }
