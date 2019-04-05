@@ -80,17 +80,16 @@ namespace RxSockets
         public void Send(byte[] buffer, int offset, int length) =>
             Socket.Send(buffer, offset, length > 0 ? length : buffer.Length, SocketFlags.None);
 
-        public async Task<Exception> DisconnectAsync(int timeout = -1, CancellationToken ct = default) =>
+        public async Task<SocketError> DisconnectAsync(int timeout = -1, CancellationToken ct = default) =>
             await Disconnector.DisconnectAsync(timeout, ct).ConfigureAwait(false);
 
         // static!
-        public static async Task<(IRxSocketClient?, Exception?)> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
+        public static async Task<(IRxSocketClient?, SocketError)> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
         {
-            (Socket? socket, Exception? exception) = await SocketConnector.ConnectAsync(endPoint, timeout, ct).ConfigureAwait(false);
-            if (exception != null)
-                return (null, exception);
-            Debug.Assert(socket != null);
-            return (Create(socket), null);
+            (Socket socket, SocketError error) = await SocketConnector.ConnectAsync(endPoint, timeout, ct).ConfigureAwait(false);
+            if (error != SocketError.Success)
+                return (null, error);
+            return (Create(socket), error);
         }
 
         internal static IRxSocketClient Create(Socket connectedSocket) =>

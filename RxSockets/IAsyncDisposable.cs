@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,6 +9,6 @@ namespace RxSockets
 {
     public interface IAsyncDisconnectable
     {
-        Task<Exception> DisconnectAsync(int timeout = -1, CancellationToken ct = default);
+        Task<SocketError> DisconnectAsync(int timeout = -1, CancellationToken ct = default);
     }
 }

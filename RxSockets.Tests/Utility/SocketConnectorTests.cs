@@ -16,25 +16,23 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T01_NoConnection()
         {
-            var (_, exception) = await SocketConnector.ConnectAsync(EndPoint);
-            var se = Assert.IsType<SocketException>(exception);
-            Assert.Equal(SocketError.ConnectionRefused, se.SocketErrorCode);
+            var (_, error) = await SocketConnector.ConnectAsync(EndPoint);
+            Assert.Equal(SocketError.ConnectionRefused, error);
         }
 
         [Fact]
         public async Task T03_Timeout()
         {
-            var (_, exception) = await SocketConnector.ConnectAsync(EndPoint, 0);
-            var se = Assert.IsType<SocketException>(exception);
-            Assert.Equal(SocketError.TimedOut, se.SocketErrorCode);
+            var (_, error) = await SocketConnector.ConnectAsync(EndPoint, 0);
+            Assert.Equal(SocketError.TimedOut, error);
         }
 
         [Fact]
         public async Task T04_Cancel()
         {
             var ct = new CancellationToken(true);
-            var (_, exception) = await SocketConnector.ConnectAsync(EndPoint, -1, ct);
-            Assert.IsType<OperationCanceledException>(exception);
+            await Assert.ThrowsAsync<OperationCanceledException>(async() =>
+                await SocketConnector.ConnectAsync(EndPoint, -1, ct));
         }
 
         [Fact]

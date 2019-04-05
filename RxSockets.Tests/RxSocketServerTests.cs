@@ -44,8 +44,8 @@ namespace RxSockets.Tests
         public async Task T03_DisconnectBeforeAccept()
         {
             var server = RxSocketServer.Create(EndPoint);
-            var se = await server.DisconnectAsync() as SocketException;
-            Assert.Equal(SocketError.Success, se!.SocketErrorCode);
+            var error = await server.DisconnectAsync();
+            Assert.Equal(SocketError.Success, error);
             await Task.Delay(100);
             var result = await server.AcceptObservable.LastOrDefaultAsync().ToTask();
             Assert.Null(result);
@@ -57,8 +57,8 @@ namespace RxSockets.Tests
             var server = RxSocketServer.Create(EndPoint);
             var acceptTask = server.AcceptObservable.LastOrDefaultAsync().ToTask();
             await Task.Delay(100);
-            var se = await server.DisconnectAsync() as SocketException;
-            Assert.Equal(SocketError.Success, se!.SocketErrorCode);
+            var error = await server.DisconnectAsync();
+            Assert.Equal(SocketError.Success, error);
             var result = await acceptTask;
             Assert.Null(result);
         }

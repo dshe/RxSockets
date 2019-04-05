@@ -37,8 +37,8 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T00_Cancel()
         {
-            var (_, exception) = await RxSocketClient.ConnectAsync(EndPoint, ct:new CancellationToken(true));
-            Assert.IsType<OperationCanceledException>(exception);
+            await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                await RxSocketClient.ConnectAsync(EndPoint, ct:new CancellationToken(true)));
         }
 
         [Fact]

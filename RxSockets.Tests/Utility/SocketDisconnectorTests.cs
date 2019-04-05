@@ -31,9 +31,8 @@ namespace RxSockets.Tests
         {
             Assert.False(Socket.Connected);
             Assert.False(Disconnector.DisconnectRequested);
-            var ex = await Disconnector.DisconnectAsync();
-            var se = ex as SocketException;
-            Assert.Equal(SocketError.Success, se?.SocketErrorCode);
+            var error = await Disconnector.DisconnectAsync();
+            Assert.Equal(SocketError.Success, error);
             Assert.True(Disconnector.DisconnectRequested);
         }
 
@@ -41,24 +40,21 @@ namespace RxSockets.Tests
         public async Task T02_DisconnectConnectedSocket()
         {
             Connect();
-            var ex = await Disconnector.DisconnectAsync();
-            var se = ex as SocketException;
-            Assert.Equal(SocketError.Success, se?.SocketErrorCode);
+            var error = await Disconnector.DisconnectAsync();
+            Assert.Equal(SocketError.Success, error);
 
             Assert.True(Disconnector.DisconnectRequested);
 
-            ex = await Disconnector.DisconnectAsync();
-            se = ex as SocketException;
-            Assert.Equal(SocketError.Success, se?.SocketErrorCode);
+            error = await Disconnector.DisconnectAsync();
+            Assert.Equal(SocketError.Success, error);
         }
 
         [Fact]
         public async Task T04_Timeout()
         {
             Connect();
-            var ex = await Disconnector.DisconnectAsync(0);
-            var se = ex as SocketException;
-            Assert.Equal(SocketError.TimedOut, se?.SocketErrorCode);
+            var error = await Disconnector.DisconnectAsync(0);
+            Assert.Equal(SocketError.TimedOut, error);
         }
 
         [Fact]
@@ -66,8 +62,8 @@ namespace RxSockets.Tests
         {
             Connect();
             var token = new CancellationToken(true);
-            var ex = await Disconnector.DisconnectAsync(-1, token);
-            Assert.IsAssignableFrom<OperationCanceledException>(ex);
+            await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                await Disconnector.DisconnectAsync(-1, token));
         }
 
         [Fact]
@@ -75,8 +71,8 @@ namespace RxSockets.Tests
         {
             Connect();
             Socket.Dispose();
-            var se = await Disconnector.DisconnectAsync() as SocketException;
-            Assert.Equal(SocketError.Success, se!.SocketErrorCode);
+            var error = await Disconnector.DisconnectAsync();
+            Assert.Equal(SocketError.Success, error);
         }
     }
 }

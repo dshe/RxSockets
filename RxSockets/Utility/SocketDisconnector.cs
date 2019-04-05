@@ -11,7 +11,7 @@ namespace RxSockets
     internal class SocketDisconnector
     {
         private readonly Socket Socket;
-        private readonly TaskCompletionSource<Exception> Tcs = new TaskCompletionSource<Exception>();
+        private readonly TaskCompletionSource<SocketError> Tcs = new TaskCompletionSource<SocketError>();
         private int disconnectRequested = 0;
         internal bool DisconnectRequested => disconnectRequested == 1;
 
@@ -19,7 +19,7 @@ namespace RxSockets
             Socket = socket ?? throw new ArgumentNullException(nameof(socket));
 
         // return Exception to enable testing
-        internal async Task<Exception> DisconnectAsync(int timeout = -1, CancellationToken ct = default)
+        internal async Task<SocketError> DisconnectAsync(int timeout = -1, CancellationToken ct = default)
         {
             if (Interlocked.CompareExchange(ref disconnectRequested, 1, 0) == 0)
             {
@@ -29,7 +29,7 @@ namespace RxSockets
             return await Tcs.Task.ConfigureAwait(false);
         }
 
-        private async Task<Exception> Disconnect(int timeout, CancellationToken ct)
+        private async Task<SocketError> Disconnect(int timeout, CancellationToken ct)
         {
             Debug.WriteLine("Disconnecting socket.");
 
@@ -43,11 +43,10 @@ namespace RxSockets
 
             try
             {
-                if (ct.IsCancellationRequested)
-                    return new OperationCanceledException();
+                ct.ThrowIfCancellationRequested();
 
                 if (timeout == 0)
-                    return new SocketException((int)SocketError.TimedOut);
+                    return SocketError.TimedOut;
 
                 if (Socket.Connected)
                 {
@@ -55,14 +54,10 @@ namespace RxSockets
 
                     if (Socket.DisconnectAsync(args))
                         if (!await semaphore.WaitAsync(timeout, ct).ConfigureAwait(false))
-                            return new SocketException((int)SocketError.TimedOut);
+                            return SocketError.TimedOut;
                 }
 
-                return new SocketException((int)args.SocketError);
-            }
-            catch (OperationCanceledException e)
-            {
-                return e;
+                return args.SocketError;
             }
             finally
             {

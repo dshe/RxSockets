@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using Xunit.Abstractions;
 using System.Collections.Generic;
 using System.Reactive.Threading.Tasks;
+using System.Net.Sockets;
 
 #nullable enable
 
@@ -36,9 +37,9 @@ namespace RxSockets.Tests
             });
 
             // Create a socket client by connecting to the server at EndPoint.
-            var (client, exception) = await RxSocketClient.ConnectAsync(IPEndPoint);
+            (IRxSocketClient? client, SocketError error) = await RxSocketClient.ConnectAsync(IPEndPoint);
             if (client == null)
-                throw exception;
+                throw new SocketException((int)error);
 
             client.ReceiveObservable.ToStrings().Subscribe(onNext:message =>
             {
@@ -62,9 +63,9 @@ namespace RxSockets.Tests
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
             // Create a socket client by successfully connecting to the server at EndPoint.
-            var (client, exception) = await RxSocketClient.ConnectAsync(IPEndPoint);
+            var (client, error) = await RxSocketClient.ConnectAsync(IPEndPoint);
             if (client == null)
-                throw exception;
+                throw new SocketException((int)error);
 
             // Get the client socket accepted by the server.
             var accept = await acceptTask;
@@ -85,9 +86,10 @@ namespace RxSockets.Tests
         {
             var server = RxSocketServer.Create(IPEndPoint);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
-            var (client, exception) = await RxSocketClient.ConnectAsync(IPEndPoint);
+            var (client, error) = await RxSocketClient.ConnectAsync(IPEndPoint);
             if (client == null)
-                throw exception;
+                throw new SocketException((int)error);
+
             var accept = await acceptTask;
             Assert.True(accept.Connected && client.Connected);
 
