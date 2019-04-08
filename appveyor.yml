@@ -11,5 +11,3 @@ test_script:
 - ps: dotnet test .\RxSockets.Tests\RxSockets.Tests.csproj
 artifacts:
 - path: '**\*.nupkg'
-nuget:
-  account_feed: true
