@@ -8,23 +8,23 @@ using Xunit.Abstractions;
 using System.Collections.Generic;
 using System.Reactive.Threading.Tasks;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 
 #nullable enable
 
 namespace RxSockets.Tests
 {
-    public class Examples
+    public class Examples : BaseTest
     {
         private readonly IPEndPoint IPEndPoint = Utilities.GetEndPointOnLoopbackRandomPort();
 
-        private readonly Action<string> Write;
-        public Examples(ITestOutputHelper output) => Write = output.WriteLine;
+        public Examples(ITestOutputHelper output) : base(output) { }
 
         [Fact]
         public async Task T00_Example()
         {
             // Create a socket server on the Endpoint.
-            var server = RxSocketServer.Create(IPEndPoint);
+            var server = RxSocketServer.Create(IPEndPoint, LoggerFactory);
 
             // Start accepting connections from clients.
             server.AcceptObservable.Subscribe(acceptClient =>
@@ -37,7 +37,7 @@ namespace RxSockets.Tests
             });
 
             // Create a socket client by connecting to the server at EndPoint.
-            (IRxSocketClient? client, SocketError error) = await RxSocketClient.ConnectAsync(IPEndPoint);
+            (IRxSocketClient? client, SocketError error) = await RxSocketClient.ConnectAsync(IPEndPoint, LoggerFactory);
             if (client == null)
                 throw new SocketException((int)error);
 
@@ -57,7 +57,7 @@ namespace RxSockets.Tests
         public async Task T00_SendAndReceiveStringMessage()
         {
             // Create a socket server on the endpoint.
-            var server = RxSocketServer.Create(IPEndPoint);
+            var server = RxSocketServer.Create(IPEndPoint, LoggerFactory);
 
             // Start a task to allow the server to accept the next client connection.
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
@@ -84,7 +84,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T10_ReceiveObservable()
         {
-            var server = RxSocketServer.Create(IPEndPoint);
+            var server = RxSocketServer.Create(IPEndPoint, LoggerFactory);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
             var (client, error) = await RxSocketClient.ConnectAsync(IPEndPoint);
             if (client == null)
@@ -110,7 +110,7 @@ namespace RxSockets.Tests
         {
             var disconnectables = new List<IAsyncDisconnectable>();
 
-            var server = RxSocketServer.Create(IPEndPoint, 10).AddDisconnectableTo(disconnectables);
+            var server = RxSocketServer.Create(IPEndPoint, LoggerFactory, 10).AddDisconnectableTo(disconnectables);
 
             server.AcceptObservable.Subscribe(accepted =>
             {
@@ -136,7 +136,7 @@ namespace RxSockets.Tests
         {
             List<IAsyncDisconnectable> disconnectables = new List<IAsyncDisconnectable>();
 
-            var server = RxSocketServer.Create(IPEndPoint).AddDisconnectableTo(disconnectables);
+            var server = RxSocketServer.Create(IPEndPoint, LoggerFactory).AddDisconnectableTo(disconnectables);
 
             server.AcceptObservable.Subscribe(accepted =>
             {

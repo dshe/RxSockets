@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Threading;
@@ -10,15 +12,19 @@ namespace RxSockets
 {
     internal class SocketDisconnector
     {
+        private readonly ILogger Logger;
         private readonly Socket Socket;
         private readonly TaskCompletionSource<SocketError> Tcs = new TaskCompletionSource<SocketError>();
         private int disconnectRequested = 0;
         internal bool DisconnectRequested => disconnectRequested == 1;
 
-        internal SocketDisconnector(Socket socket) =>
+        internal SocketDisconnector(Socket socket) : this (socket, NullLogger.Instance) { }
+        internal SocketDisconnector(Socket socket, ILogger logger)
+        {
             Socket = socket ?? throw new ArgumentNullException(nameof(socket));
+            Logger = logger;
+        }
 
-        // return Exception to enable testing
         internal async Task<SocketError> DisconnectAsync(int timeout = -1, CancellationToken ct = default)
         {
             if (Interlocked.CompareExchange(ref disconnectRequested, 1, 0) == 0)
@@ -31,7 +37,7 @@ namespace RxSockets
 
         private async Task<SocketError> Disconnect(int timeout, CancellationToken ct)
         {
-            Debug.WriteLine("Disconnecting socket.");
+            Logger.LogInformation("Disconnecting socket.");
 
             var args = new SocketAsyncEventArgs()
             {

@@ -30,7 +30,9 @@ namespace RxSockets
         }
 
         private static bool IsPortUsed(int port) =>
-            IPGlobalProperties.GetIPGlobalProperties()
-              .GetActiveTcpListeners().Any(ep => ep.Port == port);
+            IPGlobalProperties
+                .GetIPGlobalProperties()
+                .GetActiveTcpListeners()
+                .Any(ep => ep.Port == port);
     }
 }
