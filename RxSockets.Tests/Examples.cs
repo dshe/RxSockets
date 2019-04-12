@@ -150,12 +150,17 @@ namespace RxSockets.Tests
             });
 
             List<IRxSocketClient> clients = new List<IRxSocketClient>();
-            for (var i = 0; i < 100; i++)
+            for (var i = 0; i < 10; i++)
             {
-                var(client, _) = await RxSocketClient.ConnectAsync(IPEndPoint);
-                client!.Send("Hello".ToByteArray());
-                clients.Add(client);
-                disconnectables.Add(client);
+                var(client, error) = await RxSocketClient.ConnectAsync(IPEndPoint);
+                if (error != SocketError.Success)
+                    throw new SocketException((int)error);
+                if (client != null)
+                {
+                    client.Send("Hello".ToByteArray());
+                    clients.Add(client);
+                    disconnectables.Add(client);
+                }
             }
 
             foreach (var client in clients)
