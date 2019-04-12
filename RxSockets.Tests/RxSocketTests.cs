@@ -88,6 +88,7 @@ namespace RxSockets.Tests
             Assert.Throws<ObjectDisposedException>(() => client.Send(new byte[] { 0 }));
         }
 
+        /*
         [Fact]
         public async Task T06_DisconnectDuringSend()
         {
@@ -102,6 +103,7 @@ namespace RxSockets.Tests
             //await Assert.ThrowsAsync<SocketException>(async () => await sendTask);
             //await Assert.ThrowsAsync<Exception>(async () => await sendTask);
         }
+        */
 
         [Fact]
         public async Task T07_ExternalDisconnectBeforeSend()
