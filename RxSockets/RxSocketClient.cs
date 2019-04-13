@@ -47,37 +47,62 @@ namespace RxSockets
 
                 NewThreadScheduler.Default.Schedule(() =>
                 {
+                    var semaphore = new SemaphoreSlim(0, 1);
+                    void handler(object sender, SocketAsyncEventArgs a) => semaphore.Release();
+                    var args = new SocketAsyncEventArgs();
+                    args.Completed += handler;
+                    var buffer = new byte[ReceiveBufferSize];
+                    args.SetBuffer(buffer, 0, buffer.Length);
+                    Logger.LogTrace($"Start Receive.");
+
                     try
                     {
-                        Logger.LogTrace($"Start Receive.");
-                        var buffer = new byte[ReceiveBufferSize];
-
-                        while (!cts.IsCancellationRequested)
+                        while (true)
                         {
-                            var length = Socket.Receive(buffer);
-                            if (length == 0)
+                            if (Socket.ReceiveAsync(args))
+                                semaphore.Wait(cts.Token);
+                            else if (cts.IsCancellationRequested)
                             {
                                 observer.OnCompleted();
                                 return;
                             }
-                            Logger.LogTrace($"Received {length} bytes.");
-                            for (int i=0; i < length; i++)
+
+                            Logger.LogTrace($"Received {args.BytesTransferred} bytes.");
+                            if (args.BytesTransferred == 0)
+                            {
+                                observer.OnCompleted();
+                                return;
+                            }
+                            for (int i=0; i < args.BytesTransferred; i++)
                                 observer.OnNext(buffer[i]);
                         }
                     }
+                    catch (OperationCanceledException)
+                    {
+                        observer.OnCompleted();
+                    }
                     catch (Exception e)
                     {
-                        Logger.LogTrace(e, "Read Socket Exception.");
                         if (Disconnector.DisconnectRequested)
                             observer.OnCompleted();
                         else
+                        {
+                            Logger.LogTrace(e, "Read Socket Exception.");
                             observer.OnError(e);
+                        }
                     }
                     finally
                     {
-                        Logger.LogTrace("End Receive.");
+                        args.Completed -= handler;
+                        args.Dispose();
+                        semaphore.Dispose();
+                        if (cts.IsCancellationRequested)
+                            Logger.LogTrace("Receive Cancelled.");
+                        else
+                            Logger.LogTrace("Receive Ended.");
                     }
                 });
+
                 return () => cts.Cancel();
             });
         }
