@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -10,38 +11,60 @@ namespace RxSockets
 {
     internal static class SocketConnector
     {
-        internal static async Task<(Socket, SocketError error)> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
+        internal static async Task<Socket> ConnectAsync(IPEndPoint endPoint, ILogger logger, int timeout = -1, CancellationToken ct = default)
         {
+            logger.LogInformation($"Connecting to EndPoint: {endPoint}.");
             var socket = Utilities.CreateSocket();
             var semaphore = new SemaphoreSlim(0, 1);
+            void handler(object sender, SocketAsyncEventArgs a) => semaphore.Release();
             var args = new SocketAsyncEventArgs
             {
                 RemoteEndPoint = endPoint
             };
-            args.Completed += (sender, a) => semaphore.Release();
+            args.Completed += handler;
 
             try
             {
                 ct.ThrowIfCancellationRequested();
 
-                if (timeout == 0)
-                    return (socket, SocketError.TimedOut);
-
                 if (socket.ConnectAsync(args))
                     if (!await semaphore.WaitAsync(timeout, ct).ConfigureAwait(false))
-                        return (socket, SocketError.TimedOut);
+                        throw new SocketException((int)SocketError.TimedOut);
 
-                return (socket, args.SocketError);
+                if (args.SocketError != SocketError.Success)
+                    throw new SocketException((int)args.SocketError);
+
+                logger.LogInformation($"Connected.");
+                return socket;
+            }
+            catch (SocketException e)
+            {
+                logger.LogInformation(e, Enum.GetName(typeof(SocketError), e.ErrorCode));
+                throw;
+            }
+            catch (OperationCanceledException e)
+            {
+                logger.LogInformation($"Could not connect to EndPoint.");
+                logger.LogInformation(e, "Exception");
+                throw;
+            }
+            catch (Exception e)
+            {
+                logger.LogInformation($"Could not connect to EndPoint.");
+                logger.LogInformation(e, "Exception");
+                throw;
             }
             finally
             {
+                args.Completed -= handler;
+                args.Dispose();
+                semaphore.Dispose();
+
                 if (args.SocketError != SocketError.Success)
                 {
-                    if (socket.Connected)
-                        Socket.CancelConnectAsync(args);
+                    Socket.CancelConnectAsync(args);
                     socket.Dispose();
                 }
-                args.Dispose();
             }
         }
     }

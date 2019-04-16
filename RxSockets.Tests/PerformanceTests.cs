@@ -7,50 +7,40 @@ using System.Net;
 using System.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Diagnostics;
+using System.Net.Sockets;
 
 #nullable enable
 
 namespace RxSockets.Tests
 {
-    public class PerformanceTest : IAsyncLifetime
+    public class PerformanceTest : TestBase
     {
-        private readonly IPEndPoint EndPoint = Utilities.GetEndPointOnLoopbackRandomPort();
-        private IRxSocketServer? server;
-        private IRxSocketClient? client, accept;
-
-        private readonly Action<string> Write;
-        public PerformanceTest(ITestOutputHelper output) =>  Write = output.WriteLine;
-
-        public async Task InitializeAsync()
-        {
-            server = RxSocketServer.Create(EndPoint);
-            var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
-            (client, _) = await RxSocketClient.ConnectAsync(EndPoint);
-            accept = await acceptTask;
-            Assert.True(accept.Connected && client!.Connected);
-        }
-
-        public async Task DisposeAsync() =>
-            await Task.WhenAll(client?.DisconnectAsync(), accept?.DisconnectAsync(), server?.DisconnectAsync());
+        public PerformanceTest(ITestOutputHelper output) : base(output) {}
+        const int messages = 100_000;
 
         [Fact]
         public async Task T01_ReceiveStrings()
         {
-            if (accept == null || client == null)
-                throw new Exception("Accept and/or Client is null.");
+            //var server = RxSocketServer.Create(IPEndPoint, SocketServerLogger);
+            var server = RxSocketServer.Create(IPEndPoint);
+            var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
-            var messages = 100_000;
-
-            var message = "Welcome!".ToByteArray();
-
+            //var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
+            var client = await RxSocketClient.ConnectAsync(IPEndPoint);
+            Assert.True(client.Connected);
             var countTask = client.ReceiveObservable.ToStrings().Count().ToTask();
+
+            var accept = await acceptTask;
+            Assert.True(accept.Connected);
 
             var watch = new Stopwatch();
             watch.Start();
 
+            // send messages from server to client
+            var message = "Welcome!".ToByteArray();
             for (var i = 0; i < messages; i++)
                 accept.Send(message);
-            await accept.DisconnectAsync();
+            accept.Dispose();
 
             var count = await countTask;
 
@@ -66,22 +56,27 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T02_ReceiveStringsFromPrefixedBytes()
         {
-            if (accept == null || client == null)
-                throw new Exception("Accept and/or Client is null.");
+            //var server = RxSocketServer.Create(IPEndPoint, SocketServerLogger);
+            var server = RxSocketServer.Create(IPEndPoint);
+            var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
-
-            var messages = 100_000;
-
-            var message = new [] { "Welcome!" }.ToByteArrayWithLengthPrefix();
+            //var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
+            var client = await RxSocketClient.ConnectAsync(IPEndPoint);
+            Assert.True(client.Connected);
 
             var countTask = client.ReceiveObservable.ToByteArrayOfLengthPrefix().ToStringArray().Count().ToTask();
+
+            var accept = await acceptTask;
+            Assert.True(accept.Connected);
+
+            var message = new [] { "Welcome!" }.ToByteArrayWithLengthPrefix();
 
             var watch = new Stopwatch();
             watch.Start();
 
             for (var i = 0; i < messages; i++)
                 accept.Send(message);
-            await accept.DisconnectAsync();
+            accept.Dispose();
 
             int count = await countTask;
 

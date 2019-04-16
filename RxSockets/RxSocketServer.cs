@@ -3,16 +3,16 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Reactive.Concurrency;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Reactive.Disposables;
+using System.Collections.Generic;
 
 #nullable enable
 
 namespace RxSockets
 {
-    public interface IRxSocketServer: IAsyncDisconnectable
+    public interface IRxSocketServer: IDisposable
     {
         IObservable<IRxSocketClient> AcceptObservable { get; }
     }
@@ -21,68 +21,74 @@ namespace RxSockets
     {
         // Backlog specifies the number of pending connections allowed before a busy error is returned to the client.
         private readonly ILogger Logger;
-        private readonly int Backlog;
-        private readonly Socket Socket;
-        private readonly SocketDisconnector Disconnector;
+        private readonly List<RxSocketClient> Clients = new List<RxSocketClient>();
+        private readonly SocketDisposer Disposer;
         public IObservable<IRxSocketClient> AcceptObservable { get; }
 
-        private RxSocketServer(Socket socket, int backLog, ILogger logger)
+        private RxSocketServer(Socket socket, ILogger logger)
         {
             Logger = logger;
-            Socket = socket ?? throw new ArgumentNullException(nameof(socket));
-            if (socket.Connected)
-                throw new SocketException((int)SocketError.IsConnected);
-            Backlog = backLog > 0 ? backLog : throw new Exception($"Invalid backLog: {backLog}.");
-            Disconnector = new SocketDisconnector(socket, logger);
-            AcceptObservable = CreateAcceptObservable();
+            Disposer = new SocketDisposer(socket, logger);
+            AcceptObservable = CreateAcceptObservable(socket);
         }
 
-        private IObservable<IRxSocketClient> CreateAcceptObservable()
+        private IObservable<IRxSocketClient> CreateAcceptObservable(Socket socket)
         {
             // supports a single observer
             return Observable.Create<IRxSocketClient>(observer =>
             {
-                return NewThreadScheduler.Default.Schedule(() =>
+                NewThreadScheduler.Default.Schedule(() =>
                 {
+                    Logger.LogInformation($"Listening.");
                     try
                     {
-                        Logger.LogInformation($"Listening.");
-                        Socket.Listen(Backlog);
-
                         while (true)
                         {
-                            var accepted = Socket.Accept();
-                            Logger.LogInformation($"Accepted client: {accepted.LocalEndPoint}.");
-                            var rxsocket = RxSocketClient.Create(accepted, Logger);
-                            observer.OnNext(rxsocket);
+                            var accept = socket.Accept();
+                            Logger.LogInformation($"Accepted client: {accept.LocalEndPoint}.");
+                            var acceptClient = new RxSocketClient(accept, Logger);
+                            Clients.Add(acceptClient);
+                            observer.OnNext(acceptClient);
                         }
                     }
                     catch (Exception e)
                     {
-                        Logger.LogInformation(e, "Exception.");
-                        if (Disconnector.DisconnectRequested)
+                        Logger.LogTrace("Accept Ended.");
+                        if (Disposer.DisposeRequested)
                             observer.OnCompleted();
                         else
+                        {
+                            Logger.LogInformation(e, "AcceptAsync Exception.");
                             observer.OnError(e);
+                        }
                     }
                 });
+
+                return Disposable.Empty;
             });
         }
 
-        public async Task<SocketError> DisconnectAsync(int timeout = -1, CancellationToken ct = default) =>
-            await Disconnector.DisconnectAsync(timeout, ct).ConfigureAwait(false);
-
         public static IRxSocketServer Create(IPEndPoint endPoint, int backLog = 10) =>
-            Create(endPoint, NullLoggerFactory.Instance, backLog);
-        public static IRxSocketServer Create(IPEndPoint endPoint, ILoggerFactory loggerFactory, int backLog = 10)
+            Create(endPoint, NullLogger<RxSocketServer>.Instance, backLog);
+
+        public static IRxSocketServer Create(IPEndPoint endPoint, ILogger<RxSocketServer> logger, int backLog = 10)
         {
-            var logger = loggerFactory.CreateLogger<RxSocketServer>();
             if (endPoint == null)
                 throw new ArgumentNullException(nameof(endPoint));
-            var socket = Utilities.CreateSocket();
+            if (backLog < 0)
+                throw new Exception($"Invalid backLog: {backLog}.");
             logger.LogInformation($"Creating server at EndPoint: {endPoint}.");
+            var socket = Utilities.CreateSocket();
             socket.Bind(endPoint);
-            return new RxSocketServer(socket, backLog, logger);
+            socket.Listen(backLog);
+            return new RxSocketServer(socket, logger);
+        }
+
+        public void Dispose()
+        {
+            foreach (var client in Clients)
+                client.Dispose();
+            Disposer.Dispose();
         }
     }
 }

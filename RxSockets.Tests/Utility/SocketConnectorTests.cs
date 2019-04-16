@@ -4,49 +4,48 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 #nullable enable
 
 namespace RxSockets.Tests
 {
-    public class SocketConnectorTest
+    public class SocketConnectorTest : TestBase
     {
-        private readonly IPEndPoint EndPoint = Utilities.GetEndPointOnLoopbackRandomPort();
+        public SocketConnectorTest(ITestOutputHelper output): base(output) { }
 
         [Fact]
-        public async Task T01_NoConnection()
+        public async Task T01_Connection_Refused()
         {
-            var (_, error) = await SocketConnector.ConnectAsync(EndPoint);
-            Assert.Equal(SocketError.ConnectionRefused, error);
+            var e = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.ConnectAsync(IPEndPoint, Logger));
+            Assert.Equal((int)SocketError.ConnectionRefused, e.ErrorCode);
         }
 
         [Fact]
         public async Task T03_Timeout()
         {
-            var (_, error) = await SocketConnector.ConnectAsync(EndPoint, 0);
-            Assert.Equal(SocketError.TimedOut, error);
+            var e = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.ConnectAsync(IPEndPoint, Logger, 1));
+            Assert.Equal((int)SocketError.TimedOut, e.ErrorCode);
         }
 
         [Fact]
-        public async Task T04_Cancel()
+        public async Task T04_Cancellation()
         {
             var ct = new CancellationToken(true);
             await Assert.ThrowsAsync<OperationCanceledException>(async() =>
-                await SocketConnector.ConnectAsync(EndPoint, -1, ct));
+               await SocketConnector.ConnectAsync(IPEndPoint, Logger, -1, ct));
         }
 
         [Fact]
         public async Task T99_Success()
         {
             var serverSocket = Utilities.CreateSocket();
-
-            serverSocket.Bind(EndPoint);
+            serverSocket.Bind(IPEndPoint);
             serverSocket.Listen(10);
 
-            var (socket, _) = await SocketConnector.ConnectAsync(EndPoint);
+            var socket = await SocketConnector.ConnectAsync(IPEndPoint, Logger);
+            new SocketDisposer(socket, Logger).Dispose();
 
-            var sd = new SocketDisconnector(socket!);
-            await sd.DisconnectAsync();
             serverSocket.Dispose();
         }
 
