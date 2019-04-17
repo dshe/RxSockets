@@ -35,29 +35,28 @@ namespace RxSockets
             Logger = logger;
             Disposer = new SocketDisposer(connectedSocket, logger);
             ReceiveObservable = CreateReceiveObservable();
+            Logger.LogTrace("RxSocketClient Constructed.");
         }
 
         private IObservable<byte> CreateReceiveObservable()
         {
-            Logger.LogTrace($"Creating Observable.");
+            Logger.LogTrace("Creating Observable.");
 
             var buffer = new byte[ReceiveBufferSize];
 
             // supports a single observer
             return Observable.Create<byte>(observer =>
             {
-                Logger.LogTrace($"Observing.");
-
                 NewThreadScheduler.Default.Schedule(() =>
                 {
-                    Logger.LogTrace($"Starting Receive.");
+                    Logger.LogTrace("Starting Receive.");
 
                     try
                     {
                         while (true)
                         {
                             var bytes = Socket.Receive(buffer);
-                            //Logger.LogTrace($"Received {bytes} bytes.");
+                            Logger.LogTrace($"Received {bytes} bytes.");
                             if (bytes == 0)
                                 break;
                             for (int i = 0; i < bytes; i++)
@@ -83,7 +82,7 @@ namespace RxSockets
         {
             if (length == 0)
                 length = buffer.Length;
-            //Logger.LogTrace($"Sending {length} bytes.");
+            Logger.LogTrace($"Sending {length} bytes.");
             Socket.Send(buffer, offset, length, SocketFlags.None);
         }
 

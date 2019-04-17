@@ -30,6 +30,7 @@ namespace RxSockets
             Logger = logger;
             Disposer = new SocketDisposer(socket, logger);
             AcceptObservable = CreateAcceptObservable(socket);
+            Logger.LogTrace("RxSocketServer Constructed.");
         }
 
         private IObservable<IRxSocketClient> CreateAcceptObservable(Socket socket)
@@ -39,7 +40,8 @@ namespace RxSockets
             {
                 NewThreadScheduler.Default.Schedule(() =>
                 {
-                    Logger.LogInformation($"Listening.");
+                    Logger.LogTrace("Starting Accept.");
+
                     try
                     {
                         while (true)
@@ -55,7 +57,7 @@ namespace RxSockets
                     {
                         //Logger.LogTrace("Accept Ended."); // crashes logger
                         if (!Disposer.DisposeRequested)
-                            Logger.LogInformation(e, "AcceptAsync Exception.");
+                            Logger.LogInformation(e, "Async Exception.");
                         observer.OnCompleted();
                     }
                 });
@@ -77,6 +79,7 @@ namespace RxSockets
             var socket = Utilities.CreateSocket();
             socket.Bind(endPoint);
             socket.Listen(backLog);
+            logger.LogTrace("Listening.");
             return new RxSocketServer(socket, logger);
         }
 
