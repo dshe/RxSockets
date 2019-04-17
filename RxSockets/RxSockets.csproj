@@ -12,7 +12,7 @@
     <PackageTags>socket sockets reactive reactive-extensions observable observable-socket network</PackageTags>
     <Description>A minimal reactive socket implementation.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <Version>1.5.41</Version>
+    <Version>1.5.42</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageIconUrl>https://github.com/dshe.png</PackageIconUrl>
   </PropertyGroup>

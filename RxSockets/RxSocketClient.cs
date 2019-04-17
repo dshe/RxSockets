@@ -41,6 +41,8 @@ namespace RxSockets
         {
             Logger.LogTrace($"Creating Observable.");
 
+            var buffer = new byte[ReceiveBufferSize];
+
             // supports a single observer
             return Observable.Create<byte>(observer =>
             {
@@ -52,8 +54,6 @@ namespace RxSockets
 
                     try
                     {
-                        var buffer = new byte[ReceiveBufferSize];
-
                         while (true)
                         {
                             var bytes = Socket.Receive(buffer);
