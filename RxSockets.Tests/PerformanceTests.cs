@@ -51,6 +51,9 @@ namespace RxSockets.Tests
             var frequency = Stopwatch.Frequency * messages / watch.ElapsedTicks;
 
             Write($"{frequency:N0} messages / second");
+
+            client.Dispose();
+            server.Dispose();
         }
 
         [Fact]
@@ -87,6 +90,9 @@ namespace RxSockets.Tests
             var frequency = Stopwatch.Frequency * messages / watch.ElapsedTicks;
 
             Write($"{frequency:N0} messages / second");
+
+            client.Dispose();
+            server.Dispose();
         }
     }
 }

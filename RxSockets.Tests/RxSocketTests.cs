@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace RxSockets.Tests
 {
-    public class RxSocketTest : TestBase
+    public class RxSocketTest : TestBase, IDisposable
     {
         private readonly IRxSocketServer Server;
         private readonly Task<IRxSocketClient> AcceptTask;
@@ -24,11 +24,17 @@ namespace RxSockets.Tests
             AcceptTask = Server.AcceptObservable.FirstAsync().ToTask();
         }
 
+        public void Dispose()
+        {
+            Server.Dispose();
+        }
+
         [Fact]
         public async Task T00_0Ok()
         {
             var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
             var accept = await AcceptTask;
+            client.Dispose();
         }
 
         [Fact]
@@ -62,6 +68,7 @@ namespace RxSockets.Tests
             var accept = await AcceptTask;
             accept.Dispose();
             await client.ReceiveObservable.LastOrDefaultAsync();
+            client.Dispose();
         }
 
         [Fact]
@@ -72,6 +79,7 @@ namespace RxSockets.Tests
             var receiveTask = client.ReceiveObservable.FirstAsync().ToTask();
             accept.Dispose();
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await receiveTask);
+            client.Dispose();
         }
 
         [Fact]
@@ -102,6 +110,7 @@ namespace RxSockets.Tests
             accept.Dispose();
             client.Send(new byte[] { 0,1,2,3 });
             Assert.Throws<SocketException>(() => client.Send(new byte[] { 0,1,2,3 }));
+            client.Dispose();
         }
 
         [Fact]
@@ -115,6 +124,7 @@ namespace RxSockets.Tests
             accept.Dispose();
             await sendTask;
             Assert.Throws<SocketException>(() => client.Send(new byte[] { 0 }));
+            client.Dispose();
         }
     }
 }

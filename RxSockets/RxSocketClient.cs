@@ -67,15 +67,11 @@ namespace RxSockets
                     }
                     catch (Exception e)
                     {
-                        if (Disposer.DisposeRequested)
-                            observer.OnCompleted();
-                        else
-                        {
+                        // Logger.LogTrace("Receive Ended."); // crashes logger
+                        if (!Disposer.DisposeRequested)
                             Logger.LogWarning(e, "Read Socket Exception.");
-                            observer.OnError(e);
-                        }
+                        observer.OnCompleted();
                     }
-                    Logger.LogTrace("Receive Ended.");
                 });
 
                 return Disposable.Empty;

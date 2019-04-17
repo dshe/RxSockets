@@ -53,14 +53,10 @@ namespace RxSockets
                     }
                     catch (Exception e)
                     {
-                        Logger.LogTrace("Accept Ended.");
-                        if (Disposer.DisposeRequested)
-                            observer.OnCompleted();
-                        else
-                        {
+                        //Logger.LogTrace("Accept Ended."); // crashes logger
+                        if (!Disposer.DisposeRequested)
                             Logger.LogInformation(e, "AcceptAsync Exception.");
-                            observer.OnError(e);
-                        }
+                        observer.OnCompleted();
                     }
                 });
 

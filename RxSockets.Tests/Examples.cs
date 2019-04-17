@@ -84,7 +84,7 @@ namespace RxSockets.Tests
             var accept = await acceptTask;
             Assert.True(accept.Connected && client.Connected);
 
-            var subscription = client.ReceiveObservable.ToStrings().Subscribe(str =>
+            client.ReceiveObservable.ToStrings().Subscribe(str =>
             {
                 Write(str);
             });
@@ -92,7 +92,6 @@ namespace RxSockets.Tests
             accept.Send("Welcome!".ToByteArray());
             "Welcome Again!".ToByteArray().SendTo(accept); // Note SendTo() extension method.
 
-            subscription.Dispose();
             client.Dispose();
             server.Dispose();
         }
@@ -111,10 +110,13 @@ namespace RxSockets.Tests
             var client2 = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
             var client3 = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
 
-            Assert.Equal("Welcome!", await client1!.ReceiveObservable.ToStrings().Take(1).FirstAsync());
-            Assert.Equal("Welcome!", await client2!.ReceiveObservable.ToStrings().Take(1).FirstAsync());
-            Assert.Equal("Welcome!", await client3!.ReceiveObservable.ToStrings().Take(1).FirstAsync());
+            Assert.Equal("Welcome!", await client1.ReceiveObservable.ToStrings().Take(1).FirstAsync());
+            Assert.Equal("Welcome!", await client2.ReceiveObservable.ToStrings().Take(1).FirstAsync());
+            Assert.Equal("Welcome!", await client3.ReceiveObservable.ToStrings().Take(1).FirstAsync());
 
+            client1.Dispose();
+            client2.Dispose();
+            client3.Dispose();
             server.Dispose();
         }
 
@@ -133,7 +135,7 @@ namespace RxSockets.Tests
                     .Subscribe(s => s.ToByteArray().SendTo(accepted));
             });
 
-            List<IRxSocketClient> clients = new List<IRxSocketClient>();
+            var clients = new List<IRxSocketClient>();
             for (var i = 0; i < 10; i++)
             {
                 var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
@@ -144,6 +146,8 @@ namespace RxSockets.Tests
             foreach (var client in clients)
                 Assert.Equal("Hello", await client.ReceiveObservable.ToStrings().Skip(1).Take(1).FirstAsync());
 
+            foreach (var client in clients)
+                client.Dispose();
             server.Dispose();
         }
     }
