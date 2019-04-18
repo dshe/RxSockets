@@ -40,9 +40,6 @@ namespace RxSockets.Tests
             var cts = new CancellationTokenSource();
             NewThreadScheduler.Default.Schedule(async () =>
             {
-                //new[] { $"v{321}..{123}" }
-                //.ToByteArrayWithLengthPrefix().SendTo(accept);
-
                 while (!cts.IsCancellationRequested)
                 {
                     i++;
@@ -51,8 +48,6 @@ namespace RxSockets.Tests
                 }
 
             });
-
-            //await Task.Delay(1000);
 
             var x1 = await client.ReceiveObservable.ToByteArrayOfLengthPrefix().ToStringArray().Take(2).ToList();
             await Task.Delay(500);
