@@ -21,12 +21,10 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T01_ReceiveStrings()
         {
-            var server = RxSocketServer.Create(IPEndPoint, SocketServerLogger);
-            //var server = RxSocketServer.Create(IPEndPoint);
+            var server = RxSocketServer.Create(IPEndPoint);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
-            var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
-            //var client = await RxSocketClient.ConnectAsync(IPEndPoint);
+            var client = await RxSocketClient.ConnectAsync(IPEndPoint);
             Assert.True(client.Connected);
             var countTask = client.ReceiveObservable.ToStrings().Count().ToTask();
 
