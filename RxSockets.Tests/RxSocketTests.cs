@@ -13,12 +13,12 @@ using Xunit.Abstractions;
 
 namespace RxSockets.Tests
 {
-    public class RxSocketTest : TestBase, IDisposable
+    public class RxSocketClientTest : TestBase, IDisposable
     {
         private readonly IRxSocketServer Server;
         private readonly Task<IRxSocketClient> AcceptTask;
 
-        public RxSocketTest(ITestOutputHelper output) : base(output)
+        public RxSocketClientTest(ITestOutputHelper output) : base(output)
         {
             Server = RxSocketServer.Create(IPEndPoint, SocketServerLogger);
             AcceptTask = Server.AcceptObservable.FirstAsync().ToTask();
@@ -45,7 +45,7 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public async Task T01_DisconnectBeforeReceive()
+        public async Task T01_DisposeBeforeReceive()
         {
             var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
             client.Dispose();
@@ -53,7 +53,7 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public async Task T02_DisconnectDuringReceive()
+        public async Task T02_DisposeDuringReceive()
         {
             var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
             var receiveTask = client.ReceiveObservable.LastOrDefaultAsync().ToTask();
@@ -62,7 +62,7 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public async Task T03_ExternalDisconnectBeforeReceive()
+        public async Task T03_ExternalDisposeBeforeReceive()
         {
             var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
             var accept = await AcceptTask;
@@ -72,7 +72,7 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public async Task T04_ExternalDisconnectDuringReceive()
+        public async Task T04_ExternalDisposeDuringReceive()
         {
             var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
             var accept = await AcceptTask;
@@ -83,7 +83,7 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public async Task T05_DisconnectBeforeSend()
+        public async Task T05_DisposeBeforeSend()
         {
             var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
             client.Dispose();
@@ -91,7 +91,7 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public async Task T06_DisconnectDuringSend()
+        public async Task T06_DisposeDuringSend()
         {
             var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
             var sendTask = Task.Run(() => client.Send(new byte[100_000_000]));
@@ -103,7 +103,7 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public async Task T07_ExternalDisconnectBeforeSend()
+        public async Task T07_ExternalDisposeBeforeSend()
         {
             var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
             var accept = await AcceptTask;
@@ -114,7 +114,7 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public async Task T08_ExternalDisconnectDuringSend()
+        public async Task T08_ExternalDisposeDuringSend()
         {
             var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
             var accept = await AcceptTask;

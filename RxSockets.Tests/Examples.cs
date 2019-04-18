@@ -99,7 +99,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T20_AcceptObservable()
         {
-            var server = RxSocketServer.Create(IPEndPoint, SocketServerLogger, 10);
+            var server = RxSocketServer.Create(IPEndPoint, SocketServerLogger);
 
             server.AcceptObservable.Subscribe(accepted =>
             {

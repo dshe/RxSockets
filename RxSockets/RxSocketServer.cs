@@ -35,16 +35,15 @@ namespace RxSockets
 
         private IObservable<IRxSocketClient> CreateAcceptObservable(Socket socket)
         {
-            // supports a single observer
             return Observable.Create<IRxSocketClient>(observer =>
             {
-                NewThreadScheduler.Default.Schedule(() =>
+                return NewThreadScheduler.Default.ScheduleLongRunning(ct =>
                 {
                     Logger.LogTrace("Starting Accept.");
 
                     try
                     {
-                        while (true)
+                        while (!ct.IsDisposed)
                         {
                             var accept = socket.Accept();
                             Logger.LogInformation($"Accepted client: {accept.LocalEndPoint}.");
@@ -61,8 +60,6 @@ namespace RxSockets
                         observer.OnCompleted();
                     }
                 });
-
-                return Disposable.Empty;
             });
         }
 

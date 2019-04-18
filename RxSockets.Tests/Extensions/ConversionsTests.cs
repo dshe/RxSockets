@@ -18,7 +18,7 @@ namespace RxSockets.Tests
         [InlineData(new byte[] { 0, 0 }, "\0" )]
         [InlineData(new byte[] { 65, 0 }, "A" )]
         [InlineData(new byte[] { 65, 66, 0 }, "AB" )]
-        public void T02_ToByteArray(byte[] encoded, string str)
+        public void T01_ToByteArray(byte[] encoded, string str)
         {
             Assert.Equal(encoded, ConversionsEx.ToByteArray(str));
         }
@@ -26,7 +26,7 @@ namespace RxSockets.Tests
         /////////////////////////////////////////////////////////////////////
 
         [Fact]
-        public async Task T01_ToStrings()
+        public async Task T02_ToStrings()
         {
             byte[]? xxx = null;
             Assert.Throws<ArgumentNullException>(() => ConversionsEx.ToStrings(xxx).ToList()); // should have warning?
@@ -44,13 +44,13 @@ namespace RxSockets.Tests
         }
 
         [Theory]
-        [InlineData(new string[] { }, new byte[] { })]
-        [InlineData(new[] { "" },   new byte[] { 0 })]
-        [InlineData(new[] { "A" },  new byte[] { 65, 0 })]
-        [InlineData(new[] { "AB" }, new byte[] { 65, 66, 0 })]
-        [InlineData(new[] { "", "" }, new byte[] { 0, 0 })]
+        [InlineData(new string[] { },   new byte[] { })]
+        [InlineData(new[] { "" },       new byte[] { 0 })]
+        [InlineData(new[] { "A" },      new byte[] { 65, 0 })]
+        [InlineData(new[] { "AB" },     new byte[] { 65, 66, 0 })]
+        [InlineData(new[] { "", "" },   new byte[] { 0, 0 })]
         [InlineData(new[] { "A", "B" }, new byte[] { 65, 0, 66, 0 })]
-        public async Task T02_ToStrings(IEnumerable<string> strings, byte[] bytes)
+        public async Task T03_ToStrings(IEnumerable<string> strings, byte[] bytes)
         {
             Assert.Equal(strings, bytes.ToStrings().ToList());
             Assert.Equal(strings, await bytes.ToObservable().ToStrings().ToList());

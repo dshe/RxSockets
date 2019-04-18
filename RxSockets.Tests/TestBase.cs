@@ -20,8 +20,9 @@ namespace RxSockets.Tests
         {
             Write = output.WriteLine;
             // using Divergic.Logging.Xunit;
-            LoggerFactory = new LoggerFactory().AddXunit(output, MyFormatter);
-            //LoggerFactory = LogFactory.Create(output);
+            //LoggerFactory = new LoggerFactory().AddXunit(output, MyFormatter);
+            LoggerFactory = LogFactory.Create(output, MyFormatter);
+
             Logger = LoggerFactory.CreateLogger<TestBase>();
             SocketServerLogger = LoggerFactory.CreateLogger<RxSocketServer>();
             SocketClientLogger = LoggerFactory.CreateLogger<RxSocketClient>();
@@ -58,13 +59,13 @@ namespace RxSockets.Tests
         {
             switch (level)
             {
-                case LogLevel.Trace:       return "Trace  ";
-                case LogLevel.Debug:       return "Debug";
-                case LogLevel.Information: return "Info    ";
-                case LogLevel.Warning:     return "Warn  ";
-                case LogLevel.Error:       return "Error   ";
-                case LogLevel.Critical:    return "Critical";
-                case LogLevel.None:        return "None ";
+                case LogLevel.Trace:       return "Trace\t";
+                case LogLevel.Debug:       return "Debug\t";
+                case LogLevel.Information: return "Info\t";
+                case LogLevel.Warning:     return "Warn\t";
+                case LogLevel.Error:       return "Error\t";
+                case LogLevel.Critical:    return "Critical\t";
+                case LogLevel.None:        return "None\t";
                 default: throw new Exception("invalid");
             }
         }

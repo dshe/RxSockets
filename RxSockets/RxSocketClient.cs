@@ -26,6 +26,7 @@ namespace RxSockets
         private readonly ILogger Logger;
         private readonly Socket Socket;
         private readonly SocketDisposer Disposer;
+        private CancellationTokenSource? Cts = null;
         public bool Connected => Socket.Connected;
         public IObservable<byte> ReceiveObservable { get; }
 
@@ -43,37 +44,50 @@ namespace RxSockets
             Logger.LogTrace("Creating Observable.");
 
             var buffer = new byte[ReceiveBufferSize];
+            int position = 0;
+            var semaphore = new SemaphoreSlim(0, 1);
+            void handler(object sender, SocketAsyncEventArgs a) => semaphore.Release();
+            var args = new SocketAsyncEventArgs();
+            args.Completed += handler;
+            args.SetBuffer(buffer, 0, buffer.Length);
 
-            // supports a single observer
             return Observable.Create<byte>(observer =>
             {
+                Cts = new CancellationTokenSource();
+
                 NewThreadScheduler.Default.Schedule(() =>
                 {
                     Logger.LogTrace("Starting Receive.");
 
                     try
                     {
-                        while (true)
+                        while (!Cts!.IsCancellationRequested)
                         {
-                            var bytes = Socket.Receive(buffer);
-                            Logger.LogTrace($"Received {bytes} bytes.");
-                            if (bytes == 0)
+                            if (position < args.BytesTransferred)
+                            {
+                                observer.OnNext(buffer[position++]);
+                                continue;
+                            }
+                            position = 0;
+                            if (Socket.ReceiveAsync(args))
+                                semaphore.Wait(Cts.Token);
+
+                            Logger.LogTrace($"Received {args.BytesTransferred} bytes.");
+                            if (args.BytesTransferred == 0)
                                 break;
-                            for (int i = 0; i < bytes; i++)
-                                observer.OnNext(buffer[i]);
                         }
                         observer.OnCompleted();
                     }
                     catch (Exception e)
                     {
                         // Logger.LogTrace("Receive Ended."); // crashes logger
-                        if (!Disposer.DisposeRequested)
+                        if (!Cts!.IsCancellationRequested && !Disposer.DisposeRequested)
                             Logger.LogWarning(e, "Read Socket Exception.");
                         observer.OnCompleted();
                     }
                 });
 
-                return Disposable.Empty;
+                return Disposable.Create(() => Cts?.Cancel());
 
             });
         }
@@ -96,6 +110,10 @@ namespace RxSockets
             return new RxSocketClient(socket, logger);
         }
 
-        public void Dispose() => Disposer.Dispose();
+        public void Dispose()
+        {
+            Cts?.Cancel();
+            Disposer.Dispose();
+        }
     }
 }

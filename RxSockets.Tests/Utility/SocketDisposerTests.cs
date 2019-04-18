@@ -27,7 +27,7 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public void T01_DisconnectNotConnectedSocket()
+        public void T01_DisposeNotConnectedSocket()
         {
             Assert.False(Socket.Connected);
             Assert.False(Disposer.DisposeRequested);
@@ -36,7 +36,7 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public void T02_DisconnectConnectedSocket()
+        public void T02_DisposeConnectedSocket()
         {
             Connect();
             Disposer.Dispose();
@@ -46,7 +46,7 @@ namespace RxSockets.Tests
 
 
         [Fact]
-        public void T05_DisconnectDisposedSocket()
+        public void T05_DisposeDisposedSocket()
         {
             Connect();
             Socket.Dispose();
