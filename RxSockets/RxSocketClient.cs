@@ -92,7 +92,7 @@ namespace RxSockets
             });
         }
 
-        public void Send(byte[] buffer, int offset, int length)
+        public void Send(byte[] buffer, int offset = 0, int length = 0)
         {
             if (length == 0)
                 length = buffer.Length;

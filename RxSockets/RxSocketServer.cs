@@ -37,13 +37,10 @@ namespace RxSockets
 
         private IObservable<IRxSocketClient> CreateAcceptObservable(Socket socket)
         {
-            //var buffer = new byte[ReceiveBufferSize];
-            //int position = 0;
             var semaphore = new SemaphoreSlim(0, 1);
             void handler(object sender, SocketAsyncEventArgs a) => semaphore.Release();
             var args = new SocketAsyncEventArgs();
             args.Completed += handler;
-            //args.SetBuffer(buffer, 0, buffer.Length);
 
             return Observable.Create<IRxSocketClient>(observer =>
             {
@@ -57,8 +54,7 @@ namespace RxSockets
                     {
                         while (!Cts!.IsCancellationRequested)
                         {
-                            //var accept = socket.Accept();
-                            args.AcceptSocket = new Socket(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+                            args.AcceptSocket = Utilities.CreateSocket();
                             if (socket.AcceptAsync(args))
                                 semaphore.Wait(Cts.Token);
                             Logger.LogInformation($"Accepted client: {args.AcceptSocket!.LocalEndPoint}.");
