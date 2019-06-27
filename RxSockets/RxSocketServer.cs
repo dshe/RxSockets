@@ -65,7 +65,7 @@ namespace RxSockets
                     }
                     catch (Exception e)
                     {
-                        //Logger.LogTrace("Accept Ended."); // crashes logger
+                       Logger.LogTrace("Accept Ended."); // crashes logger
                         if (!Cts!.IsCancellationRequested && !Disposer.DisposeRequested)
                             Logger.LogInformation(e, "Async Exception.");
                         observer.OnCompleted();

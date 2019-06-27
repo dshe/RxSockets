@@ -80,14 +80,18 @@ namespace RxSockets
                     }
                     catch (Exception e)
                     {
-                        // Logger.LogTrace("Receive Ended."); // crashes logger
+                        Logger.LogTrace("Receive Ended."); // crashes logger
                         if (!Cts!.IsCancellationRequested && !Disposer.DisposeRequested)
                             Logger.LogWarning(e, "Read Socket Exception.");
                         observer.OnCompleted();
                     }
                 });
 
-                return Disposable.Create(() => Cts?.Cancel());
+                return Disposable.Create(() =>
+                {
+                    Logger.LogCritical("cancelling");
+                    Cts?.Cancel();
+                });
 
             });
         }

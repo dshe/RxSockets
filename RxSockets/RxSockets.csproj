@@ -2,36 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>RxSockets</AssemblyName>
-    <RootNamespace>RxSockets</RootNamespace>
-    <Authors>DavidS</Authors>
-    <Company></Company>
-    <Product>RxSockets</Product>
-    <PackageLicenseUrl></PackageLicenseUrl>
+    <LangVersion>8.0</LangVersion>
+    <NullableContextOptions>enable</NullableContextOptions>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/dshe/RxSocket</PackageProjectUrl>
+    <PackageIconUrl>https://github.com/dshe.png</PackageIconUrl>
     <PackageTags>socket sockets reactive reactive-extensions observable observable-socket network</PackageTags>
     <Description>A minimal reactive socket implementation.</Description>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <Version>1.5.46</Version>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageIconUrl>https://github.com/dshe.png</PackageIconUrl>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <LangVersion>8.0</LangVersion>
-    <NullableContextOptions>enable</NullableContextOptions>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <NoWarn />
-    <WarningsAsErrors />
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <LangVersion>8.0</LangVersion>
-    <NullableContextOptions>enable</NullableContextOptions>
-    <DefineConstants />
-    <NoWarn />
-    <WarningsAsErrors />
+    <Authors>DavidS</Authors>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

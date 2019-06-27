@@ -30,7 +30,7 @@ namespace RxSockets
                         ms.WriteByte(b);
                 }
                 if (ms.Position != 0)
-                    throw new InvalidDataException("No termination.");
+                    throw new InvalidDataException("ToStrings: no termination(1).");
             }
         }
 
@@ -60,7 +60,7 @@ namespace RxSockets
                         if (ms.Position == 0)
                             observer.OnCompleted();
                         else
-                            observer.OnError(new InvalidDataException("No termination."));
+                            observer.OnError(new InvalidDataException("ToStrings: no termination(2)."));
                     });
             });
         }

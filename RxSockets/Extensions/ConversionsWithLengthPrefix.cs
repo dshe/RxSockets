@@ -107,7 +107,7 @@ namespace RxSockets
                         if (ms.Position == 0)
                             observer.OnCompleted();
                         else
-                            observer.OnError(new InvalidDataException("Incomplete."));
+                            observer.OnError(new InvalidDataException("ToByteArrayOfLengthPrefix: incomplete."));
                     });
             });
         }
@@ -132,7 +132,7 @@ namespace RxSockets
                 throw new ArgumentNullException(nameof(buffer));
             var length = buffer.Length;
             if (length == 0 || buffer[length - 1] != 0)
-                throw new InvalidDataException("No termination.");
+                throw new InvalidDataException("GetStringArray: no termination.");
             return Encoding.UTF8.GetString(buffer, 0, length - 1).Split('\0');
         }
     }

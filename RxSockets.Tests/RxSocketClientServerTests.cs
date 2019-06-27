@@ -8,6 +8,8 @@ using System.Reactive.Threading.Tasks;
 using Xunit.Abstractions;
 using System.Reactive.Concurrency;
 using System.Threading;
+using System.IO;
+using System.Linq;
 
 #nullable enable
 
@@ -24,10 +26,7 @@ namespace RxSockets.Tests
             AcceptTask = Server.AcceptObservable.FirstAsync().ToTask();
         }
 
-        public void Dispose()
-        {
-            Server.Dispose();
-        }
+        public void Dispose() => Server.Dispose();
 
         [Fact]
         public async Task T01_Disc()
@@ -35,27 +34,56 @@ namespace RxSockets.Tests
             var client = await RxSocketClient.ConnectAsync(IPEndPoint);
             var accept = await AcceptTask;
 
-            int i = 0;
 
-            var cts = new CancellationTokenSource();
+            //var firstString = await accept.ReceiveObservable.ObserveOn(NewThreadScheduler.Default);
+
             NewThreadScheduler.Default.Schedule(async () =>
             {
-                while (!cts.IsCancellationRequested)
+                var firstString = await accept.ReceiveObservable.ToStrings().FirstAsync();
+                if (firstString != "A")
+                    throw new InvalidDataException("'A' not received.");
+
+                /*
+                accept.ReceiveObservable.Subscribe(x =>
                 {
-                    i++;
-                    new[] { $"v{i}..{i}" }.ToByteArrayWithLengthPrefix().SendTo(accept);
-                    await Task.Delay(1000);
-                }
+                    Write(x.ToString());
+                });
+                */
+
+                //await Task.Delay(100);
+
+                //var messages0 = await accept.ReceiveObservable.FirstAsync();
+                //var messages1 = await accept.ReceiveObservable.FirstAsync();
+
+                //var messages1 = await accept.ReceiveObservable.ToByteArrayOfLengthPrefix().ToStringArray().FirstAsync();
+                //var messages2 = await accept.ReceiveObservable.ToByteArrayOfLengthPrefix().ToStringArray().FirstAsync();
+
+                ;
+                //var messages = await accept.ReceiveObservable.ToByteArrayOfLengthPrefix().ToStringArray().Take(2).ToList();
+                //var versions = messages[0].Single();
+                
+                //if (messages[1][0] != "71") // receive StartApi message
+                //    throw new InvalidDataException("StartApi message not received.");
+                
+                //new[] { "149", DateTime.Now.ToString("yyyyMMdd HH:mm:ss XXX")}.ToByteArrayWithLengthPrefix().SendTo(accept);
+                //new[] { "15", "1", "123,456,789" }.ToByteArrayWithLengthPrefix().SendTo(accept);
+                //new[] { "9", "1", "10" }.ToByteArrayWithLengthPrefix().SendTo(accept);
 
             });
 
-            var x1 = await client.ReceiveObservable.ToByteArrayOfLengthPrefix().ToStringArray().Take(2).ToList();
-            await Task.Delay(500);
-            var x2 = await client.ReceiveObservable.ToByteArrayOfLengthPrefix().ToStringArray().Take(2).ToList();
+            "A".ToByteArray().SendTo(client);
 
+            // Start sending and receiving messages with an int32 message length prefix (UseV100Plus).
+            new[] { $"B" }
+            .ToByteArrayWithLengthPrefix().SendTo(client);
+
+            new[] { "C", "D" }
+            .ToByteArrayWithLengthPrefix().SendTo(client);
+
+            await Task.Delay(3000);
             ;
 
-
+            Write("complete");
 
 
             client.Dispose();
