@@ -11,10 +11,10 @@ namespace RxSockets.Utility
 {
     public static class RxExtensions
     {
-        public static IRxSocketServer Create(this IPEndPoint endPoint, int backLog = 10) =>
-            Create(endPoint, NullLogger<RxSocketServer>.Instance, backLog);
+        public static IRxSocketServer CreateRxSocketServer(this IPEndPoint endPoint, int backLog = 10) =>
+            CreateRxSocketServer(endPoint, NullLogger<RxSocketServer>.Instance, backLog);
 
-        public static IRxSocketServer Create(this IPEndPoint endPoint, ILogger<RxSocketServer> logger, int backLog = 10)
+        public static IRxSocketServer CreateRxSocketServer(this IPEndPoint endPoint, ILogger<RxSocketServer> logger, int backLog = 10)
         {
             if (endPoint == null)
                 throw new ArgumentNullException(nameof(endPoint));
@@ -27,10 +27,10 @@ namespace RxSockets.Utility
             logger.LogTrace("Listening.");
             return new RxSocketServer(socket, logger);
         }
-        public static Task<IRxSocketClient> ConnectAsync(this IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
-            => ConnectAsync(endPoint, NullLogger<RxSocketClient>.Instance, timeout, ct);
+        public static Task<IRxSocketClient> ConnectRxSocketClientAsync(this IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
+            => ConnectRxSocketClientAsync(endPoint, NullLogger<RxSocketClient>.Instance, timeout, ct);
 
-        public static async Task<IRxSocketClient> ConnectAsync(this IPEndPoint endPoint, ILogger<RxSocketClient> logger, int timeout = -1, CancellationToken ct = default)
+        public static async Task<IRxSocketClient> ConnectRxSocketClientAsync(this IPEndPoint endPoint, ILogger<RxSocketClient> logger, int timeout = -1, CancellationToken ct = default)
         {
             var socket = await SocketConnector.ConnectAsync(endPoint, logger, timeout, ct).ConfigureAwait(false);
             return new RxSocketClient(socket, logger);
