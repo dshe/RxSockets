@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RxSockets.Utility
+namespace RxSockets
 {
     public static class RxExtensions
     {
