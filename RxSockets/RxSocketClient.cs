@@ -8,6 +8,7 @@ using System.Reactive.Concurrency;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Reactive.Disposables;
+using RxSockets.Utility;
 
 #nullable enable
 
@@ -95,7 +96,8 @@ namespace RxSockets
 
             });
         }
-
+        public static Task<IRxSocketClient> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default) => RxExtensions.ConnectRxSocketClientAsync(endPoint, timeout, ct);
+        public static async Task<IRxSocketClient> ConnectAsync(IPEndPoint endPoint, ILogger<RxSocketClient> logger, int timeout = -1, CancellationToken ct = default) => await RxExtensions.ConnectRxSocketClientAsync(endPoint, logger, timeout, ct);
         public void Send(byte[] buffer, int offset = 0, int length = 0)
         {
             if (length == 0)

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using System.Reactive.Disposables;
 using System.Collections.Generic;
 using System.Threading;
-
+using RxSockets.Utility;
 #nullable enable
 
 namespace RxSockets
@@ -75,8 +75,8 @@ namespace RxSockets
                 return Disposable.Create(() => Cts?.Cancel());
             });
         }
-
-
+        public static IRxSocketServer Create(IPEndPoint endPoint, int backLog = 10) => RxExtensions.CreateRxSocketServer(endPoint, backLog);
+        public static IRxSocketServer Create(IPEndPoint endPoint, ILogger<RxSocketServer> logger, int backLog = 10) => RxExtensions.CreateRxSocketServer(endPoint, logger, backLog);
         public void Dispose()
         {
             Cts?.Cancel();
