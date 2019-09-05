@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using System.Reactive.Disposables;
 using System.Collections.Generic;
 using System.Threading;
-using RxSockets.Utility;
+using RxSockets;
 #nullable enable
 
 namespace RxSockets

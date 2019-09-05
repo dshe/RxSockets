@@ -8,7 +8,7 @@ using System.Reactive.Concurrency;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Reactive.Disposables;
-using RxSockets.Utility;
+using RxSockets;
 
 #nullable enable
 
