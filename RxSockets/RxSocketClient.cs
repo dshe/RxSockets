@@ -13,7 +13,7 @@ using System.Reactive.Disposables;
 
 namespace RxSockets
 {
-    public interface IRxSocketClient: IDisposable
+    public interface IRxSocketClient : IDisposable
     {
         bool Connected { get; }
         void Send(byte[] buffer, int offset = 0, int length = 0);
@@ -102,16 +102,6 @@ namespace RxSockets
                 length = buffer.Length;
             Logger.LogTrace($"Sending {length} bytes.");
             Socket.Send(buffer, offset, length, SocketFlags.None);
-        }
-
-        // static!
-        public static Task<IRxSocketClient> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
-            => ConnectAsync(endPoint, NullLogger<RxSocketClient>.Instance, timeout, ct);
-
-        public static async Task<IRxSocketClient> ConnectAsync(IPEndPoint endPoint, ILogger<RxSocketClient> logger, int timeout = -1, CancellationToken ct = default)
-        {
-            var socket = await SocketConnector.ConnectAsync(endPoint, logger, timeout, ct).ConfigureAwait(false);
-            return new RxSocketClient(socket, logger);
         }
 
         public void Dispose()
