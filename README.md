@@ -16,8 +16,12 @@ interface IRxSocketServer: IDisposable
 }
 ```
 ```csharp
-// Create a socket server on the Endpoint.
-IRxSocketServer server = RxSocketServer.Create(IPEndPoint);
+using RxSockets;
+
+IPEndPoint endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
+
+// Create a socket server on the IPEndpoint.
+IRxSocketServer server = endPoint.CreateRxSocketServer();
 
 // Start accepting connections from clients.
 server.AcceptObservable.Subscribe(onNext: acceptClient =>
@@ -39,8 +43,12 @@ interface IRxSocketClient: IDisposable
 }
 ```
 ```csharp
-// Create a socket client by connecting to the server at EndPoint.
-IRxSocketClient client = await RxSocketClient.ConnectAsync(IPEndPoint);
+using RxSockets;
+
+IPEndPoint endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
+
+// Create a socket client by connecting to the server at the IPEndPoint.
+IRxSocketClient client = await endPoint.ConnectRxSocketClientAsync();
 
 client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
 {
