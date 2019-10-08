@@ -22,7 +22,8 @@ namespace RxSockets.Tests
 
         public RxSocketClientServerTest(ITestOutputHelper output) : base(output)
         {
-            Server = RxSocketServer.Create(IPEndPoint, SocketServerLogger);
+            Server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
+
             AcceptTask = Server.AcceptObservable.FirstAsync().ToTask();
         }
 
@@ -31,7 +32,8 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T01_Disc()
         {
-            var client = await RxSocketClient.ConnectAsync(IPEndPoint);
+            var client = await IPEndPoint.ConnectRxSocketClientAsync();
+
             var accept = await AcceptTask;
 
 

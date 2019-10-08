@@ -21,10 +21,11 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T01_ReceiveStrings()
         {
-            var server = RxSocketServer.Create(IPEndPoint);
+            var server = IPEndPoint.CreateRxSocketServer();
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
-            var client = await RxSocketClient.ConnectAsync(IPEndPoint);
+            var client = await IPEndPoint.ConnectRxSocketClientAsync();
+
             Assert.True(client.Connected);
             var countTask = client.ReceiveObservable.ToStrings().Count().ToTask();
 
@@ -57,12 +58,13 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T02_ReceiveStringsFromPrefixedBytes()
         {
-            //var server = RxSocketServer.Create(IPEndPoint, SocketServerLogger);
-            var server = RxSocketServer.Create(IPEndPoint);
+            //var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
+            var server = IPEndPoint.CreateRxSocketServer();
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
-            //var client = await RxSocketClient.ConnectAsync(IPEndPoint, SocketClientLogger);
-            var client = await RxSocketClient.ConnectAsync(IPEndPoint);
+            //var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
+            var client = await IPEndPoint.ConnectRxSocketClientAsync();
+
             Assert.True(client.Connected);
 
             var countTask = client.ReceiveObservable.ToByteArrayOfLengthPrefix().ToStringArray().Count().ToTask();

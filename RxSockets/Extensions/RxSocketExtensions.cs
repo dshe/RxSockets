@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace RxSockets
 {
-    public static class RxExtensions
+    public static class RxSocketExtensions
     {
         public static IRxSocketServer CreateRxSocketServer(this IPEndPoint endPoint, int backLog = 10) =>
             CreateRxSocketServer(endPoint, NullLogger<RxSocketServer>.Instance, backLog);
@@ -27,6 +27,7 @@ namespace RxSockets
             logger.LogTrace("Listening.");
             return new RxSocketServer(socket, logger);
         }
+
         public static Task<IRxSocketClient> ConnectRxSocketClientAsync(this IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
             => ConnectRxSocketClientAsync(endPoint, NullLogger<RxSocketClient>.Instance, timeout, ct);
 

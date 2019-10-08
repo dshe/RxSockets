@@ -19,13 +19,13 @@ namespace RxSockets.Tests
         public void T01_InvalidEndPoint()
         {
             var endPoint = new IPEndPoint(IPAddress.Parse("111.111.111.111"), 1111);
-            Assert.Throws<SocketException>(() => RxSocketServer.Create(endPoint, SocketServerLogger));
+            Assert.Throws<SocketException>(() => endPoint.CreateRxSocketServer(SocketServerLogger));
         }
 
         [Fact]
         public async Task T02_AcceptSuccess()
         {
-            var server = RxSocketServer.Create(IPEndPoint, SocketServerLogger);
+            var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
 
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
@@ -44,7 +44,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T03_DisconnectBeforeAccept()
         {
-            var server = RxSocketServer.Create(IPEndPoint, SocketServerLogger);
+            var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
             server.Dispose();
             //Assert.Equal(SocketError.Success, error);
             await Task.Delay(100);
@@ -55,7 +55,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T04_DisconnectWhileAccept()
         {
-            var server = RxSocketServer.Create(IPEndPoint, SocketServerLogger);
+            var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
             var acceptTask = server.AcceptObservable.LastOrDefaultAsync().ToTask();
             await Task.Delay(100);
             server.Dispose();

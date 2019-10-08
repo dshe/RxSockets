@@ -96,8 +96,7 @@ namespace RxSockets
 
             });
         }
-        public static Task<IRxSocketClient> ConnectAsync(IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default) => RxExtensions.ConnectRxSocketClientAsync(endPoint, timeout, ct);
-        public static async Task<IRxSocketClient> ConnectAsync(IPEndPoint endPoint, ILogger<RxSocketClient> logger, int timeout = -1, CancellationToken ct = default) => await RxExtensions.ConnectRxSocketClientAsync(endPoint, logger, timeout, ct);
+
         public void Send(byte[] buffer, int offset = 0, int length = 0)
         {
             if (length == 0)
