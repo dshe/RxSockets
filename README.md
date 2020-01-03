@@ -8,6 +8,18 @@
 - tested
 - fast
 
+```csharp
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
+using Xunit.Abstractions;
+using Xunit;
+using RxSockets;
+```
+
 ### server
 ```csharp
 interface IRxSocketServer: IDisposable
@@ -16,8 +28,6 @@ interface IRxSocketServer: IDisposable
 }
 ```
 ```csharp
-using RxSockets;
-
 IPEndPoint endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
 
 // Create a socket server on the IPEndpoint.
@@ -43,8 +53,6 @@ interface IRxSocketClient: IDisposable
 }
 ```
 ```csharp
-using RxSockets;
-
 IPEndPoint endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
 
 // Create a socket client by connecting to the server at the IPEndPoint.
