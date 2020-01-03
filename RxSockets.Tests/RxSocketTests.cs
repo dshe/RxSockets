@@ -47,8 +47,8 @@ namespace RxSockets.Tests
         {
             var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
             client.Dispose();
-            //Assert.Empty(await client.ReceiveObservable.ToList());
-            await Assert.ThrowsAsync<ObjectDisposedException>(async() => await client.ReceiveObservable.ToList());
+            Assert.Empty(await client.ReceiveObservable.ToList());
+            //await Assert.ThrowsAsync<ObjectDisposedException>(async() => await client.ReceiveObservable.ToList());
         }
 
         [Fact]
