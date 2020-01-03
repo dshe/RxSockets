@@ -42,7 +42,8 @@ namespace RxSockets.Tests
             serverSocket.Listen(10);
 
             var socket = await SocketConnector.ConnectAsync(IPEndPoint, Logger);
-            new SocketDisposer(socket, Logger).Dispose();
+            var disposer = new SocketDisposer(socket, Logger);
+            await disposer.DisposeAsync();
 
             serverSocket.Dispose();
         }

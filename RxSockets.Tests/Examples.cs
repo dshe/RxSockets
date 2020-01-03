@@ -39,10 +39,8 @@ namespace RxSockets.Tests
 
             client.Send("Hello!".ToByteArray());
 
-            await Task.Delay(100);
-
-            client.Dispose();
-            server.Dispose();
+            await client.DisposeAsync();
+            await server.DisposeAsync();
         }
 
         [Fact]
@@ -68,8 +66,8 @@ namespace RxSockets.Tests
             accept.Send("Welcome!".ToByteArray());
             Assert.Equal("Welcome!", await dataTask);
 
-            client.Dispose();
-            server.Dispose();
+            await client.DisposeAsync();
+            await server.DisposeAsync();
         }
 
         [Fact]
@@ -88,10 +86,10 @@ namespace RxSockets.Tests
             });
 
             accept.Send("Welcome!".ToByteArray());
-            "Welcome Again!".ToByteArray().SendTo(accept); // Note: SendTo() extension method.
+            "Welcome Again!".ToByteArray().SendFrom(accept); // Note: SendTo() extension method.
 
-            client.Dispose();
-            server.Dispose();
+            await client.DisposeAsync();
+            await server.DisposeAsync();
         }
 
         [Fact]
@@ -101,7 +99,7 @@ namespace RxSockets.Tests
 
             server.AcceptObservable.Subscribe(accepted =>
             {
-                "Welcome!".ToByteArray().SendTo(accepted);
+                "Welcome!".ToByteArray().SendFrom(accepted);
             });
 
             var client1 = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
@@ -112,10 +110,11 @@ namespace RxSockets.Tests
             Assert.Equal("Welcome!", await client2.ReceiveObservable.ToStrings().Take(1).FirstAsync());
             Assert.Equal("Welcome!", await client3.ReceiveObservable.ToStrings().Take(1).FirstAsync());
 
-            client1.Dispose();
-            client2.Dispose();
-            client3.Dispose();
-            server.Dispose();
+            await client1.DisposeAsync();
+            await client2.DisposeAsync();
+            await client3.DisposeAsync();
+
+            await server.DisposeAsync();
         }
 
         [Fact]
@@ -125,12 +124,12 @@ namespace RxSockets.Tests
 
             server.AcceptObservable.Subscribe(accepted =>
             {
-                "Welcome!".ToByteArray().SendTo(accepted);
+                "Welcome!".ToByteArray().SendFrom(accepted);
 
                 accepted
                     .ReceiveObservable
                     .ToStrings()
-                    .Subscribe(s => s.ToByteArray().SendTo(accepted));
+                    .Subscribe(s => s.ToByteArray().SendFrom(accepted));
             });
 
             var clients = new List<IRxSocketClient>();
@@ -145,8 +144,8 @@ namespace RxSockets.Tests
                 Assert.Equal("Hello", await client.ReceiveObservable.ToStrings().Skip(1).Take(1).FirstAsync());
 
             foreach (var client in clients)
-                client.Dispose();
-            server.Dispose();
+                await client.DisposeAsync();
+            await server.DisposeAsync();
         }
     }
 }

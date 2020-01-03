@@ -16,7 +16,7 @@ namespace RxSockets.Tests
         public async Task T01()
         {
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await (new byte[] { 0, 0, 0, 0, 0 }).ToObservable().ToByteArrayOfLengthPrefix().FirstOrDefaultAsync());
+                await (new byte[] { 0, 0, 0, 0, 0 }).ToObservable().FromByteArrayWithLengthPrefix().FirstOrDefaultAsync());
         }
 
         [Theory]
@@ -25,8 +25,8 @@ namespace RxSockets.Tests
         [InlineData(new byte[] { 65, 0, 66, 0 }, new byte[] { 0, 0, 0, 4, 65, 0, 66, 0 })]
         public async Task T02(byte[] result, byte[] bytes)
         {
-            Assert.Equal(result, bytes.ToByteArrayOfLengthPrefix().SingleOrDefault());
-            Assert.Equal(result, await bytes.ToObservable().ToByteArrayOfLengthPrefix());
+            Assert.Equal(result, bytes.FromByteArrayWithLengthPrefix().SingleOrDefault());
+            Assert.Equal(result, await bytes.ToObservable().FromByteArrayWithLengthPrefix());
         }
 
 

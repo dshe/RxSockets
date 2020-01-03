@@ -21,7 +21,6 @@ namespace RxSockets.Tests
         {
             var server = IPEndPoint.CreateRxSocketServer();
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
-
             var client = await IPEndPoint.ConnectRxSocketClientAsync();
 
             Assert.True(client.Connected);
@@ -37,7 +36,8 @@ namespace RxSockets.Tests
             var message = "Welcome!".ToByteArray();
             for (var i = 0; i < messages; i++)
                 accept.Send(message);
-            accept.Dispose();
+
+            await accept.DisposeAsync();
 
             var count = await countTask;
 
@@ -49,8 +49,8 @@ namespace RxSockets.Tests
 
             Write($"{frequency:N0} messages / second");
 
-            client.Dispose();
-            server.Dispose();
+            await client.DisposeAsync();
+            await server.DisposeAsync();
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace RxSockets.Tests
 
             Assert.True(client.Connected);
 
-            var countTask = client.ReceiveObservable.ToByteArrayOfLengthPrefix().ToStringArray().Count().ToTask();
+            var countTask = client.ReceiveObservable.FromByteArrayWithLengthPrefix().ToStringArray().Count().ToTask();
 
             var accept = await acceptTask;
             Assert.True(accept.Connected);
@@ -77,7 +77,8 @@ namespace RxSockets.Tests
 
             for (var i = 0; i < messages; i++)
                 accept.Send(message);
-            accept.Dispose();
+
+            await accept.DisposeAsync();
 
             int count = await countTask;
 
@@ -89,8 +90,8 @@ namespace RxSockets.Tests
 
             Write($"{frequency:N0} messages / second");
 
-            client.Dispose();
-            server.Dispose();
+            await client.DisposeAsync();
+            await server.DisposeAsync();
         }
     }
 }

@@ -35,7 +35,16 @@ namespace RxSockets
                 if (Position == Args.BytesTransferred)
                 {
                     if (Socket.ReceiveAsync(Args))
-                        Semaphore.Wait(Ct);
+                    {
+                        try
+                        {
+                            Semaphore.Wait(Ct);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            break;
+                        }
+                    }
                     if (Args.BytesTransferred == 0)
                         break;
                     Logger.LogTrace($"Received {Args.BytesTransferred} bytes.");

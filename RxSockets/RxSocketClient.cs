@@ -8,13 +8,14 @@ using Microsoft.Extensions.Logging;
 
 namespace RxSockets
 {
-    public interface IRxSocketClient : IDisposable
+    public interface IRxSocketClient
     {
         bool Connected { get; }
         void Send(byte[] buffer);
         void Send(byte[] buffer, int offset, int length);
         Task<byte> ReadAsync();
         IObservable<byte> ReceiveObservable { get; }
+        Task DisposeAsync();
     }
 
     public sealed class RxSocketClient : IRxSocketClient
@@ -28,11 +29,10 @@ namespace RxSockets
         public IObservable<byte> ReceiveObservable { get; }
         public bool Connected => Socket.Connected;
 
-        internal RxSocketClient(Socket connectedSocket, ILogger logger, CancellationToken ct)
+        internal RxSocketClient(Socket connectedSocket, ILogger logger)
         {
             Socket = connectedSocket.Connected ? connectedSocket : throw new SocketException((int)SocketError.NotConnected);
             Logger = logger;
-            ct.Register(Dispose);
             Disposer = new SocketDisposer(connectedSocket, logger);
             SocketReader = new SocketReader(connectedSocket, Cts.Token, logger);
             ReceiveObservable = SocketReader.Read().ToObservable(NewThreadScheduler.Default);
@@ -46,10 +46,10 @@ namespace RxSockets
             Logger.LogTrace($"Sent {length} bytes.");
         }
 
-        public void Dispose()
+        public async Task DisposeAsync()
         {
             Cts.Cancel();
-            Disposer.Dispose();
+            await Disposer.DisposeAsync().ConfigureAwait(false);
         }
     }
 }

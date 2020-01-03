@@ -11,28 +11,28 @@ using Xunit.Abstractions;
 
 namespace RxSockets.Tests
 {
-    public class RxSocketClientTest : TestBase, IDisposable
+    public class RxSocketClientTest : TestBase, IAsyncLifetime
     {
-        private readonly IRxSocketServer Server;
-        private readonly Task<IRxSocketClient> AcceptTask;
-
-        public RxSocketClientTest(ITestOutputHelper output) : base(output)
+        public IRxSocketServer Server;
+        public RxSocketClientTest(ITestOutputHelper output) : base(output) 
         {
             Server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
-            AcceptTask = Server.AcceptObservable.FirstAsync().ToTask();
         }
-
-        public void Dispose()
+        async Task IAsyncLifetime.InitializeAsync()
         {
-            Server.Dispose();
+           await Task.Delay(0);
+        }
+        async Task IAsyncLifetime.DisposeAsync()
+        {
+            await Server.DisposeAsync();
         }
 
         [Fact]
         public async Task T00_0Ok()
         {
             var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-            await AcceptTask;
-            client.Dispose();
+            await Server.AcceptObservable.FirstAsync().ToTask();
+            await client.DisposeAsync();
         }
 
         [Fact]
@@ -46,7 +46,7 @@ namespace RxSockets.Tests
         public async Task T01_DisposeBeforeReceive()
         {
             var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-            client.Dispose();
+            await client.DisposeAsync();
             Assert.Empty(await client.ReceiveObservable.ToList());
             //await Assert.ThrowsAsync<ObjectDisposedException>(async() => await client.ReceiveObservable.ToList());
         }
@@ -56,7 +56,7 @@ namespace RxSockets.Tests
         {
             var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
             var receiveTask = client.ReceiveObservable.LastOrDefaultAsync().ToTask();
-            client.Dispose();
+            await client.DisposeAsync();
             await receiveTask;
         }
 
@@ -64,28 +64,28 @@ namespace RxSockets.Tests
         public async Task T03_ExternalDisposeBeforeReceive()
         {
             var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-            var accept = await AcceptTask;
-            accept.Dispose();
+            var accept = await Server.AcceptObservable.FirstAsync().ToTask();
+            await accept.DisposeAsync();
             await client.ReceiveObservable.LastOrDefaultAsync();
-            client.Dispose();
+            await client.DisposeAsync();
         }
 
         [Fact]
         public async Task T04_ExternalDisposeDuringReceive()
         {
             var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-            var accept = await AcceptTask;
+            var accept = await Server.AcceptObservable.FirstAsync().ToTask();
             var receiveTask = client.ReceiveObservable.FirstAsync().ToTask();
-            accept.Dispose();
+            await accept.DisposeAsync();
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await receiveTask);
-            client.Dispose();
+            await client.DisposeAsync();
         }
 
         [Fact]
         public async Task T05_DisposeBeforeSend()
         {
             var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-            client.Dispose();
+            await client.DisposeAsync();
             Assert.Throws<ObjectDisposedException>(() => client.Send(new byte[] { 0 }));
         }
 
@@ -107,26 +107,27 @@ namespace RxSockets.Tests
         public async Task T07_ExternalDisposeBeforeSend()
         {
             var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-            var accept = await AcceptTask;
-            accept.Dispose();
+            var accept = await Server.AcceptObservable.FirstAsync().ToTask();
+            await accept.DisposeAsync();
             client.Send(new byte[] { 0,1,2,3 });
             Assert.ThrowsAny<Exception>(() => client.Send(new byte[] { 0,1,2,3 }));
-            client.Dispose();
+            await client.DisposeAsync();
         }
 
         [Fact]
         public async Task T08_ExternalDisposeDuringSend()
         {
             var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-            var accept = await AcceptTask;
+            var accept = await Server.AcceptObservable.FirstAsync().ToTask();
             var sendTask = Task.Run(() => client.Send(new byte[100_000_000]));
             while (sendTask.Status != TaskStatus.Running && sendTask.Status != TaskStatus.RanToCompletion)
                 await Task.Yield();
-            accept.Dispose();
+            await accept.DisposeAsync();
             await sendTask;
             Assert.ThrowsAny<Exception>(() => client.Send(new byte[] { 0 }));
-            client.Dispose();
+            await client.DisposeAsync();
         }
+
     }
 }
 

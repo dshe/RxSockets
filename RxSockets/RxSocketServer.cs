@@ -9,12 +9,14 @@ using Microsoft.Extensions.Logging.Abstractions;
 using System.Reactive.Disposables;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RxSockets
 {
-    public interface IRxSocketServer : IDisposable
+    public interface IRxSocketServer
     {
         IObservable<IRxSocketClient> AcceptObservable { get; }
+        Task DisposeAsync();
     }
 
     public sealed class RxSocketServer : IRxSocketServer
@@ -24,6 +26,7 @@ namespace RxSockets
         private readonly CancellationTokenSource Cts = new CancellationTokenSource();
         private readonly SocketDisposer Disposer;
         private readonly SocketAccepter SocketAccepter;
+        private readonly List<RxSocketClient> Clients = new List<RxSocketClient>();
         public IObservable<IRxSocketClient> AcceptObservable { get; }
 
         internal RxSocketServer(Socket socket, ILogger logger)
@@ -33,14 +36,16 @@ namespace RxSockets
             SocketAccepter = new SocketAccepter(socket, logger, Cts.Token);
             AcceptObservable = SocketAccepter.Accept()
                 .ToObservable(NewThreadScheduler.Default)
-                .Select(acceptSocket => new RxSocketClient(acceptSocket, logger, Cts.Token));
+                .Select(acceptSocket => new RxSocketClient(acceptSocket, logger))
+                .Do(client => Clients.Add(client));
             Logger.LogTrace("RxSocketServer constructed.");
         }
 
-        public void Dispose()
+        public async Task DisposeAsync()
         {
             Cts.Cancel();
-            Disposer.Dispose();
+            await Disposer.DisposeAsync().ConfigureAwait(false);
+            await Task.WhenAll(Clients.Select(client => client.DisposeAsync()));
         }
     }
 }

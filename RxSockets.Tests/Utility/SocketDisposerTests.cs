@@ -31,7 +31,7 @@ namespace RxSockets.Tests
         {
             Assert.False(Socket.Connected);
             Assert.False(Disposer.DisposeRequested);
-            Disposer.Dispose();
+            Disposer.DisposeAsync();
             Assert.True(Disposer.DisposeRequested);
         }
 
@@ -39,9 +39,9 @@ namespace RxSockets.Tests
         public void T02_DisposeConnectedSocket()
         {
             Connect();
-            Disposer.Dispose();
+            Disposer.DisposeAsync();
             Assert.True(Disposer.DisposeRequested);
-            Disposer.Dispose();
+            Disposer.DisposeAsync();
         }
 
 
@@ -50,7 +50,7 @@ namespace RxSockets.Tests
         {
             Connect();
             Socket.Dispose();
-            Disposer.Dispose();
+            Disposer.DisposeAsync();
         }
     }
 }

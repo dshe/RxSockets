@@ -30,7 +30,16 @@ namespace RxSockets
             {
                 Args.AcceptSocket = Utilities.CreateSocket();
                 if (Socket.AcceptAsync(Args))
-                     Semaphore.Wait(Ct);
+                {
+                    try
+                    {
+                        Semaphore.Wait(Ct);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        yield break;
+                    }
+                }
                 Logger.LogInformation($"Accepted socket: {Args.AcceptSocket.LocalEndPoint}.");
                 yield return Args.AcceptSocket;
             }

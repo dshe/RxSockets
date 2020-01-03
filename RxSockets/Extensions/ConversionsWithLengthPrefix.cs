@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace RxSockets
 {
@@ -42,7 +43,20 @@ namespace RxSockets
 
         /////////////////////////////////////////////////////////////////////////////////
 
-        public static IEnumerable<byte[]> ToByteArrayOfLengthPrefix(this IEnumerable<byte> source)
+        // Note: not an extension method!
+        public static async Task<string[]> FromBytesWithLengthPrefix(Func<Task<byte>> byteReader)
+        {
+            using var ms = new MemoryStream();
+            for (int i = 0; i < 4; i++)
+                ms.WriteByte(await byteReader().ConfigureAwait(false));
+            var length = GetMessageLength(ms);
+            ms.SetLength(0);
+            while (ms.Length < length)
+                ms.WriteByte(await byteReader().ConfigureAwait(false));
+            return GetStringArray(ms.ToArray());
+        }
+
+        public static IEnumerable<byte[]> FromByteArrayWithLengthPrefix(this IEnumerable<byte> source)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
@@ -69,7 +83,7 @@ namespace RxSockets
                 throw new InvalidDataException("Incomplete.");
         }
 
-        public static IObservable<byte[]> ToByteArrayOfLengthPrefix(this IObservable<byte> source)
+        public static IObservable<byte[]> FromByteArrayWithLengthPrefix(this IObservable<byte> source)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
@@ -120,7 +134,7 @@ namespace RxSockets
         public static IObservable<string[]> ToStringArray(this IObservable<byte[]> source) =>
             source.Select(buffer => GetStringArray(buffer));
 
-        internal static string[] GetStringArray(in byte[] buffer) // keep internal for testing
+        internal static string[] GetStringArray(byte[] buffer) // keep internal for testing
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));

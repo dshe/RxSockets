@@ -34,17 +34,17 @@ namespace RxSockets.Tests
 
             Assert.True(clientSocket.Connected && acceptedSocket.Connected);
 
-            acceptedSocket.Dispose();
             clientSocket.Disconnect(false);
-            server.Dispose();
+            await server.DisposeAsync();
         }
 
         [Fact]
         public async Task T03_DisconnectBeforeAccept()
         {
             var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
-            server.Dispose();
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await server.AcceptObservable.LastOrDefaultAsync());
+            await server.DisposeAsync();
+            //await Assert.ThrowsAsync<ObjectDisposedException>(async () => await server.AcceptObservable.LastOrDefaultAsync());
+            await server.AcceptObservable.LastOrDefaultAsync();
         }
 
         [Fact]
@@ -52,9 +52,8 @@ namespace RxSockets.Tests
         {
             var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
             var acceptTask = server.AcceptObservable.LastAsync().ToTask();
-            server.Dispose();
+            await server.DisposeAsync();
             await Assert.ThrowsAnyAsync<Exception>(async () => await acceptTask);
         }
-
     }
 }
