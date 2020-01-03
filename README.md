@@ -9,6 +9,14 @@
 - fast
 
 ```csharp
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
+using Xunit.Abstractions;
+using Xunit;
 using RxSockets;
 ```
 
