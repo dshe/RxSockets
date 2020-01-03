@@ -3,7 +3,7 @@
 - **asynchronous** connect
 - **observable** accept and receive
 - supports **.NET Standard 2.0**
-- dependencies: Reactive Extensions 4
+- dependencies: Reactive Extensions
 - simple and intuitive API
 - tested
 - fast
@@ -48,7 +48,9 @@ server.AcceptObservable.Subscribe(onNext: acceptClient =>
 interface IRxSocketClient: IDisposable
 {
     bool Connected { get; }
-    void Send(byte[] buffer, int offset = 0, int length = 0);
+    void Send(byte[] buffer);
+    void Send(byte[] buffer, int offset, int length);
+    Task<byte> ReadAsync();
     IObservable<byte> ReceiveObservable { get; }
 }
 ```
