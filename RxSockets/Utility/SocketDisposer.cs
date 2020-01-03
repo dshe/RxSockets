@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace RxSockets
 {
@@ -8,7 +9,8 @@ namespace RxSockets
     {
         private readonly ILogger Logger;
         private readonly Socket Socket;
-        internal bool DisposeRequested { get; private set; }
+        internal bool DisposeRequested => Disposed == 1;
+        private int Disposed = 0;
 
         internal SocketDisposer(Socket socket, ILogger logger)
         {
@@ -18,18 +20,11 @@ namespace RxSockets
 
         public void Dispose()
         {
-            Logger.LogDebug("Disconnecting socket.");
-            lock (this)
-            {
-                if (DisposeRequested)
-                    return;
-               DisposeRequested = true;
-               DisposeImpl();
-            }
-        }
+            if (Interlocked.CompareExchange(ref Disposed, 1, 0) == 1)
+                return;
 
-        private void DisposeImpl()
-        {
+            Logger.LogDebug("Disconnecting socket.");
+
             try
             {
                 if (Socket.Connected)

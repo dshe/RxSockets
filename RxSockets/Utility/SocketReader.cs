@@ -10,7 +10,7 @@ namespace RxSockets
 {
     internal class SocketReader
     {
-        const int BufferLength = 0x1000;
+        public const int BufferLength = 0x1000;
         private readonly byte[] Buffer = new byte[BufferLength];
         private readonly ILogger Logger;
         private readonly CancellationToken Ct;
@@ -59,7 +59,7 @@ namespace RxSockets
             return Buffer[Position++];
         }
 
-        /*
+        /* Requires NetStardard 2.0 => 2.1
         internal async IAsyncEnumerable<byte> ReadAsync()
         {
             while (!Ct.IsCancellationRequested)

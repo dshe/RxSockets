@@ -1,47 +1,43 @@
 ﻿using System;
-using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Reactive.Linq;
 using System.Reactive.Concurrency;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using System.Reactive.Disposables;
-using RxSockets;
-using System.Collections.Generic;
 
 namespace RxSockets
 {
     public interface IRxSocketClient : IDisposable
     {
         bool Connected { get; }
-        void Send(byte[] buffer, int offset, int length);
         void Send(byte[] buffer);
+        void Send(byte[] buffer, int offset, int length);
+        Task<byte> ReadAsync();
         IObservable<byte> ReceiveObservable { get; }
     }
 
     public sealed class RxSocketClient : IRxSocketClient
     {
         private readonly ILogger Logger;
+        private readonly CancellationTokenSource Cts = new CancellationTokenSource();
         private readonly Socket Socket;
         private readonly SocketDisposer Disposer;
-        private readonly CancellationTokenSource Cts = new CancellationTokenSource();
-        public bool Connected => Socket.Connected;
-        public IObservable<byte> ReceiveObservable { get; }
         private readonly SocketReader SocketReader;
+        public Task<byte> ReadAsync() => SocketReader.ReadAsync();
+        public IObservable<byte> ReceiveObservable { get; }
+        public bool Connected => Socket.Connected;
 
-        internal RxSocketClient(Socket connectedSocket, ILogger logger)
+        internal RxSocketClient(Socket connectedSocket, ILogger logger, CancellationToken ct)
         {
             Socket = connectedSocket.Connected ? connectedSocket : throw new SocketException((int)SocketError.NotConnected);
             Logger = logger;
+            ct.Register(Dispose);
             Disposer = new SocketDisposer(connectedSocket, logger);
             SocketReader = new SocketReader(connectedSocket, Cts.Token, logger);
             ReceiveObservable = SocketReader.Read().ToObservable(NewThreadScheduler.Default);
             Logger.LogTrace("RxSocketClient constructed.");
         }
-
-        public Task<byte> ReadAsync() => SocketReader.ReadAsync();
 
         public void Send(byte[] buffer) => Send(buffer, 0, buffer.Length);
         public void Send(byte[] buffer, int offset, int length)
@@ -56,5 +52,4 @@ namespace RxSockets
             Disposer.Dispose();
         }
     }
-  
 }

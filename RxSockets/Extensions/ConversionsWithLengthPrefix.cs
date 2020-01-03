@@ -120,7 +120,7 @@ namespace RxSockets
         public static IObservable<string[]> ToStringArray(this IObservable<byte[]> source) =>
             source.Select(buffer => GetStringArray(buffer));
 
-        internal static string[] GetStringArray(in byte[] buffer) // internal for testing
+        internal static string[] GetStringArray(in byte[] buffer) // keep internal for testing
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));

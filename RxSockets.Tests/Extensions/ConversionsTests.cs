@@ -26,9 +26,6 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T02_ToStrings()
         {
-            byte[]? xxx = null;
-            Assert.Throws<ArgumentNullException>(() => ConversionsEx.ToStrings(xxx).ToList()); // should have warning?
-
             await Assert.ThrowsAsync<ArgumentNullException>(async () =>
                 await ((byte[]?)null).ToObservable().ToStrings().ToList()); // should have warning?
 

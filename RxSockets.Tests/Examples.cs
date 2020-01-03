@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Xunit;
 using System.Linq;
-using System.Reactive.Linq;
-using Xunit.Abstractions;
+using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
+using Xunit.Abstractions;
+using Xunit;
 
 namespace RxSockets.Tests
 {
@@ -88,7 +88,7 @@ namespace RxSockets.Tests
             });
 
             accept.Send("Welcome!".ToByteArray());
-            "Welcome Again!".ToByteArray().SendTo(accept); // Note SendTo() extension method.
+            "Welcome Again!".ToByteArray().SendTo(accept); // Note: SendTo() extension method.
 
             client.Dispose();
             server.Dispose();

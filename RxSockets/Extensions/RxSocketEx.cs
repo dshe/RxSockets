@@ -9,8 +9,21 @@ using System.Threading.Tasks;
 
 namespace RxSockets
 {
-    public static class RxSocketExtensions
+    public static class RxSocketEx
     {
+
+        public static Task<IRxSocketClient> ConnectRxSocketClientAsync(this IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
+            => ConnectRxSocketClientAsync(endPoint, NullLogger<RxSocketClient>.Instance, timeout, ct);
+
+        public static async Task<IRxSocketClient> ConnectRxSocketClientAsync(this IPEndPoint endPoint, ILogger<RxSocketClient> logger, int timeout = -1, CancellationToken ct = default)
+        {
+            if (endPoint == null)
+                throw new ArgumentNullException(nameof(endPoint));
+            var socket = await SocketConnector.ConnectAsync(endPoint, logger, timeout, ct).ConfigureAwait(false);
+            return new RxSocketClient(socket, logger, ct);
+        }
+
+
         public static IRxSocketServer CreateRxSocketServer(this IPEndPoint endPoint, int backLog = 10) =>
             CreateRxSocketServer(endPoint, NullLogger<RxSocketServer>.Instance, backLog);
 
@@ -26,15 +39,6 @@ namespace RxSockets
             socket.Listen(backLog);
             logger.LogTrace("Listening.");
             return new RxSocketServer(socket, logger);
-        }
-
-        public static Task<IRxSocketClient> ConnectRxSocketClientAsync(this IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
-            => ConnectRxSocketClientAsync(endPoint, NullLogger<RxSocketClient>.Instance, timeout, ct);
-
-        public static async Task<IRxSocketClient> ConnectRxSocketClientAsync(this IPEndPoint endPoint, ILogger<RxSocketClient> logger, int timeout = -1, CancellationToken ct = default)
-        {
-            var socket = await SocketConnector.ConnectAsync(endPoint, logger, timeout, ct).ConfigureAwait(false);
-            return new RxSocketClient(socket, logger);
         }
     }
 }

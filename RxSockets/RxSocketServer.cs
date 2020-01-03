@@ -21,7 +21,6 @@ namespace RxSockets
     {
         // Backlog specifies the number of pending connections allowed before a busy error is returned to the client.
         private readonly ILogger Logger;
-        private readonly List<RxSocketClient> Clients = new List<RxSocketClient>();
         private readonly CancellationTokenSource Cts = new CancellationTokenSource();
         private readonly SocketDisposer Disposer;
         private readonly SocketAcceptReader SocketAcceptReader;
@@ -32,19 +31,15 @@ namespace RxSockets
             Logger = logger;
             Disposer = new SocketDisposer(socket, logger);
             SocketAcceptReader = new SocketAcceptReader(socket, logger, Cts.Token);
-
             AcceptObservable = SocketAcceptReader.Read()
                 .ToObservable(NewThreadScheduler.Default)
-                .Select(acceptSocket => new RxSocketClient(acceptSocket, logger));
-
+                .Select(acceptSocket => new RxSocketClient(acceptSocket, logger, Cts.Token));
             Logger.LogTrace("RxSocketServer constructed.");
         }
 
         public void Dispose()
         {
             Cts.Cancel();
-            foreach (var client in Clients)
-                client.Dispose();
             Disposer.Dispose();
         }
     }

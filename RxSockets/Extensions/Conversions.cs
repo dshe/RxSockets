@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reactive.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace RxSockets
 {
@@ -59,6 +60,20 @@ namespace RxSockets
                             observer.OnError(new InvalidDataException("ToStrings: no termination(2)."));
                     });
             });
+        }
+
+        // Note: not an extension method!
+        public static async Task<string> ReadString(Func<Task<byte>> byteReader)
+        {
+            using var ms = new MemoryStream();
+            while (true)
+            {
+                var b = await byteReader().ConfigureAwait(false);
+                if (b == 0)
+                    break;
+                ms.WriteByte(b);
+            }
+            return GetString(ms);
         }
 
         private static string GetString(in MemoryStream ms) =>

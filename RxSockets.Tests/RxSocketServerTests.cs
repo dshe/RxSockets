@@ -44,7 +44,6 @@ namespace RxSockets.Tests
         {
             var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
             server.Dispose();
-            await Task.Delay(50);
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await server.AcceptObservable.LastOrDefaultAsync());
         }
 
@@ -52,10 +51,9 @@ namespace RxSockets.Tests
         public async Task T04_DisconnectWhileAccept()
         {
             var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
-            var acceptTask = server.AcceptObservable.LastOrDefaultAsync().ToTask();
-            await Task.Delay(50);
+            var acceptTask = server.AcceptObservable.LastAsync().ToTask();
             server.Dispose();
-            await Assert.ThrowsAsync<SocketException>(async () => await acceptTask);
+            await Assert.ThrowsAnyAsync<Exception>(async () => await acceptTask);
         }
 
     }
