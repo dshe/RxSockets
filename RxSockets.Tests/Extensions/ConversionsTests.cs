@@ -7,8 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-#nullable enable
-
 namespace RxSockets.Tests
 {
     public class ConversionsTest

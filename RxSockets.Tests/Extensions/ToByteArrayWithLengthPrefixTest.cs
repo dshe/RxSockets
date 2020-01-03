@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-#nullable enable
+
 
 namespace RxSockets.Tests
 {

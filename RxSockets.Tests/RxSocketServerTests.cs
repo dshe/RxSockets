@@ -7,8 +7,6 @@ using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using Xunit.Abstractions;
 
-#nullable enable
-
 namespace RxSockets.Tests
 {
     public class RxSocketServerTest : TestBase
@@ -46,10 +44,8 @@ namespace RxSockets.Tests
         {
             var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
             server.Dispose();
-            //Assert.Equal(SocketError.Success, error);
-            await Task.Delay(100);
-            var result = await server.AcceptObservable.LastOrDefaultAsync().ToTask();
-            Assert.Null(result);
+            await Task.Delay(50);
+            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await server.AcceptObservable.LastOrDefaultAsync());
         }
 
         [Fact]
@@ -57,11 +53,9 @@ namespace RxSockets.Tests
         {
             var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
             var acceptTask = server.AcceptObservable.LastOrDefaultAsync().ToTask();
-            await Task.Delay(100);
+            await Task.Delay(50);
             server.Dispose();
-            //Assert.Equal(SocketError.Success, error);
-            var result = await acceptTask;
-            Assert.Null(result);
+            await Assert.ThrowsAsync<SocketException>(async () => await acceptTask);
         }
 
     }

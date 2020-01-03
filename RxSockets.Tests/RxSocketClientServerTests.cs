@@ -11,8 +11,6 @@ using System.Threading;
 using System.IO;
 using System.Linq;
 
-#nullable enable
-
 namespace RxSockets.Tests
 {
     public class RxSocketClientServerTest : TestBase, IDisposable

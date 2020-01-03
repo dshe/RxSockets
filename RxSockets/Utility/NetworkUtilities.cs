@@ -6,8 +6,6 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 
-#nullable enable
-
 namespace RxSockets
 {
     public static class Utilities
@@ -20,12 +18,12 @@ namespace RxSockets
 
         public static int GetRandomAvailablePort()
         {
-            while (true)
+            int port;
+            do
             {
-                var port = RandomInt(1024, 65535);
-                if (!IsPortUsed(port))
-                    return port;
-            }
+                port = RandomInt(1024, 65535);
+            } while (IsPortUsed(port));
+            return port;
         }
 
         private static bool IsPortUsed(int port) =>
@@ -34,7 +32,7 @@ namespace RxSockets
                 .GetActiveTcpListeners()
                 .Any(ep => ep.Port == port);
 
-        private static int RandomInt(int min = int.MinValue, int max = int.MaxValue)
+        private static int RandomInt(int min, int max)
         {
             var buffer = GetRandomBytes(4);
             int result = BitConverter.ToInt32(buffer, 0);
@@ -43,13 +41,10 @@ namespace RxSockets
 
         private static byte[] GetRandomBytes(int bytes)
         {
-            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
-            {
-                var buffer = new byte[bytes];
-                rng.GetBytes(buffer);
-                return buffer;
-            }
+            var buffer = new byte[bytes];
+            using RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
+            rng.GetBytes(buffer);
+            return buffer;
         }
-
     }
 }

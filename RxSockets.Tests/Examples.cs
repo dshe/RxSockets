@@ -7,8 +7,6 @@ using Xunit.Abstractions;
 using System.Collections.Generic;
 using System.Reactive.Threading.Tasks;
 
-#nullable enable
-
 namespace RxSockets.Tests
 {
     public class Examples : TestBase
@@ -123,7 +121,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T30_Both()
         {
-            var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);  //.AddDisconnectableTo(disconnectables);
+            var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
 
             server.AcceptObservable.Subscribe(accepted =>
             {

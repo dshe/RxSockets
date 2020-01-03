@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace RxSockets
+﻿namespace RxSockets
 {
     public static class SendToEx
     {

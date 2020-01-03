@@ -4,8 +4,6 @@ using System.IO;
 using System.Reactive.Linq;
 using System.Text;
 
-#nullable enable
-
 namespace RxSockets
 {
     public static class ConversionsEx
@@ -17,21 +15,19 @@ namespace RxSockets
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            foreach (var b in source)
             {
-                foreach (var b in source)
+                if (b == 0)
                 {
-                    if (b == 0)
-                    {
-                        yield return GetString(ms);
-                        ms.SetLength(0);
-                    }
-                    else
-                        ms.WriteByte(b);
+                    yield return GetString(ms);
+                    ms.SetLength(0);
                 }
-                if (ms.Position != 0)
-                    throw new InvalidDataException("ToStrings: no termination(1).");
+                else
+                    ms.WriteByte(b);
             }
+            if (ms.Position != 0)
+                throw new InvalidDataException("ToStrings: no termination(1).");
         }
 
         public static IObservable<string> ToStrings(this IObservable<byte> source)

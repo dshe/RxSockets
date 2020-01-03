@@ -2,7 +2,7 @@
 using Xunit;
 using Xunit.Abstractions;
 
-#nullable enable
+
 
 namespace RxSockets.Tests
 {

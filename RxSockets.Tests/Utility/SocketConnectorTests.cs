@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-#nullable enable
-
 namespace RxSockets.Tests
 {
     public class SocketConnectorTest : TestBase

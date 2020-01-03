@@ -6,8 +6,6 @@ using System.Text;
 using System.Linq;
 using System.Reactive.Linq;
 
-#nullable enable
-
 namespace RxSockets
 {
     // Encode strings with a 4 byte BigEndian integer length prefix.
@@ -18,19 +16,17 @@ namespace RxSockets
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            using (var ms = new MemoryStream() { Position = 4 })
+            using var ms = new MemoryStream() { Position = 4 };
+            foreach (var s in source)
             {
-                foreach (var s in source)
+                if (!string.IsNullOrEmpty(s))
                 {
-                    if (!string.IsNullOrEmpty(s))
-                    {
-                        var buffer = Encoding.UTF8.GetBytes(s);
-                        ms.Write(buffer, 0, buffer.Length);
-                    }
-                    ms.WriteByte(0); // null or empty
+                    var buffer = Encoding.UTF8.GetBytes(s);
+                    ms.Write(buffer, 0, buffer.Length);
                 }
-                return GetBytes(ms);
+                ms.WriteByte(0); // null or empty
             }
+            return GetBytes(ms);
         }
 
         private static byte[] GetBytes(in MemoryStream ms)
@@ -53,26 +49,24 @@ namespace RxSockets
 
             var length = -1;
 
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            foreach (var b in source)
             {
-                foreach (var b in source)
+                ms.WriteByte(b);
+                if (length == -1 && ms.Position == 4)
                 {
-                    ms.WriteByte(b);
-                    if (length == -1 && ms.Position == 4)
-                    {
-                        length = GetMessageLength(ms);
-                        ms.SetLength(0);
-                    }
-                    else if (ms.Length == length)
-                    {
-                        yield return ms.ToArray(); // array copy
-                        length = -1;
-                        ms.SetLength(0);
-                    }
+                    length = GetMessageLength(ms);
+                    ms.SetLength(0);
                 }
-                if (ms.Position != 0)
-                    throw new InvalidDataException("Incomplete.");
+                else if (ms.Length == length)
+                {
+                    yield return ms.ToArray(); // array copy
+                    length = -1;
+                    ms.SetLength(0);
+                }
             }
+            if (ms.Position != 0)
+                throw new InvalidDataException("Incomplete.");
         }
 
         public static IObservable<byte[]> ToByteArrayOfLengthPrefix(this IObservable<byte> source)

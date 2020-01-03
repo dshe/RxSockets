@@ -9,8 +9,6 @@ using System.Reactive.Threading.Tasks;
 using System.Diagnostics;
 using System.Net.Sockets;
 
-#nullable enable
-
 namespace RxSockets.Tests
 {
     public class PerformanceTest : TestBase

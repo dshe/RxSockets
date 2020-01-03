@@ -2,8 +2,6 @@
 using System;
 using System.Net.Sockets;
 
-#nullable enable
-
 namespace RxSockets
 {
     internal class SocketDisposer

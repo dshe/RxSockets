@@ -9,7 +9,7 @@ using Xunit;
 using System.Threading;
 using Xunit.Abstractions;
 
-#nullable enable
+
 
 namespace RxSockets.Tests
 {
@@ -33,7 +33,7 @@ namespace RxSockets.Tests
         public async Task T00_0Ok()
         {
             var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-            var accept = await AcceptTask;
+            await AcceptTask;
             client.Dispose();
         }
 
@@ -49,7 +49,8 @@ namespace RxSockets.Tests
         {
             var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
             client.Dispose();
-            Assert.Empty(await client.ReceiveObservable.ToList());
+            //Assert.Empty(await client.ReceiveObservable.ToList());
+            await Assert.ThrowsAsync<ObjectDisposedException>(async() => await client.ReceiveObservable.ToList());
         }
 
         [Fact]
