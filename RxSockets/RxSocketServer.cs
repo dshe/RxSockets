@@ -23,15 +23,15 @@ namespace RxSockets
         private readonly ILogger Logger;
         private readonly CancellationTokenSource Cts = new CancellationTokenSource();
         private readonly SocketDisposer Disposer;
-        private readonly SocketAcceptReader SocketAcceptReader;
+        private readonly SocketAccepter SocketAccepter;
         public IObservable<IRxSocketClient> AcceptObservable { get; }
 
         internal RxSocketServer(Socket socket, ILogger logger)
         {
             Logger = logger;
             Disposer = new SocketDisposer(socket, logger);
-            SocketAcceptReader = new SocketAcceptReader(socket, logger, Cts.Token);
-            AcceptObservable = SocketAcceptReader.Read()
+            SocketAccepter = new SocketAccepter(socket, logger, Cts.Token);
+            AcceptObservable = SocketAccepter.Accept()
                 .ToObservable(NewThreadScheduler.Default)
                 .Select(acceptSocket => new RxSocketClient(acceptSocket, logger, Cts.Token));
             Logger.LogTrace("RxSocketServer constructed.");

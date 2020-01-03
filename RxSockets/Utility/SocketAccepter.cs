@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace RxSockets
 {
-    class SocketAcceptReader
+    class SocketAccepter
     {
         private readonly ILogger Logger;
         private readonly CancellationToken Ct;
@@ -15,7 +15,7 @@ namespace RxSockets
         private readonly SemaphoreSlim Semaphore = new SemaphoreSlim(0, 1);
         private readonly SocketAsyncEventArgs Args = new SocketAsyncEventArgs();
 
-        internal SocketAcceptReader(Socket socket, ILogger logger, CancellationToken ct)
+        internal SocketAccepter(Socket socket, ILogger logger, CancellationToken ct)
         {
             Socket = socket;
             Logger = logger;
@@ -23,7 +23,7 @@ namespace RxSockets
             Args.Completed += (x, y) => Semaphore.Release();
         }
 
-        internal IEnumerable<Socket> Read()
+        internal IEnumerable<Socket> Accept()
         {
             Logger.LogTrace("Accept started.");
             while (true)

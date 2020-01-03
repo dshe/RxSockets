@@ -9,8 +9,6 @@ using Xunit;
 using System.Threading;
 using Xunit.Abstractions;
 
-
-
 namespace RxSockets.Tests
 {
     public class RxSocketClientTest : TestBase, IDisposable
@@ -112,7 +110,7 @@ namespace RxSockets.Tests
             var accept = await AcceptTask;
             accept.Dispose();
             client.Send(new byte[] { 0,1,2,3 });
-            Assert.Throws<SocketException>(() => client.Send(new byte[] { 0,1,2,3 }));
+            Assert.ThrowsAny<Exception>(() => client.Send(new byte[] { 0,1,2,3 }));
             client.Dispose();
         }
 
@@ -126,7 +124,7 @@ namespace RxSockets.Tests
                 await Task.Yield();
             accept.Dispose();
             await sendTask;
-            Assert.Throws<SocketException>(() => client.Send(new byte[] { 0 }));
+            Assert.ThrowsAny<Exception>(() => client.Send(new byte[] { 0 }));
             client.Dispose();
         }
     }
