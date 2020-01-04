@@ -27,12 +27,13 @@ namespace RxSockets
                 await Tcs.Task;
                 return;
             }
-            Logger.LogDebug("Disconnecting socket.");
+
             try
             {
-                Socket.Shutdown(SocketShutdown.Both); // never blocks
+                var localEndPoint = Socket.LocalEndPoint;
                 if (Socket.Connected)
                 {
+                    var remoteEndPoint = Socket.RemoteEndPoint;
                     var semaphore = new SemaphoreSlim(0, 1);
                     var args = new SocketAsyncEventArgs
                     {
@@ -41,14 +42,15 @@ namespace RxSockets
                     args.Completed += (_, __) => semaphore.Release();
                     if (Socket.DisconnectAsync(args))
                         await semaphore.WaitAsync().ConfigureAwait(false);
-                    Logger.LogTrace("Socket disconnected.");
+                    Logger.LogTrace($"Disconnected socket on {localEndPoint} from {remoteEndPoint}.");
                 }
                 Socket.Dispose();
-                Logger.LogTrace("Socket disposed.");
+                Logger.LogTrace($"Disposed socket on {localEndPoint}.");
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Disconnecting socket exception.");
+                Logger.LogError(e, $"Disconnect socket exception.");
+                throw;
             }
             finally
             {

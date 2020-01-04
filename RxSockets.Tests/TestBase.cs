@@ -4,6 +4,7 @@ using System.Net;
 using Xunit.Abstractions;
 using System.Text;
 using MXLogger;
+using System.Diagnostics;
 
 namespace RxSockets.Tests
 {
@@ -19,6 +20,15 @@ namespace RxSockets.Tests
         protected TestBase(ITestOutputHelper output)
         {
             Write = output.WriteLine;
+
+            AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs args) =>
+            {
+                Debug.Write("CurrentDomain_UnhandledException");
+                Write("CurrentDomain_UnhandledException");
+                if (args.ExceptionObject is Exception exception)
+                    Write(exception.ToString());
+            };
+
             var provider = new MXLoggerProvider(output.WriteLine);
             LoggerFactory = new LoggerFactory(new[] { provider });
 

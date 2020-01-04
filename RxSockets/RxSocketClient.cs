@@ -36,7 +36,7 @@ namespace RxSockets
             Disposer = new SocketDisposer(connectedSocket, logger);
             SocketReader = new SocketReader(connectedSocket, Cts.Token, logger);
             ReceiveObservable = SocketReader.Read().ToObservable(NewThreadScheduler.Default);
-            Logger.LogTrace("RxSocketClient constructed.");
+            Logger.LogTrace($"RxSocketClient created on {Socket.LocalEndPoint} connected to {Socket.RemoteEndPoint}.");
         }
 
         public void Send(byte[] buffer) => Send(buffer, 0, buffer.Length);

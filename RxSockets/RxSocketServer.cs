@@ -38,7 +38,7 @@ namespace RxSockets
                 .ToObservable(NewThreadScheduler.Default)
                 .Select(acceptSocket => new RxSocketClient(acceptSocket, logger))
                 .Do(client => Clients.Add(client));
-            Logger.LogTrace("RxSocketServer constructed.");
+            Logger.LogTrace($"RxSocketServer constructed on {socket.LocalEndPoint}.");
         }
 
         public async Task DisposeAsync()

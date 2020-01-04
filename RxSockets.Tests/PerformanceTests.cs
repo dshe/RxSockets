@@ -16,7 +16,7 @@ namespace RxSockets.Tests
         public PerformanceTest(ITestOutputHelper output) : base(output) {}
         const int messages = 100_000;
 
-        [Fact]
+        //[Fact]
         public async Task T01_ReceiveStrings()
         {
             var server = IPEndPoint.CreateRxSocketServer();
@@ -37,8 +37,8 @@ namespace RxSockets.Tests
             for (var i = 0; i < messages; i++)
                 accept.Send(message);
 
+            // end count task
             await accept.DisposeAsync();
-
             var count = await countTask;
 
             watch.Stop();
@@ -53,7 +53,7 @@ namespace RxSockets.Tests
             await server.DisposeAsync();
         }
 
-        [Fact]
+        //[Fact]
         public async Task T02_ReceiveStringsFromPrefixedBytes()
         {
             //var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
@@ -78,8 +78,8 @@ namespace RxSockets.Tests
             for (var i = 0; i < messages; i++)
                 accept.Send(message);
 
+            // end count task
             await accept.DisposeAsync();
-
             int count = await countTask;
 
             watch.Stop();

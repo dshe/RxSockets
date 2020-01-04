@@ -11,7 +11,6 @@ namespace RxSockets
     {
         internal static async Task<Socket> ConnectAsync(IPEndPoint endPoint, ILogger logger, int timeout = -1, CancellationToken ct = default)
         {
-            logger.LogInformation($"Connecting to EndPoint: {endPoint}.");
             var socket = Utilities.CreateSocket();
             var semaphore = new SemaphoreSlim(0, 1);
             void handler(object sender, SocketAsyncEventArgs a) => semaphore.Release();
@@ -32,23 +31,24 @@ namespace RxSockets
                 if (args.SocketError != SocketError.Success)
                     throw new SocketException((int)args.SocketError);
 
-                logger.LogInformation($"Connected.");
+                //logger.LogInformation($"Socket at {socket.LocalEndPoint} connected to {socket.RemoteEndPoint}.");
                 return socket;
             }
             catch (SocketException e)
             {
+                logger.LogInformation($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}.");
                 logger.LogInformation(e, Enum.GetName(typeof(SocketError), e.ErrorCode));
                 throw;
             }
             catch (OperationCanceledException e)
             {
-                logger.LogInformation($"Could not connect to EndPoint.");
+                logger.LogInformation($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}.");
                 logger.LogInformation(e, "Exception");
                 throw;
             }
             catch (Exception e)
             {
-                logger.LogInformation($"Could not connect to EndPoint.");
+                logger.LogInformation($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}.");
                 logger.LogInformation(e, "Exception");
                 throw;
             }

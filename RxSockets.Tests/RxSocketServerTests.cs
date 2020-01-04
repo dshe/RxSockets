@@ -43,8 +43,8 @@ namespace RxSockets.Tests
         {
             var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
             await server.DisposeAsync();
-            //await Assert.ThrowsAsync<ObjectDisposedException>(async () => await server.AcceptObservable.LastOrDefaultAsync());
-            await server.AcceptObservable.LastOrDefaultAsync();
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await server.AcceptObservable.LastOrDefaultAsync());
+            //await server.AcceptObservable.LastOrDefaultAsync();
         }
 
         [Fact]

@@ -33,11 +33,9 @@ namespace RxSockets
                 throw new ArgumentNullException(nameof(endPoint));
             if (backLog < 0)
                 throw new Exception($"Invalid backLog: {backLog}.");
-            logger.LogInformation($"Creating server at EndPoint: {endPoint}.");
             var socket = Utilities.CreateSocket();
             socket.Bind(endPoint);
             socket.Listen(backLog);
-            logger.LogTrace("Listening.");
             return new RxSocketServer(socket, logger);
         }
     }

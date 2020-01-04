@@ -12,7 +12,7 @@ namespace RxSockets.Tests
     {
         public SocketConnectorTest(ITestOutputHelper output): base(output) { }
 
-        [Fact]
+        //[Fact]
         public async Task T01_Connection_Refused()
         {
             var e = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.ConnectAsync(IPEndPoint, Logger));

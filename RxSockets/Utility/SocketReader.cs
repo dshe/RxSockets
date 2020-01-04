@@ -30,33 +30,25 @@ namespace RxSockets
 
         internal IEnumerable<byte> Read()
         {
-            while (!Ct.IsCancellationRequested)
+            while (true)
             {
+                Ct.ThrowIfCancellationRequested();
                 if (Position == Args.BytesTransferred)
                 {
                     if (Socket.ReceiveAsync(Args))
-                    {
-                        try
-                        {
-                            Semaphore.Wait(Ct);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            break;
-                        }
-                    }
+                        Semaphore.Wait(Ct);
                     if (Args.BytesTransferred == 0)
-                        break;
+                        yield break;
                     Logger.LogTrace($"Received {Args.BytesTransferred} bytes.");
                     Position = 0;
                 }
                 yield return Buffer[Position++];
             }
-            yield break;
         }
 
         internal async Task<byte> ReadAsync()
         {
+            Ct.ThrowIfCancellationRequested();
             if (Position == Args.BytesTransferred)
             {
                 if (Socket.ReceiveAsync(Args))

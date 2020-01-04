@@ -1,8 +1,8 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net.Sockets;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
-
-
 
 namespace RxSockets.Tests
 {
@@ -27,30 +27,30 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public void T01_DisposeNotConnectedSocket()
+        public async Task T01_DisposeNotConnectedSocket()
         {
             Assert.False(Socket.Connected);
             Assert.False(Disposer.DisposeRequested);
-            Disposer.DisposeAsync();
+            await Disposer.DisposeAsync();
             Assert.True(Disposer.DisposeRequested);
         }
 
         [Fact]
-        public void T02_DisposeConnectedSocket()
+        public async Task T02_DisposeConnectedSocket()
         {
             Connect();
-            Disposer.DisposeAsync();
+            await Disposer.DisposeAsync();
             Assert.True(Disposer.DisposeRequested);
-            Disposer.DisposeAsync();
+            await Disposer.DisposeAsync();
         }
 
 
         [Fact]
-        public void T05_DisposeDisposedSocket()
+        public async Task T05_DisposeDisposedSocket()
         {
             Connect();
             Socket.Dispose();
-            Disposer.DisposeAsync();
+            await Assert.ThrowsAnyAsync<Exception>(async() => await Disposer.DisposeAsync());
         }
     }
 }

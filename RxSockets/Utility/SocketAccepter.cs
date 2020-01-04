@@ -25,22 +25,13 @@ namespace RxSockets
 
         internal IEnumerable<Socket> Accept()
         {
-            Logger.LogTrace("Accept started.");
             while (true)
             {
+                Ct.ThrowIfCancellationRequested();
                 Args.AcceptSocket = Utilities.CreateSocket();
                 if (Socket.AcceptAsync(Args))
-                {
-                    try
-                    {
-                        Semaphore.Wait(Ct);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        yield break;
-                    }
-                }
-                Logger.LogInformation($"Accepted socket: {Args.AcceptSocket.LocalEndPoint}.");
+                    Semaphore.Wait(Ct);
+                Logger.LogInformation($"RxSocketServer on {Socket.LocalEndPoint} accepted {Args.AcceptSocket.RemoteEndPoint}.");
                 yield return Args.AcceptSocket;
             }
         }
