@@ -15,13 +15,15 @@ namespace RxSockets
         private readonly ILogger Logger;
         private readonly CancellationToken Ct;
         private readonly Socket Socket;
+        private readonly string Name;
         private readonly SemaphoreSlim Semaphore = new SemaphoreSlim(0, 1);
         private readonly SocketAsyncEventArgs Args = new SocketAsyncEventArgs();
         private int Position;
 
-        internal SocketReader(Socket socket, CancellationToken ct, ILogger logger)
+        internal SocketReader(Socket socket, string name, CancellationToken ct, ILogger logger)
         {
             Socket = socket;
+            Name = name;
             Ct = ct;
             Logger = logger;
             Args.Completed += (_, __) => Semaphore.Release();
@@ -39,7 +41,7 @@ namespace RxSockets
                         Semaphore.Wait(Ct);
                     if (Args.BytesTransferred == 0)
                         yield break;
-                    Logger.LogTrace($"Received {Args.BytesTransferred} bytes.");
+                    LogMessage();
                     Position = 0;
                 }
                 yield return Buffer[Position++];
@@ -55,40 +57,34 @@ namespace RxSockets
                     await Semaphore.WaitAsync(Ct).ConfigureAwait(false);
                 if (Args.BytesTransferred == 0)
                     throw new SocketException((int)SocketError.NoData);
-                Logger.LogTrace($"Received {Args.BytesTransferred} bytes.");
+                LogMessage();
                 Position = 0;
             }
             return Buffer[Position++];
         }
 
+        private void LogMessage()
+        {
+            Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {Args.BytesTransferred} bytes from {Socket.RemoteEndPoint}.");
+        }
+
         /* Requires NetStardard 2.0 => 2.1
         internal async IAsyncEnumerable<byte> ReadAsync()
         {
-            while (!Ct.IsCancellationRequested)
+            while (true)
             {
-                if (Position < Args.BytesTransferred)
+                Ct.ThrowIfCancellationRequested();
+                if (Position == Args.BytesTransferred)
                 {
-                    yield return Buffer[Position++];
-                    continue;
+                    if (Socket.ReceiveAsync(Args))
+                        await Semaphore.WaitAsync(Ct).ConfigureAwait(false);
+                    if (Args.BytesTransferred == 0)
+                        yield break;
+                    Logger.LogTrace($"Received {Args.BytesTransferred} bytes.");
+                    Position = 0;
                 }
-
-                if (Socket.ReceiveAsync(Args))
-                {
-                    try
-                    {
-                        await Semaphore.WaitAsync(Ct);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        break;
-                    }
-                }
-                if (Args.BytesTransferred == 0)
-                    break;
-                Logger.LogTrace($"Received {Args.BytesTransferred} bytes.");
-                Position = 0;
+                yield return Buffer[Position++];
             }
-            yield break;
         }
         */
     }

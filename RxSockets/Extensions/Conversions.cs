@@ -70,10 +70,9 @@ namespace RxSockets
             {
                 var b = await byteReader().ConfigureAwait(false);
                 if (b == 0)
-                    break;
+                    return GetString(ms);
                 ms.WriteByte(b);
             }
-            return GetString(ms);
         }
 
         private static string GetString(in MemoryStream ms) =>

@@ -21,6 +21,7 @@ namespace RxSockets.Tests
         {
             Write = output.WriteLine;
 
+            /*
             AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs args) =>
             {
                 Debug.Write("CurrentDomain_UnhandledException");
@@ -28,6 +29,7 @@ namespace RxSockets.Tests
                 if (args.ExceptionObject is Exception exception)
                     Write(exception.ToString());
             };
+            */
 
             var provider = new MXLoggerProvider(output.WriteLine);
             LoggerFactory = new LoggerFactory(new[] { provider });

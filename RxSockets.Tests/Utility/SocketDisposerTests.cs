@@ -14,7 +14,7 @@ namespace RxSockets.Tests
 
         public SocketDisposerTest(ITestOutputHelper output) : base(output)
         {
-            Disposer = new SocketDisposer(Socket, Logger);
+            Disposer = new SocketDisposer(Socket, "?", Logger);
         }
 
         private void Connect()

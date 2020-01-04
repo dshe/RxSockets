@@ -32,20 +32,28 @@ namespace RxSockets
         internal RxSocketServer(Socket socket, ILogger logger)
         {
             Logger = logger;
-            Disposer = new SocketDisposer(socket, logger);
+            Disposer = new SocketDisposer(socket, "RxSocketServer", logger);
             SocketAccepter = new SocketAccepter(socket, logger, Cts.Token);
             AcceptObservable = SocketAccepter.Accept()
-                .ToObservable(NewThreadScheduler.Default)
-                .Select(acceptSocket => new RxSocketClient(acceptSocket, logger))
+                .ToObservable(NewThreadScheduler.Default.Catch<Exception>(ExceptionHandler))
+                .Select(acceptSocket => new RxSocketClient(acceptSocket, true, logger))
                 .Do(client => Clients.Add(client));
-            Logger.LogTrace($"RxSocketServer constructed on {socket.LocalEndPoint}.");
+            Logger.LogDebug($"RxSocketServer created on {socket.LocalEndPoint}.");
+        }
+
+        private bool ExceptionHandler(Exception e)
+        {
+            if (!Cts.IsCancellationRequested)
+                Logger.LogWarning($"RxSocketServer caught {e.ToString()}.");
+            return true;
         }
 
         public async Task DisposeAsync()
         {
             Cts.Cancel();
-            await Disposer.DisposeAsync().ConfigureAwait(false);
-            await Task.WhenAll(Clients.Select(client => client.DisposeAsync()));
+            var task = Disposer.DisposeAsync();
+            await Task.WhenAll(Clients.Select(client => client.DisposeAsync())).ConfigureAwait(false);
+            await task.ConfigureAwait(false);
         }
     }
 }

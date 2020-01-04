@@ -31,7 +31,7 @@ namespace RxSockets
                 Args.AcceptSocket = Utilities.CreateSocket();
                 if (Socket.AcceptAsync(Args))
                     Semaphore.Wait(Ct);
-                Logger.LogInformation($"RxSocketServer on {Socket.LocalEndPoint} accepted {Args.AcceptSocket.RemoteEndPoint}.");
+                Logger.LogDebug($"RxSocketServer on {Socket.LocalEndPoint} accepted {Args.AcceptSocket.RemoteEndPoint}.");
                 yield return Args.AcceptSocket;
             }
         }

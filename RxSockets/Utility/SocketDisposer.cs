@@ -10,13 +10,15 @@ namespace RxSockets
     {
         private readonly ILogger Logger;
         private readonly Socket Socket;
+        private readonly string Name;
         internal bool DisposeRequested => Disposed == 1;
         private int Disposed = 0;
         private readonly TaskCompletionSource<bool> Tcs = new TaskCompletionSource<bool>();
 
-        internal SocketDisposer(Socket socket, ILogger logger)
+        internal SocketDisposer(Socket socket, string name, ILogger logger)
         {
             Socket = socket ?? throw new ArgumentNullException(nameof(socket));
+            Name = name;
             Logger = logger;
         }
 
@@ -24,7 +26,7 @@ namespace RxSockets
         {
             if (Interlocked.CompareExchange(ref Disposed, 1, 0) == 1)
             {
-                await Tcs.Task;
+                await Tcs.Task.ConfigureAwait(false);
                 return;
             }
 
@@ -42,14 +44,17 @@ namespace RxSockets
                     args.Completed += (_, __) => semaphore.Release();
                     if (Socket.DisconnectAsync(args))
                         await semaphore.WaitAsync().ConfigureAwait(false);
-                    Logger.LogTrace($"Disconnected socket on {localEndPoint} from {remoteEndPoint}.");
+                    Logger.LogDebug($"{Name} on {localEndPoint} disposed and disconnected from {remoteEndPoint}.");
                 }
-                Socket.Dispose();
-                Logger.LogTrace($"Disposed socket on {localEndPoint}.");
+                else
+                {
+                    Socket.Dispose();
+                    Logger.LogDebug($"{Name} on {localEndPoint} disposed.");
+                }
             }
             catch (Exception e)
             {
-                Logger.LogError(e, $"Disconnect socket exception.");
+                Logger.LogWarning(e, $"{Name} dispose exception.");
                 throw;
             }
             finally

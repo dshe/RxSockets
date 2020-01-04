@@ -12,7 +12,7 @@ namespace RxSockets.Tests
     {
         public SocketConnectorTest(ITestOutputHelper output): base(output) { }
 
-        //[Fact]
+        [Fact]
         public async Task T01_Connection_Refused()
         {
             var e = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.ConnectAsync(IPEndPoint, Logger));
@@ -42,7 +42,7 @@ namespace RxSockets.Tests
             serverSocket.Listen(10);
 
             var socket = await SocketConnector.ConnectAsync(IPEndPoint, Logger);
-            var disposer = new SocketDisposer(socket, Logger);
+            var disposer = new SocketDisposer(socket, "?", Logger);
             await disposer.DisposeAsync();
 
             serverSocket.Dispose();

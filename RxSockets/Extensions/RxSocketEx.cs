@@ -20,7 +20,7 @@ namespace RxSockets
             if (endPoint == null)
                 throw new ArgumentNullException(nameof(endPoint));
             var socket = await SocketConnector.ConnectAsync(endPoint, logger, timeout, ct).ConfigureAwait(false);
-            return new RxSocketClient(socket, logger);
+            return new RxSocketClient(socket, false, logger);
         }
 
 

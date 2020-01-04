@@ -22,6 +22,7 @@ namespace RxSockets
     {
         private readonly ILogger Logger;
         private readonly CancellationTokenSource Cts = new CancellationTokenSource();
+        private readonly string Name;
         private readonly Socket Socket;
         private readonly SocketDisposer Disposer;
         private readonly SocketReader SocketReader;
@@ -29,21 +30,31 @@ namespace RxSockets
         public IObservable<byte> ReceiveObservable { get; }
         public bool Connected => Socket.Connected;
 
-        internal RxSocketClient(Socket connectedSocket, ILogger logger)
+        internal RxSocketClient(Socket connectedSocket, bool isAcceptSocket, ILogger logger)
         {
             Socket = connectedSocket.Connected ? connectedSocket : throw new SocketException((int)SocketError.NotConnected);
+            Name = $"{(isAcceptSocket ? "Accepted " : "")}RxSocketClient";
             Logger = logger;
-            Disposer = new SocketDisposer(connectedSocket, logger);
-            SocketReader = new SocketReader(connectedSocket, Cts.Token, logger);
-            ReceiveObservable = SocketReader.Read().ToObservable(NewThreadScheduler.Default);
-            Logger.LogTrace($"RxSocketClient created on {Socket.LocalEndPoint} connected to {Socket.RemoteEndPoint}.");
+            Disposer = new SocketDisposer(connectedSocket, Name, logger);
+            SocketReader = new SocketReader(connectedSocket, Name, Cts.Token, logger);
+            ReceiveObservable = SocketReader.Read()
+                .ToObservable(NewThreadScheduler.Default.Catch<Exception>(ExceptionHandler));
+            Logger.LogDebug($"{Name} created on {Socket.LocalEndPoint} connected to {Socket.RemoteEndPoint}.");
         }
+
+        private bool ExceptionHandler(Exception e)
+        {
+            if (!Cts.IsCancellationRequested)
+                Logger.LogTrace($"{Name} caught {e.ToString()}.");
+            return true;
+        }
+
 
         public void Send(byte[] buffer) => Send(buffer, 0, buffer.Length);
         public void Send(byte[] buffer, int offset, int length)
         {
             Socket.Send(buffer, offset, length, SocketFlags.None);
-            Logger.LogTrace($"Sent {length} bytes.");
+            Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} sent {length} bytes to {Socket.RemoteEndPoint}.");
         }
 
         public async Task DisposeAsync()

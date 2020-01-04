@@ -31,7 +31,6 @@ namespace RxSockets
                 if (args.SocketError != SocketError.Success)
                     throw new SocketException((int)args.SocketError);
 
-                //logger.LogInformation($"Socket at {socket.LocalEndPoint} connected to {socket.RemoteEndPoint}.");
                 return socket;
             }
             catch (SocketException e)
@@ -48,8 +47,8 @@ namespace RxSockets
             }
             catch (Exception e)
             {
-                logger.LogInformation($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}.");
-                logger.LogInformation(e, "Exception");
+                logger.LogWarning($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}.");
+                logger.LogWarning(e, "Exception");
                 throw;
             }
             finally
