@@ -47,8 +47,6 @@ namespace RxSockets.Tests
 
             serverSocket.Dispose();
         }
-
     }
-
 }
 

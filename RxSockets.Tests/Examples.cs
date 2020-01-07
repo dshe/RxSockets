@@ -16,12 +16,13 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T00_Example()
         {
-            // Create a socket server on the Endpoint.
+            // Create a socket server on the EndPoint.
             var server = IPEndPoint.CreateRxSocketServer();
 
             // Start accepting connections from clients.
             server.AcceptObservable.Subscribe(acceptClient =>
             {
+                // After the server accepts a client connection...
                 acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
                 {
                     // Echo each message received back to the client.
@@ -29,14 +30,17 @@ namespace RxSockets.Tests
                 });
             });
 
-            // Create a socket client by connecting to the server at EndPoint.
+            // Create a socket client by first connecting to the server at the EndPoint.
             var client = await IPEndPoint.ConnectRxSocketClientAsync();
 
+            // Start receiving messages from the server.
             client.ReceiveObservable.ToStrings().Subscribe(onNext:message =>
             {
+                // The message received from the server is "Hello!".
                 Assert.Equal("Hello!", message);
             });
 
+            // Send the message "Hello" to the server (which will be echoed back to the client).
             client.Send("Hello!".ToByteArray());
 
             await client.DisposeAsync();
@@ -44,7 +48,7 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public async Task T00_SendAndReceiveStringMessage()
+        public async Task T01_SendAndReceiveStringMessage()
         {
             // Create a socket server on the endpoint.
             var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
@@ -86,7 +90,7 @@ namespace RxSockets.Tests
             });
 
             accept.Send("Welcome!".ToByteArray());
-            "Welcome Again!".ToByteArray().SendFrom(accept); // Note: SendTo() extension method.
+            accept.Send("Welcome Again!".ToByteArray());
 
             await client.DisposeAsync();
             await server.DisposeAsync();
@@ -97,10 +101,7 @@ namespace RxSockets.Tests
         {
             var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
 
-            server.AcceptObservable.Subscribe(accepted =>
-            {
-                "Welcome!".ToByteArray().SendFrom(accepted);
-            });
+            server.AcceptObservable.Subscribe(accepted => accepted.Send("Welcome!".ToByteArray()));
 
             var client1 = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
             var client2 = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
@@ -113,7 +114,6 @@ namespace RxSockets.Tests
             await client1.DisposeAsync();
             await client2.DisposeAsync();
             await client3.DisposeAsync();
-
             await server.DisposeAsync();
         }
 
@@ -124,13 +124,13 @@ namespace RxSockets.Tests
 
             server.AcceptObservable.Subscribe(accepted =>
             {
-                "Welcome!".ToByteArray().SendFrom(accepted);
-
+                accepted.Send("Welcome!".ToByteArray());
                 accepted
                     .ReceiveObservable
                     .ToStrings()
-                    .Subscribe(s => s.ToByteArray().SendFrom(accepted));
+                    .Subscribe(s => accepted.Send(s.ToByteArray()));
             });
+
 
             var clients = new List<IRxSocketClient>();
             for (var i = 0; i < 10; i++)

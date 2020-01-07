@@ -14,9 +14,6 @@ namespace RxSockets
     {
         public static byte[] ToByteArrayWithLengthPrefix(this IEnumerable<string> source)
         {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
             using var ms = new MemoryStream() { Position = 4 };
             foreach (var s in source)
             {
@@ -32,8 +29,6 @@ namespace RxSockets
 
         private static byte[] GetBytes(in MemoryStream ms)
         {
-            if (ms == null)
-                throw new ArgumentNullException(nameof(ms));
             var length = Convert.ToInt32(ms.Position) - 4;
             var prefix = IPAddress.HostToNetworkOrder(length);
             ms.Position = 0;
@@ -44,7 +39,7 @@ namespace RxSockets
         /////////////////////////////////////////////////////////////////////////////////
 
         // Note: not an extension method!
-        public static async Task<string[]> FromBytesWithLengthPrefix(Func<Task<byte>> byteReader)
+        public static async Task<string[]> ReadStringsFromBytesWithLengthPrefix(Func<Task<byte>> byteReader)
         {
             using var ms = new MemoryStream();
             for (int i = 0; i < 4; i++)
@@ -58,11 +53,7 @@ namespace RxSockets
 
         public static IEnumerable<byte[]> FromByteArrayWithLengthPrefix(this IEnumerable<byte> source)
         {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
-            var length = -1;
-
+            int length = -1;
             using var ms = new MemoryStream();
             foreach (var b in source)
             {
@@ -85,10 +76,7 @@ namespace RxSockets
 
         public static IObservable<byte[]> FromByteArrayWithLengthPrefix(this IObservable<byte> source)
         {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
-            var length = -1;
+            int length = -1;
             var ms = new MemoryStream();
 
             return Observable.Create<byte[]>(observer =>
@@ -136,8 +124,6 @@ namespace RxSockets
 
         internal static string[] GetStringArray(byte[] buffer) // keep internal for testing
         {
-            if (buffer == null)
-                throw new ArgumentNullException(nameof(buffer));
             var length = buffer.Length;
             if (length == 0 || buffer[length - 1] != 0)
                 throw new InvalidDataException("GetStringArray: no termination.");

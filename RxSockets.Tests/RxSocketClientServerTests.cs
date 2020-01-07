@@ -28,10 +28,10 @@ namespace RxSockets.Tests
                 var message1 = await ConversionsEx.ReadString(accept.ReadAsync);
                 Assert.Equal("API", message1);
 
-                var message2 = await ConversionsWithLengthPrefixEx.FromBytesWithLengthPrefix(accept.ReadAsync);
+                var message2 = await ConversionsWithLengthPrefixEx.ReadStringsFromBytesWithLengthPrefix(accept.ReadAsync);
                 Assert.Equal("HelloFromClient", message2.Single());
 
-                new[] { "HelloFromServer" }.ToByteArrayWithLengthPrefix().SendFrom(accept);
+                accept.Send(new[] { "HelloFromServer" }.ToByteArrayWithLengthPrefix());
 
                 await server.DisposeAsync();
             });
@@ -39,12 +39,12 @@ namespace RxSockets.Tests
             var client = await IPEndPoint.ConnectRxSocketClientAsync();
 
             // Send only the first message without prefix.
-            "API".ToByteArray().SendFrom(client);
+            client.Send("API".ToByteArray());
 
             // Start sending and receiving messages with an int32 message length prefix (UseV100Plus).
-            new[] { "HelloFromClient" }.ToByteArrayWithLengthPrefix().SendFrom(client);
+            client.Send(new[] { "HelloFromClient" }.ToByteArrayWithLengthPrefix());
 
-            var message3 = await ConversionsWithLengthPrefixEx.FromBytesWithLengthPrefix(client.ReadAsync);
+            var message3 = await ConversionsWithLengthPrefixEx.ReadStringsFromBytesWithLengthPrefix(client.ReadAsync);
             Assert.Equal("HelloFromServer", message3.Single());
 
             await client.DisposeAsync();

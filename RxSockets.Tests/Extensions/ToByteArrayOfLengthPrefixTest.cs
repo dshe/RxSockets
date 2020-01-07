@@ -6,8 +6,6 @@ using Xunit;
 using RxSockets;
 using System.IO;
 
-
-
 namespace RxSockets.Tests
 {
     public class ToByteArrayOfLengthPrefixTest

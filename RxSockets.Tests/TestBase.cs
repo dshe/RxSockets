@@ -21,6 +21,13 @@ namespace RxSockets.Tests
         {
             Write = output.WriteLine;
 
+            var provider = new MXLoggerProvider(output.WriteLine);
+            LoggerFactory = new LoggerFactory(new[] { provider });
+
+            Logger = LoggerFactory.CreateLogger<TestBase>();
+            SocketServerLogger = LoggerFactory.CreateLogger<RxSocketServer>();
+            SocketClientLogger = LoggerFactory.CreateLogger<RxSocketClient>();
+
             /*
             AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs args) =>
             {
@@ -30,13 +37,6 @@ namespace RxSockets.Tests
                     Write(exception.ToString());
             };
             */
-
-            var provider = new MXLoggerProvider(output.WriteLine);
-            LoggerFactory = new LoggerFactory(new[] { provider });
-
-            Logger = LoggerFactory.CreateLogger<TestBase>();
-            SocketServerLogger = LoggerFactory.CreateLogger<RxSocketServer>();
-            SocketClientLogger = LoggerFactory.CreateLogger<RxSocketClient>();
         }
     }
 }

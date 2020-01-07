@@ -32,7 +32,7 @@ namespace RxSockets
 
         internal RxSocketClient(Socket connectedSocket, bool isAcceptSocket, ILogger logger)
         {
-            Socket = connectedSocket.Connected ? connectedSocket : throw new SocketException((int)SocketError.NotConnected);
+            Socket = connectedSocket;
             Name = $"{(isAcceptSocket ? "Accepted " : "")}RxSocketClient";
             Logger = logger;
             Disposer = new SocketDisposer(connectedSocket, Name, logger);
@@ -45,7 +45,7 @@ namespace RxSockets
         private bool ExceptionHandler(Exception e)
         {
             if (!Cts.IsCancellationRequested)
-                Logger.LogTrace($"{Name} caught {e.ToString()}.");
+                Logger.LogTrace($"{Name} scheduler caught {e.ToString()}.");
             return true;
         }
 

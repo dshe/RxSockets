@@ -11,14 +11,11 @@ namespace RxSockets
 {
     public static class RxSocketEx
     {
-
         public static Task<IRxSocketClient> ConnectRxSocketClientAsync(this IPEndPoint endPoint, int timeout = -1, CancellationToken ct = default)
             => ConnectRxSocketClientAsync(endPoint, NullLogger<RxSocketClient>.Instance, timeout, ct);
 
         public static async Task<IRxSocketClient> ConnectRxSocketClientAsync(this IPEndPoint endPoint, ILogger<RxSocketClient> logger, int timeout = -1, CancellationToken ct = default)
         {
-            if (endPoint == null)
-                throw new ArgumentNullException(nameof(endPoint));
             var socket = await SocketConnector.ConnectAsync(endPoint, logger, timeout, ct).ConfigureAwait(false);
             return new RxSocketClient(socket, false, logger);
         }
@@ -29,8 +26,6 @@ namespace RxSockets
 
         public static IRxSocketServer CreateRxSocketServer(this IPEndPoint endPoint, ILogger<RxSocketServer> logger, int backLog = 10)
         {
-            if (endPoint == null)
-                throw new ArgumentNullException(nameof(endPoint));
             if (backLog < 0)
                 throw new Exception($"Invalid backLog: {backLog}.");
             var socket = Utilities.CreateSocket();

@@ -16,10 +16,8 @@ namespace RxSockets.Tests
         [InlineData(new byte[] { 0, 0 }, "\0" )]
         [InlineData(new byte[] { 65, 0 }, "A" )]
         [InlineData(new byte[] { 65, 66, 0 }, "AB" )]
-        public void T01_ToByteArray(byte[] encoded, string str)
-        {
+        public void T01_ToByteArray(byte[] encoded, string str) =>
             Assert.Equal(encoded, ConversionsEx.ToByteArray(str));
-        }
 
         /////////////////////////////////////////////////////////////////////
 
@@ -50,6 +48,5 @@ namespace RxSockets.Tests
             Assert.Equal(strings, bytes.ToStrings().ToList());
             Assert.Equal(strings, await bytes.ToObservable().ToStrings().ToList());
         }
-
     }
 }

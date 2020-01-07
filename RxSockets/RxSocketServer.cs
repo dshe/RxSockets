@@ -44,16 +44,16 @@ namespace RxSockets
         private bool ExceptionHandler(Exception e)
         {
             if (!Cts.IsCancellationRequested)
-                Logger.LogWarning($"RxSocketServer caught {e.ToString()}.");
+                Logger.LogWarning($"RxSocketServer scheduler caught {e.ToString()}.");
             return true;
         }
 
         public async Task DisposeAsync()
         {
             Cts.Cancel();
-            var task = Disposer.DisposeAsync();
-            await Task.WhenAll(Clients.Select(client => client.DisposeAsync())).ConfigureAwait(false);
-            await task.ConfigureAwait(false);
+            var disposeTasks = Clients.Select(client => client.DisposeAsync()).ToList();
+            disposeTasks.Add(Disposer.DisposeAsync());
+            await Task.WhenAll(disposeTasks).ConfigureAwait(false);
         }
     }
 }

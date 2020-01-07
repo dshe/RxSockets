@@ -17,7 +17,7 @@ namespace RxSockets
 
         internal SocketDisposer(Socket socket, string name, ILogger logger)
         {
-            Socket = socket ?? throw new ArgumentNullException(nameof(socket));
+            Socket = socket;
             Name = name;
             Logger = logger;
         }
@@ -54,7 +54,7 @@ namespace RxSockets
             }
             catch (Exception e)
             {
-                Logger.LogWarning(e, $"{Name} dispose exception.");
+                Logger.LogWarning(e, $"{Name} DisposeAsync exception.");
                 throw;
             }
             finally

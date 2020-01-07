@@ -13,9 +13,6 @@ namespace RxSockets
 
         public static IEnumerable<string> ToStrings(this IEnumerable<byte> source)
         {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
             using var ms = new MemoryStream();
             foreach (var b in source)
             {
@@ -33,9 +30,6 @@ namespace RxSockets
 
         public static IObservable<string> ToStrings(this IObservable<byte> source)
         {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
             var ms = new MemoryStream();
 
             return Observable.Create<string>(observer =>

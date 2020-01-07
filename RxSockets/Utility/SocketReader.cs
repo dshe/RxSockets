@@ -32,6 +32,7 @@ namespace RxSockets
 
         internal IEnumerable<byte> Read()
         {
+            Logger.LogDebug($"{Name} on {Socket.LocalEndPoint} starting to receive streaming bytes from {Socket.RemoteEndPoint}.");
             while (true)
             {
                 Ct.ThrowIfCancellationRequested();
@@ -41,7 +42,7 @@ namespace RxSockets
                         Semaphore.Wait(Ct);
                     if (Args.BytesTransferred == 0)
                         yield break;
-                    LogMessage();
+                    Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {Args.BytesTransferred} streaming bytes from {Socket.RemoteEndPoint}.");
                     Position = 0;
                 }
                 yield return Buffer[Position++];
@@ -57,15 +58,10 @@ namespace RxSockets
                     await Semaphore.WaitAsync(Ct).ConfigureAwait(false);
                 if (Args.BytesTransferred == 0)
                     throw new SocketException((int)SocketError.NoData);
-                LogMessage();
+                Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {Args.BytesTransferred} bytes asynchronously from {Socket.RemoteEndPoint}.");
                 Position = 0;
             }
             return Buffer[Position++];
-        }
-
-        private void LogMessage()
-        {
-            Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {Args.BytesTransferred} bytes from {Socket.RemoteEndPoint}.");
         }
 
         /* Requires NetStardard 2.0 => 2.1

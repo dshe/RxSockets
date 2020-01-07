@@ -22,12 +22,8 @@ namespace RxSockets.Tests
             var server = IPEndPoint.CreateRxSocketServer();
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
             var client = await IPEndPoint.ConnectRxSocketClientAsync();
-
-            Assert.True(client.Connected);
             var countTask = client.ReceiveObservable.ToStrings().Count().ToTask();
-
             var accept = await acceptTask;
-            Assert.True(accept.Connected);
 
             var watch = new Stopwatch();
             watch.Start();
