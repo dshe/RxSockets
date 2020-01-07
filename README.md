@@ -69,7 +69,7 @@ client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
     Assert.Equal("Hello!", message);
 });
 
-// Send the message "Hello" to the server (which will then be echoed back to the client).
+// Send the message "Hello" to the server, which the server will then echo back to the client.
 client.Send("Hello!".ToByteArray());
 
 await client.DisposeAsync();
