@@ -22,56 +22,56 @@ using RxSockets;
 
 ### server
 ```csharp
-interface IRxSocketServer: IDisposable
+interface IRxSocketServer
 {
     IObservable<IRxSocketClient> AcceptObservable { get; }
+    Task DisposeAsync();
 }
 ```
 ```csharp
+// Create an IPEndPoint on the local machine on an available arbitrary port.
 IPEndPoint endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
 
-// Create a socket server on the IPEndpoint.
+// Create a socket server on the IPEndPoint.
 IRxSocketServer server = endPoint.CreateRxSocketServer();
 
 // Start accepting connections from clients.
 server.AcceptObservable.Subscribe(onNext: acceptClient =>
 {
+    // After the server accepts a client connection, start receiving messages from the client and ...
     acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
     {
-        // Echo received messages back to the client.
+        // Echo each message received back to the client.
         acceptClient.Send(message.ToByteArray());
     });
 });
 ```
 ### client
 ```csharp
-interface IRxSocketClient: IDisposable
+interface IRxSocketClient
 {
     bool Connected { get; }
     void Send(byte[] buffer);
     void Send(byte[] buffer, int offset, int length);
     Task<byte> ReadAsync();
     IObservable<byte> ReceiveObservable { get; }
+    Task DisposeAsync();
 }
 ```
 ```csharp
-IPEndPoint endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
-
-// Create a socket client by connecting to the server at the IPEndPoint.
+// Create a socket client by first connecting to the server at the IPEndPoint.
 IRxSocketClient client = await endPoint.ConnectRxSocketClientAsync();
 
+// Start receiving messages from the server.
 client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
 {
-    // Receive message from the server.
+    // The message received from the server is "Hello!".
     Assert.Equal("Hello!", message);
 });
 
-// Send a message to the server.
+// Send the message "Hello" to the server (which will then be echoed back to the client).
 client.Send("Hello!".ToByteArray());
 
-// Wait for the message to be received by the server and sent back to the client.
-await Task.Delay(100);
-
-client.Dispose();
-server.Dispose();
+await client.DisposeAsync();
+await server.DisposeAsync();
 ```
