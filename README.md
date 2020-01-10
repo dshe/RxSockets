@@ -19,7 +19,6 @@ using Xunit.Abstractions;
 using Xunit;
 using RxSockets;
 ```
-
 ### server
 ```csharp
 interface IRxSocketServer
@@ -71,7 +70,8 @@ client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
 
 // Send the message "Hello" to the server, which the server will then echo back to the client.
 client.Send("Hello!".ToByteArray());
-
+```
+```csharp
 await client.DisposeAsync();
 await server.DisposeAsync();
 ```
