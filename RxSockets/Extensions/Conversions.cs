@@ -57,7 +57,7 @@ namespace RxSockets
         }
 
         // Note: not an extension method!
-        public static async Task<string> ReadString(Func<Task<byte>> byteReader)
+        public static async Task<string> ReadStringFromByteReader(Func<Task<byte>> byteReader)
         {
             using var ms = new MemoryStream();
             while (true)

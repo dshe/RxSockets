@@ -44,7 +44,7 @@ namespace RxSockets
                     args.Completed += (_, __) => semaphore.Release();
                     if (Socket.DisconnectAsync(args))
                         await semaphore.WaitAsync().ConfigureAwait(false);
-                    Logger.LogDebug($"{Name} on {localEndPoint} disposed and disconnected from {remoteEndPoint}.");
+                    Logger.LogDebug($"{Name} on {localEndPoint} disconnected from {remoteEndPoint} and disposed.");
                 }
                 else
                 {
@@ -54,7 +54,7 @@ namespace RxSockets
             }
             catch (Exception e)
             {
-                Logger.LogWarning(e, $"{Name} DisposeAsync exception.");
+                Logger.LogWarning($"{Name} DisposeAsync Exception: {e.Message}\r\n{e}");
                 throw;
             }
             finally

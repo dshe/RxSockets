@@ -26,8 +26,8 @@ namespace RxSockets
         private readonly Socket Socket;
         private readonly SocketDisposer Disposer;
         private readonly SocketReader SocketReader;
-        public Task<byte> ReadAsync() => SocketReader.ReadAsync();
-        public IObservable<byte> ReceiveObservable { get; }
+        public Task<byte> ReadAsync() => SocketReader.ReadByteAsync();
+        public IObservable<byte> ReceiveObservable => SocketReader.CreateReceiveObservable();
         public bool Connected => Socket.Connected;
 
         internal RxSocketClient(Socket connectedSocket, bool isAcceptSocket, ILogger logger)
@@ -35,20 +35,10 @@ namespace RxSockets
             Socket = connectedSocket;
             Name = $"{(isAcceptSocket ? "Accepted " : "")}RxSocketClient";
             Logger = logger;
+            Logger.LogDebug($"{Name} created on {Socket.LocalEndPoint} connected to {Socket.RemoteEndPoint}.");
             Disposer = new SocketDisposer(connectedSocket, Name, logger);
             SocketReader = new SocketReader(connectedSocket, Name, Cts.Token, logger);
-            ReceiveObservable = SocketReader.Read()
-                .ToObservable(NewThreadScheduler.Default.Catch<Exception>(ExceptionHandler));
-            Logger.LogDebug($"{Name} created on {Socket.LocalEndPoint} connected to {Socket.RemoteEndPoint}.");
         }
-
-        private bool ExceptionHandler(Exception e)
-        {
-            if (!Cts.IsCancellationRequested)
-                Logger.LogTrace($"{Name} scheduler caught {e.ToString()}.");
-            return true;
-        }
-
 
         public void Send(byte[] buffer) => Send(buffer, 0, buffer.Length);
         public void Send(byte[] buffer, int offset, int length)

@@ -17,7 +17,7 @@ namespace RxSockets.Tests
         public async Task T00_Example()
         {
             // Create a socket server on the EndPoint.
-            var server = IPEndPoint.CreateRxSocketServer();
+            var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
 
             // Start accepting connections from clients.
             server.AcceptObservable.Subscribe(acceptClient =>
@@ -31,7 +31,7 @@ namespace RxSockets.Tests
             });
 
             // Create a socket client by first connecting to the server at the EndPoint.
-            var client = await IPEndPoint.ConnectRxSocketClientAsync();
+            var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
 
             // Start receiving messages from the server.
             client.ReceiveObservable.ToStrings().Subscribe(onNext:message =>
@@ -42,6 +42,8 @@ namespace RxSockets.Tests
 
             // Send the message "Hello" to the server (which will be echoed back to the client).
             client.Send("Hello!".ToByteArray());
+
+            await Task.Delay(100);
 
             await client.DisposeAsync();
             await server.DisposeAsync();
@@ -80,9 +82,7 @@ namespace RxSockets.Tests
             var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
             var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-
             var accept = await acceptTask;
-            Assert.True(accept.Connected && client.Connected);
 
             client.ReceiveObservable.ToStrings().Subscribe(str =>
             {
@@ -91,6 +91,8 @@ namespace RxSockets.Tests
 
             accept.Send("Welcome!".ToByteArray());
             accept.Send("Welcome Again!".ToByteArray());
+
+            await Task.Delay(100);
 
             await client.DisposeAsync();
             await server.DisposeAsync();
@@ -133,7 +135,7 @@ namespace RxSockets.Tests
 
 
             var clients = new List<IRxSocketClient>();
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < 3; i++)
             {
                 var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
                 client.Send("Hello".ToByteArray());

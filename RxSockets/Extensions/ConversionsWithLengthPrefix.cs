@@ -39,7 +39,7 @@ namespace RxSockets
         /////////////////////////////////////////////////////////////////////////////////
 
         // Note: not an extension method!
-        public static async Task<string[]> ReadStringsFromBytesWithLengthPrefix(Func<Task<byte>> byteReader)
+        public static async Task<string[]> ReadStringsFromByteReader(Func<Task<byte>> byteReader)
         {
             using var ms = new MemoryStream();
             for (int i = 0; i < 4; i++)
@@ -51,7 +51,7 @@ namespace RxSockets
             return GetStringArray(ms.ToArray());
         }
 
-        public static IEnumerable<byte[]> FromByteArrayWithLengthPrefix(this IEnumerable<byte> source)
+        public static IEnumerable<byte[]> RemoveLengthPrefix(this IEnumerable<byte> source)
         {
             int length = -1;
             using var ms = new MemoryStream();
@@ -74,7 +74,7 @@ namespace RxSockets
                 throw new InvalidDataException("Incomplete.");
         }
 
-        public static IObservable<byte[]> FromByteArrayWithLengthPrefix(this IObservable<byte> source)
+        public static IObservable<byte[]> RemoveLengthPrefix(this IObservable<byte> source)
         {
             int length = -1;
             var ms = new MemoryStream();

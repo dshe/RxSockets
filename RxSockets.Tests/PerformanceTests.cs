@@ -7,7 +7,6 @@ using System.Net;
 using System.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Diagnostics;
-using System.Net.Sockets;
 
 namespace RxSockets.Tests
 {
@@ -16,7 +15,7 @@ namespace RxSockets.Tests
         public PerformanceTest(ITestOutputHelper output) : base(output) {}
         const int messages = 100_000;
 
-        //[Fact]
+        [Fact]
         public async Task T01_ReceiveStrings()
         {
             var server = IPEndPoint.CreateRxSocketServer();
@@ -49,19 +48,17 @@ namespace RxSockets.Tests
             await server.DisposeAsync();
         }
 
-        //[Fact]
+        [Fact]
         public async Task T02_ReceiveStringsFromPrefixedBytes()
         {
-            //var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
             var server = IPEndPoint.CreateRxSocketServer();
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
-            //var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
             var client = await IPEndPoint.ConnectRxSocketClientAsync();
 
             Assert.True(client.Connected);
 
-            var countTask = client.ReceiveObservable.FromByteArrayWithLengthPrefix().ToStringArray().Count().ToTask();
+            var countTask = client.ReceiveObservable.RemoveLengthPrefix().ToStringArray().Count().ToTask();
 
             var accept = await acceptTask;
             Assert.True(accept.Connected);

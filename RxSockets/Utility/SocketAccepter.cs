@@ -1,39 +1,74 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Text;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RxSockets
 {
     class SocketAccepter
     {
-        private readonly ILogger Logger;
         private readonly CancellationToken Ct;
+        private readonly ILogger Logger;
         private readonly Socket Socket;
         private readonly SemaphoreSlim Semaphore = new SemaphoreSlim(0, 1);
         private readonly SocketAsyncEventArgs Args = new SocketAsyncEventArgs();
 
-        internal SocketAccepter(Socket socket, ILogger logger, CancellationToken ct)
+        internal SocketAccepter(Socket socket, CancellationToken ct, ILogger logger)
         {
             Socket = socket;
-            Logger = logger;
             Ct = ct;
+            Logger = logger;
             Args.Completed += (x, y) => Semaphore.Release();
         }
 
-        internal IEnumerable<Socket> Accept()
+        internal IObservable<Socket> CreateAcceptObservable()
         {
-            while (true)
+            return Observable.Create<Socket>(async observer =>
             {
-                Ct.ThrowIfCancellationRequested();
-                Args.AcceptSocket = Utilities.CreateSocket();
-                if (Socket.AcceptAsync(Args))
-                    Semaphore.Wait(Ct);
-                Logger.LogDebug($"RxSocketServer on {Socket.LocalEndPoint} accepted {Args.AcceptSocket.RemoteEndPoint}.");
-                yield return Args.AcceptSocket;
-            }
+                var cts = CancellationTokenSource.CreateLinkedTokenSource(Ct);
+                var ct = cts.Token;
+                try
+                {
+                    while (true)
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        var socket = await AcceptAsync().ConfigureAwait(false);
+                        observer.OnNext(socket);
+                    }
+                }
+                catch (Exception e)
+                {
+                    if (cts.IsCancellationRequested && !Ct.IsCancellationRequested)
+                        observer.OnCompleted(); // unsubscribe
+                    else
+                    {
+                        try
+                        {
+                            if (!ct.IsCancellationRequested)
+                                Logger.LogDebug($"SocketAcceptor on {Socket.LocalEndPoint} Observer Exeption\r\n{e}");
+                            observer.OnError(e);
+                        }
+                        catch (Exception e2)
+                        {
+                            if (!ct.IsCancellationRequested)
+                                Logger.LogDebug($"SocketAcceptor on {Socket.LocalEndPoint} OnError Exeption\r\n{e2}");
+                        }
+                    }
+                }
+                return Disposable.Create(() => cts.Cancel());
+            });
+        }
+
+        private async Task<Socket> AcceptAsync()
+        {
+            Ct.ThrowIfCancellationRequested();
+            Args.AcceptSocket = Utilities.CreateSocket();
+            if (Socket.AcceptAsync(Args))
+                await Semaphore.WaitAsync(Ct).ConfigureAwait(false);
+            return Args.AcceptSocket;
         }
     }
 }

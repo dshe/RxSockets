@@ -2,6 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,9 +18,11 @@ namespace RxSockets
         private readonly ILogger Logger;
         private readonly CancellationToken Ct;
         private readonly Socket Socket;
-        private readonly string Name;
         private readonly SemaphoreSlim Semaphore = new SemaphoreSlim(0, 1);
         private readonly SocketAsyncEventArgs Args = new SocketAsyncEventArgs();
+        private readonly string Name;
+        private readonly IScheduler Scheduler = new NewThreadScheduler(
+            ts => new Thread(ts) { IsBackground = false, Name = "SocketReader" });
         private int Position;
 
         internal SocketReader(Socket socket, string name, CancellationToken ct, ILogger logger)
@@ -30,26 +35,7 @@ namespace RxSockets
             Args.SetBuffer(Buffer, 0, BufferLength);
         }
 
-        internal IEnumerable<byte> Read()
-        {
-            Logger.LogDebug($"{Name} on {Socket.LocalEndPoint} starting to receive streaming bytes from {Socket.RemoteEndPoint}.");
-            while (true)
-            {
-                Ct.ThrowIfCancellationRequested();
-                if (Position == Args.BytesTransferred)
-                {
-                    if (Socket.ReceiveAsync(Args))
-                        Semaphore.Wait(Ct);
-                    if (Args.BytesTransferred == 0)
-                        yield break;
-                    Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {Args.BytesTransferred} streaming bytes from {Socket.RemoteEndPoint}.");
-                    Position = 0;
-                }
-                yield return Buffer[Position++];
-            }
-        }
-
-        internal async Task<byte> ReadAsync()
+        internal async Task<byte> ReadByteAsync()
         {
             Ct.ThrowIfCancellationRequested();
             if (Position == Args.BytesTransferred)
@@ -58,30 +44,55 @@ namespace RxSockets
                     await Semaphore.WaitAsync(Ct).ConfigureAwait(false);
                 if (Args.BytesTransferred == 0)
                     throw new SocketException((int)SocketError.NoData);
-                Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {Args.BytesTransferred} bytes asynchronously from {Socket.RemoteEndPoint}.");
+                Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {Args.BytesTransferred} bytes async from {Socket.RemoteEndPoint}.");
                 Position = 0;
             }
             return Buffer[Position++];
         }
 
-        /* Requires NetStardard 2.0 => 2.1
-        internal async IAsyncEnumerable<byte> ReadAsync()
+        internal IObservable<byte> CreateReceiveObservable()
         {
-            while (true)
+            return Observable.Create<byte>(observer =>
             {
-                Ct.ThrowIfCancellationRequested();
-                if (Position == Args.BytesTransferred)
+                var cts = CancellationTokenSource.CreateLinkedTokenSource(Ct);
+                var ct = cts.Token;
+                Scheduler.Schedule(() =>
                 {
-                    if (Socket.ReceiveAsync(Args))
-                        await Semaphore.WaitAsync(Ct).ConfigureAwait(false);
-                    if (Args.BytesTransferred == 0)
-                        yield break;
-                    Logger.LogTrace($"Received {Args.BytesTransferred} bytes.");
-                    Position = 0;
-                }
-                yield return Buffer[Position++];
-            }
+                    try
+                    {
+                        while (true)
+                        {
+                            ct.ThrowIfCancellationRequested();
+                            if (Position == Args.BytesTransferred)
+                            {
+                                if (Socket.ReceiveAsync(Args))
+                                    Semaphore.Wait(ct);
+                                if (Args.BytesTransferred == 0)
+                                    break;
+                                Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {Args.BytesTransferred} bytes from {Socket.RemoteEndPoint}.");
+                                Position = 0;
+                            }
+                            observer.OnNext(Buffer[Position++]);
+                        }
+                        observer.OnCompleted();
+                    }
+                    catch (Exception e)
+                    {
+                        try
+                        {
+                            if (!ct.IsCancellationRequested)
+                                Logger.LogDebug($"{Name} on {Socket.LocalEndPoint} Observer Exception: {e.Message}\r\n{e}");
+                            observer.OnError(e);
+                        }
+                        catch (Exception e2)
+                        {
+                            if (!ct.IsCancellationRequested)
+                                Logger.LogDebug($"{Name} on {Socket.LocalEndPoint} OnError Exception: {e2.Message}\r\n{e2}");
+                        }
+                    }
+                });
+                return Disposable.Create(() => cts.Cancel());
+            });
         }
-        */
     }
 }

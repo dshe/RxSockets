@@ -35,20 +35,18 @@ namespace RxSockets
             }
             catch (SocketException e)
             {
-                logger.LogInformation($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}.");
-                logger.LogInformation(e, Enum.GetName(typeof(SocketError), e.ErrorCode));
+                var errorName = "SocketException: " + Enum.GetName(typeof(SocketError), e.ErrorCode);
+                logger.LogInformation($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}. {errorName}.\r\n{e}");
                 throw;
             }
             catch (OperationCanceledException e)
             {
-                logger.LogInformation($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}.");
-                logger.LogInformation(e, "Exception");
+                logger.LogInformation($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}. {e.Message}\r\n{e}");
                 throw;
             }
             catch (Exception e)
             {
-                logger.LogWarning($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}.");
-                logger.LogWarning(e, "Exception");
+                logger.LogWarning($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}. {e.Message}\r\n{e}");
                 throw;
             }
             finally
@@ -56,7 +54,6 @@ namespace RxSockets
                 args.Completed -= handler;
                 args.Dispose();
                 semaphore.Dispose();
-
                 if (args.SocketError != SocketError.Success)
                 {
                     Socket.CancelConnectAsync(args);
