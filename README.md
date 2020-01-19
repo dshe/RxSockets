@@ -18,6 +18,9 @@ using System.Reactive.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit;
 using RxSockets;
+
+// Create an IPEndPoint on the local machine on an available arbitrary port.
+IPEndPoint endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
 ```
 ### server
 ```csharp
@@ -28,9 +31,6 @@ interface IRxSocketServer
 }
 ```
 ```csharp
-// Create an IPEndPoint on the local machine on an available arbitrary port.
-IPEndPoint endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
-
 // Create a socket server on the IPEndPoint.
 IRxSocketServer server = endPoint.CreateRxSocketServer();
 
