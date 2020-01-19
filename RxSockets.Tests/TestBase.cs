@@ -8,22 +8,20 @@ using System.Diagnostics;
 
 namespace RxSockets.Tests
 {
-    public abstract class TestBase : IDisposable
+    public abstract class TestBase
     {
-        protected readonly Action<string> Write;
         protected readonly IPEndPoint IPEndPoint = Utilities.GetEndPointOnLoopbackRandomPort();
+        protected readonly Action<string> Write;
+        protected readonly MXLoggerProvider LoggerProvider;
         protected readonly ILoggerFactory LoggerFactory;
         protected readonly ILogger Logger;
         protected readonly ILogger<RxSocketServer> SocketServerLogger;
         protected readonly ILogger<RxSocketClient> SocketClientLogger;
-        protected readonly MXLoggerProvider LoggerProvider;
 
         protected TestBase(ITestOutputHelper output)
         {
             Write = output.WriteLine;
-
-            //LoggerProvider = new MXLoggerProvider(output.WriteLine);
-            LoggerProvider = new MXLoggerProvider();
+            LoggerProvider = new MXLoggerProvider(output.WriteLine);
             LoggerFactory = new LoggerFactory(new[] { LoggerProvider });
 
             Logger = LoggerFactory.CreateLogger<TestBase>();
@@ -40,7 +38,5 @@ namespace RxSockets.Tests
             };
             */
         }
-
-        public void Dispose() => LoggerProvider.WriteTo(Write);
     }
 }

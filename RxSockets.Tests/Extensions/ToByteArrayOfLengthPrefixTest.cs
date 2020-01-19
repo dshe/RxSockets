@@ -8,7 +8,7 @@ using System.IO;
 
 namespace RxSockets.Tests
 {
-    public class ToByteArrayOfLengthPrefixTest
+    public class ConversionsFromByteArrayOfLengthPrefixTest
     {
         [Fact]
         public async Task T01()

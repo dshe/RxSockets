@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit;
+using System.Threading;
 
 namespace RxSockets.Tests
 {
@@ -148,6 +149,81 @@ namespace RxSockets.Tests
             foreach (var client in clients)
                 await client.DisposeAsync();
             await server.DisposeAsync();
+        }
+
+        [Fact]
+        public async Task T40_ClientDisconnect()
+        {
+            var semaphore = new SemaphoreSlim(0, 1);
+
+            var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
+            IRxSocketClient? acceptClient = null;
+            server.AcceptObservable.Subscribe(ac =>
+            {
+                acceptClient = ac;
+                semaphore.Release();
+                acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
+                {
+                    acceptClient.Send(message.ToByteArray());
+                });
+            });
+
+            var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
+            client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
+            {
+                Write(message);
+            });
+
+            client.Send("Hello!".ToByteArray());
+
+            await semaphore.WaitAsync();
+            if (acceptClient == null)
+                throw new NullReferenceException(nameof(acceptClient));
+
+            await client.DisposeAsync();
+
+            // should throw!
+            acceptClient.Send("Anybody there?".ToByteArray());
+            //client.Send("Anybody there?".ToByteArray());
+
+            await server.DisposeAsync();
+        }
+
+        [Fact]
+        public async Task T41_ServerDisconnect()
+        {
+            var semaphore = new SemaphoreSlim(0, 1);
+
+            var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
+            IRxSocketClient? acceptClient = null;
+            server.AcceptObservable.Subscribe(ac =>
+            {
+                acceptClient = ac;
+                semaphore.Release();
+                acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
+                {
+                    acceptClient.Send(message.ToByteArray());
+                });
+            });
+
+            var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
+            client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
+            {
+                Write(message);
+            });
+
+            client.Send("Hello!".ToByteArray());
+            await semaphore.WaitAsync();
+            if (acceptClient == null)
+                throw new NullReferenceException(nameof(acceptClient));
+
+            await server.DisposeAsync();
+
+            // should throw!
+            client.Send("Anybody there?".ToByteArray());
+            //acceptClient.Send("Anybody there?".ToByteArray());
+
+            await client.DisposeAsync();
         }
     }
 }

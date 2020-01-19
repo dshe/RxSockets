@@ -20,14 +20,14 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public async Task T03_Timeout()
+        public async Task T02_Timeout()
         {
             var e = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.ConnectAsync(IPEndPoint, Logger, 1));
             Assert.Equal((int)SocketError.TimedOut, e.ErrorCode);
         }
 
         [Fact]
-        public async Task T04_Cancellation()
+        public async Task T03_Cancellation()
         {
             var ct = new CancellationToken(true);
             await Assert.ThrowsAsync<OperationCanceledException>(async() =>
@@ -35,16 +35,16 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public async Task T99_Success()
+        public async Task T10_Success()
         {
             var serverSocket = Utilities.CreateSocket();
             serverSocket.Bind(IPEndPoint);
             serverSocket.Listen(10);
 
             var socket = await SocketConnector.ConnectAsync(IPEndPoint, Logger);
-            var disposer = new SocketDisposer(socket, "?", Logger);
-            await disposer.DisposeAsync();
+            Assert.True(socket.Connected);
 
+            socket.Close();
             serverSocket.Dispose();
         }
     }

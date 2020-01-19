@@ -24,16 +24,16 @@ namespace RxSockets
         // Backlog specifies the number of pending connections allowed before a busy error is returned to the client.
         private readonly ILogger Logger;
         private readonly CancellationTokenSource Cts = new CancellationTokenSource();
-        private readonly SocketDisposer Disposer;
+        private readonly Socket Socket;
         private readonly SocketAccepter SocketAccepter;
         private readonly List<RxSocketClient> Clients = new List<RxSocketClient>();
         public IObservable<IRxSocketClient> AcceptObservable { get; }
 
         internal RxSocketServer(Socket socket, ILogger logger)
         {
+            Socket = socket;
             Logger = logger;
             Logger.LogDebug($"RxSocketServer created on {socket.LocalEndPoint}.");
-            Disposer = new SocketDisposer(socket, "RxSocketServer", logger);
             SocketAccepter = new SocketAccepter(socket, Cts.Token, Logger);
             AcceptObservable = SocketAccepter.CreateAcceptObservable()
                 .Select(acceptSocket => new RxSocketClient(acceptSocket, true, logger))
@@ -43,9 +43,8 @@ namespace RxSockets
         public async Task DisposeAsync()
         {
             Cts.Cancel();
-            var disposeTasks = Clients.Select(client => client.DisposeAsync()).ToList();
-            disposeTasks.Add(Disposer.DisposeAsync());
-            await Task.WhenAll(disposeTasks).ConfigureAwait(false);
+            await Task.WhenAll(Clients.Select(client => client.DisposeAsync())).ConfigureAwait(false);
+            Socket.Close();
         }
     }
 }

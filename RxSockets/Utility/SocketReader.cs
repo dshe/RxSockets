@@ -67,9 +67,9 @@ namespace RxSockets
                             {
                                 if (Socket.ReceiveAsync(Args))
                                     Semaphore.Wait(ct);
+                                Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {Args.BytesTransferred} bytes from {Socket.RemoteEndPoint}.");
                                 if (Args.BytesTransferred == 0)
                                     break;
-                                Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {Args.BytesTransferred} bytes from {Socket.RemoteEndPoint}.");
                                 Position = 0;
                             }
                             observer.OnNext(Buffer[Position++]);

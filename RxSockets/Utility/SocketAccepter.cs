@@ -21,7 +21,7 @@ namespace RxSockets
             Socket = socket;
             Ct = ct;
             Logger = logger;
-            Args.Completed += (x, y) => Semaphore.Release();
+            Args.Completed += (_, __) => Semaphore.Release();
         }
 
         internal IObservable<Socket> CreateAcceptObservable()

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace RxSockets.Tests
 {
-    public class ToByteArrayWithLengthPrefixTest
+    public class ConversionsToByteArrayWithLengthPrefixTest
     {
         [Theory]
         [InlineData(new byte[] { 0, 0, 0, 0 }, new string[] { })]

@@ -28,7 +28,8 @@ namespace RxSockets
         private readonly SocketReader SocketReader;
         public Task<byte> ReadAsync() => SocketReader.ReadByteAsync();
         public IObservable<byte> ReceiveObservable => SocketReader.CreateReceiveObservable();
-        public bool Connected => Socket.Connected;
+        public bool Connected =>
+            !((Socket.Poll(1000, SelectMode.SelectRead) && (Socket.Available == 0)) || !Socket.Connected);
 
         internal RxSocketClient(Socket connectedSocket, bool isAcceptSocket, ILogger logger)
         {
