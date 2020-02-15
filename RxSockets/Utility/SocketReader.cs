@@ -35,19 +35,22 @@ namespace RxSockets
             Args.SetBuffer(Buffer, 0, BufferLength);
         }
 
-        internal async Task<byte> ReadByteAsync()
+        internal async IAsyncEnumerable<byte> ReadBytesAsync()
         {
-            Ct.ThrowIfCancellationRequested();
-            if (Position == Args.BytesTransferred)
+            while (true)
             {
-                if (Socket.ReceiveAsync(Args))
-                    await Semaphore.WaitAsync(Ct).ConfigureAwait(false);
-                if (Args.BytesTransferred == 0)
-                    throw new SocketException((int)SocketError.NoData);
-                Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {Args.BytesTransferred} bytes async from {Socket.RemoteEndPoint}.");
-                Position = 0;
+                Ct.ThrowIfCancellationRequested();
+                if (Position == Args.BytesTransferred)
+                {
+                    if (Socket.ReceiveAsync(Args))
+                        await Semaphore.WaitAsync(Ct).ConfigureAwait(false);
+                    if (Args.BytesTransferred == 0)
+                        yield break;
+                    Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {Args.BytesTransferred} bytes async from {Socket.RemoteEndPoint}.");
+                    Position = 0;
+                }
+                yield return Buffer[Position++];
             }
-            return Buffer[Position++];
         }
 
         internal IObservable<byte> CreateReceiveObservable()

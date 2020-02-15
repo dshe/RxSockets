@@ -49,9 +49,9 @@ namespace RxSockets.Tests
 
             var reader = new SocketReader(Socket, "?", default, Logger);
 
-            // after the remote socket disconnects, reader.ReadByteAsync() throws
-            var e = await Assert.ThrowsAsync<SocketException>(async() => await reader.ReadByteAsync());
-            Assert.Equal(SocketError.NoData, e.SocketErrorCode);
+            // after the remote socket disconnects, reader.ReadByteAsync() returns nothing
+            var empty = await reader.ReadBytesAsync().IsEmptyAsync();
+            Assert.True(empty);
         }
 
         [Fact]

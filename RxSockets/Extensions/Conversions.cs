@@ -56,20 +56,19 @@ namespace RxSockets
             });
         }
 
-        // Note: not an extension method!
-        public static async Task<string> ReadStringFromByteReader(Func<Task<byte>> byteReader)
+        public static async Task<string> ReadStringAsync(this IAsyncEnumerable<byte> bytes)
         {
             using var ms = new MemoryStream();
-            while (true)
+            await foreach (var b in bytes.ConfigureAwait(false))
             {
-                var b = await byteReader().ConfigureAwait(false);
                 if (b == 0)
-                    return GetString(ms);
+                    break;
                 ms.WriteByte(b);
             }
+            return GetString(ms);
         }
 
         private static string GetString(in MemoryStream ms) =>
-            Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
+                Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
     }
 }

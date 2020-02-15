@@ -38,17 +38,12 @@ namespace RxSockets
 
         /////////////////////////////////////////////////////////////////////////////////
 
-        // Note: not an extension method!
-        public static async Task<string[]> ReadStringsFromByteReader(Func<Task<byte>> byteReader)
+        public static async Task<string[]> ReadStringsAsync(this IAsyncEnumerable<byte> bytes)
         {
-            using var ms = new MemoryStream();
-            for (int i = 0; i < 4; i++)
-                ms.WriteByte(await byteReader().ConfigureAwait(false));
-            var length = GetMessageLength(ms);
-            ms.SetLength(0);
-            while (ms.Length < length)
-                ms.WriteByte(await byteReader().ConfigureAwait(false));
-            return GetStringArray(ms.ToArray());
+            var fourbytes = await bytes.Buffer(4).FirstAsync().ConfigureAwait(false);
+            var length = GetMessageLength(fourbytes.ToArray());
+            var morebytes = await bytes.Buffer(length).FirstAsync().ConfigureAwait(false);
+            return GetStringArray(morebytes.ToArray());
         }
 
         public static IEnumerable<byte[]> RemoveLengthPrefix(this IEnumerable<byte> source)
@@ -108,9 +103,11 @@ namespace RxSockets
             });
         }
 
-        private static int GetMessageLength(in MemoryStream ms)
+        private static int GetMessageLength(in MemoryStream ms) => GetMessageLength(ms.GetBuffer());
+
+        private static int GetMessageLength(in byte[] bytea)
         {
-            var length = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(ms.GetBuffer(), 0));
+            var length = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(bytea, 0));
             if (length <= 0)
                 throw new InvalidOperationException($"Invalid length: {length}.");
             return length;
