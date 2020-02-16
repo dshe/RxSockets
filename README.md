@@ -52,7 +52,7 @@ interface IRxSocketClient
     bool Connected { get; }
     void Send(byte[] buffer);
     void Send(byte[] buffer, int offset, int length);
-    Task<byte> ReadAsync();
+    IAsyncEnumerable<byte> ReadBytesAsync();
     IObservable<byte> ReceiveObservable { get; }
     Task DisposeAsync();
 }
