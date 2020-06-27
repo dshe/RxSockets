@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
 using System.Net.Sockets;
 using System.Reactive.Linq;
-using System.Reactive.Concurrency;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using System.Reactive.Disposables;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;

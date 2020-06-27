@@ -23,7 +23,7 @@ namespace RxSockets.Tests
         {
             NewThreadScheduler.Default.Schedule(async () =>
             {
-                var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
+                var server = IPEndPoint.CreateRxSocketServer(10, SocketServerLogger);
                 var accept = await server.AcceptObservable.FirstAsync();
 
                 var message1 = await accept.ReadBytesAsync().ReadStringAsync();
@@ -37,7 +37,10 @@ namespace RxSockets.Tests
                 await server.DisposeAsync();
             });
 
-            var client = await IPEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
+            // give some time for the server to start
+            await Task.Delay(100);
+
+            var client = await IPEndPoint.ConnectRxSocketClientAsync(10, SocketClientLogger);
 
             // Send only the first message without prefix.
             client.Send("API".ToByteArray());

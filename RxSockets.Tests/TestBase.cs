@@ -2,9 +2,7 @@
 using System;
 using System.Net;
 using Xunit.Abstractions;
-using System.Text;
 using MXLogger;
-using System.Diagnostics;
 
 namespace RxSockets.Tests
 {

@@ -17,13 +17,13 @@ namespace RxSockets.Tests
         public void T01_InvalidEndPoint()
         {
             var endPoint = new IPEndPoint(IPAddress.Parse("111.111.111.111"), 1111);
-            Assert.Throws<SocketException>(() => endPoint.CreateRxSocketServer(SocketServerLogger));
+            Assert.Throws<SocketException>(() => endPoint.CreateRxSocketServer(10, SocketServerLogger));
         }
 
         [Fact]
         public async Task T02_AcceptSuccess()
         {
-            var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
+            var server = IPEndPoint.CreateRxSocketServer(10, SocketServerLogger);
 
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
@@ -41,7 +41,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T03_DisconnectBeforeAccept()
         {
-            var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
+            var server = IPEndPoint.CreateRxSocketServer(10, SocketServerLogger);
             await server.DisposeAsync();
             await Assert.ThrowsAsync<OperationCanceledException>(async () => await server.AcceptObservable.LastOrDefaultAsync());
             //await server.AcceptObservable.LastOrDefaultAsync();
@@ -50,7 +50,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T04_DisconnectWhileAccept()
         {
-            var server = IPEndPoint.CreateRxSocketServer(SocketServerLogger);
+            var server = IPEndPoint.CreateRxSocketServer(10, SocketServerLogger);
             var acceptTask = server.AcceptObservable.LastAsync().ToTask();
             await server.DisposeAsync();
             await Assert.ThrowsAnyAsync<Exception>(async () => await acceptTask);
