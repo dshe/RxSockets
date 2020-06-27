@@ -5,17 +5,13 @@
 - supports **.NET Standard 2.0**
 - dependencies: Reactive Extensions
 - simple and intuitive API
-- tested
 - fast
 
 ```csharp
 using System;
-using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
-using Xunit.Abstractions;
 using Xunit;
 using RxSockets;
 
@@ -40,7 +36,7 @@ server.AcceptObservable.Subscribe(onNext: acceptClient =>
     // After the server accepts a client connection, start receiving messages from the client and ...
     acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
     {
-        // Echo each message received back to the client.
+        // echo each message received back to the client.
         acceptClient.Send(message.ToByteArray());
     });
 });
@@ -52,7 +48,7 @@ interface IRxSocketClient
     bool Connected { get; }
     void Send(byte[] buffer);
     void Send(byte[] buffer, int offset, int length);
-    Task<byte> ReadAsync();
+    IAsyncEnumerable<byte> ReadBytesAsync();
     IObservable<byte> ReceiveObservable { get; }
     Task DisposeAsync();
 }
@@ -71,7 +67,11 @@ client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
 // Send the message "Hello" to the server, which the server will then echo back to the client.
 client.Send("Hello!".ToByteArray());
 ```
+
 ```csharp
+// Allow time for communication to complete.
+await Task.Delay(100);
+
 await client.DisposeAsync();
 await server.DisposeAsync();
 ```
