@@ -5,7 +5,6 @@
 - supports **.NET Standard 2.0**
 - dependencies: Reactive Extensions
 - simple and intuitive API
-- tested
 - fast
 
 ```csharp
@@ -37,7 +36,7 @@ server.AcceptObservable.Subscribe(onNext: acceptClient =>
     // After the server accepts a client connection, start receiving messages from the client and ...
     acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
     {
-        // Echo each message received back to the client.
+        // echo each message received back to the client.
         acceptClient.Send(message.ToByteArray());
     });
 });
