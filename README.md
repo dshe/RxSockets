@@ -10,12 +10,9 @@
 
 ```csharp
 using System;
-using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
-using Xunit.Abstractions;
 using Xunit;
 using RxSockets;
 
@@ -71,7 +68,11 @@ client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
 // Send the message "Hello" to the server, which the server will then echo back to the client.
 client.Send("Hello!".ToByteArray());
 ```
+
 ```csharp
+// Allow time for communication to complete.
+await Task.Delay(100);
+
 await client.DisposeAsync();
 await server.DisposeAsync();
 ```
