@@ -7,6 +7,11 @@
 - simple and intuitive API
 - fast
 
+## installation
+```csharp
+PM> Install-Package RxSockets
+```
+## example
 ```csharp
 using System;
 using System.Net;
