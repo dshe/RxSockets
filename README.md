@@ -7,11 +7,11 @@
 - simple and intuitive API
 - fast
 
-## installation
+### installation
 ```csharp
 PM> Install-Package RxSockets
 ```
-## example
+### example
 ```csharp
 using System;
 using System.Net;
@@ -23,7 +23,7 @@ using RxSockets;
 // Create an IPEndPoint on the local machine on an available arbitrary port.
 IPEndPoint endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
 ```
-### server
+#### server
 ```csharp
 interface IRxSocketServer
 {
@@ -46,7 +46,7 @@ server.AcceptObservable.Subscribe(onNext: acceptClient =>
     });
 });
 ```
-### client
+#### client
 ```csharp
 interface IRxSocketClient
 {
@@ -79,4 +79,9 @@ await Task.Delay(100);
 
 await client.DisposeAsync();
 await server.DisposeAsync();
+```
+### notes
+In order to support multiple simultaneous observers, you can use, for example:
+```csharp
+IObservable<byte> observable = IRxSocketClient.ReceiveObservable.Publish().AutoConnect();
 ```
