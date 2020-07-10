@@ -7,11 +7,11 @@
 - simple and intuitive API
 - fast
 
-## installation
+### installation
 ```csharp
 PM> Install-Package RxSockets
 ```
-## example
+### example
 ```csharp
 using System;
 using System.Net;
@@ -20,20 +20,21 @@ using System.Reactive.Linq;
 using Xunit;
 using RxSockets;
 
-// Create an IPEndPoint on the local machine on an available arbitrary port.
-IPEndPoint endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
+// Create an IPEndPoint on the local machine on an available port.
+IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
 ```
-### server
+#### server
 ```csharp
 interface IRxSocketServer
 {
+    IPEndPoint IPEndPoint { get; }
     IObservable<IRxSocketClient> AcceptObservable { get; }
     Task DisposeAsync();
 }
 ```
 ```csharp
 // Create a socket server on the IPEndPoint.
-IRxSocketServer server = endPoint.CreateRxSocketServer();
+IRxSocketServer server = new RxSocketServer(ipEndPoint);
 
 // Start accepting connections from clients.
 server.AcceptObservable.Subscribe(onNext: acceptClient =>
@@ -46,7 +47,7 @@ server.AcceptObservable.Subscribe(onNext: acceptClient =>
     });
 });
 ```
-### client
+#### client
 ```csharp
 interface IRxSocketClient
 {
@@ -60,7 +61,7 @@ interface IRxSocketClient
 ```
 ```csharp
 // Create a socket client by first connecting to the server at the IPEndPoint.
-IRxSocketClient client = await endPoint.ConnectRxSocketClientAsync();
+IRxSocketClient client = await ipEndPoint.ConnectRxSocketClientAsync();
 
 // Start receiving messages from the server.
 client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
@@ -75,8 +76,13 @@ client.Send("Hello!".ToByteArray());
 
 ```csharp
 // Allow time for communication to complete.
-await Task.Delay(100);
+await Task.Delay(50);
 
 await client.DisposeAsync();
 await server.DisposeAsync();
+```
+### notes
+In order to support multiple simultaneous observers, you can use, for example:
+```csharp
+IObservable<byte> observable = IRxSocketClient.ReceiveObservable.Publish().AutoConnect();
 ```
