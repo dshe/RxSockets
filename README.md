@@ -82,9 +82,9 @@ await client.DisposeAsync();
 await server.DisposeAsync();
 ```
 ### notes
-When constructing a ```RxSocketServer``` without indicating an ```IPEndPoint```, IPv6Loopback on an automatically assigned port is used.
+When constructing a ```RxSocketServer``` without indicating an ```IPEndPoint```, an automatically assigned port on IPv6Loopback is used.
 
-In order to support multiple simultaneous observers, you can use, for example:
+To support multiple simultaneous observers, you can use, for example:
 ```csharp
 IObservable<byte> observable = IRxSocketClient.ReceiveObservable.Publish().AutoConnect();
 ```
