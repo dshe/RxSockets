@@ -17,9 +17,8 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T00_0Ok()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
 
             var client = await endPoint.ConnectRxSocketClientAsync(logger: SocketClientLogger);
 
@@ -40,8 +39,9 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T01_DisposeBeforeReceive()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
+
             var client = await endPoint.ConnectRxSocketClientAsync(logger: SocketClientLogger);
             await client.DisposeAsync();
             await Assert.ThrowsAsync<ObjectDisposedException>(async() => await client.ReceiveObservable.ToList());
@@ -51,8 +51,9 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T02_DisposeDuringReceive()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
+
             var client = await endPoint.ConnectRxSocketClientAsync(logger: SocketClientLogger);
             var receiveTask = client.ReceiveObservable.LastOrDefaultAsync().ToTask();
             await client.DisposeAsync();
@@ -65,8 +66,9 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T03_ExternalDisposeBeforeReceive()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
+
             var client = await endPoint.ConnectRxSocketClientAsync(logger: SocketClientLogger);
             var accept = await server.AcceptObservable.FirstAsync().ToTask();
             await accept.DisposeAsync();
@@ -78,8 +80,9 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T04_ExternalDisposeDuringReceive()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
+
             var client = await endPoint.ConnectRxSocketClientAsync(logger: SocketClientLogger);
             var accept = await server.AcceptObservable.FirstAsync().ToTask();
             var receiveTask = client.ReceiveObservable.FirstAsync().ToTask();
@@ -92,8 +95,9 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T05_DisposeBeforeSend()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
+
             var client = await endPoint.ConnectRxSocketClientAsync(logger: SocketClientLogger);
             await client.DisposeAsync();
             Assert.ThrowsAny<Exception>(() => client.Send(new byte[] { 0 }));
@@ -103,8 +107,9 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T06_DisposeDuringSend()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
+
             var client = await endPoint.ConnectRxSocketClientAsync(logger: SocketClientLogger);
             var sendTask = Task.Run(() => client.Send(new byte[100_000_000]));
             await client.DisposeAsync();

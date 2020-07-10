@@ -5,11 +5,14 @@ using System.Reactive.Linq;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Net;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace RxSockets
 {
     public interface IRxSocketServer
     {
+        IPEndPoint IPEndPoint { get; }
         IObservable<IRxSocketClient> AcceptObservable { get; }
         Task DisposeAsync();
     }
@@ -17,16 +20,28 @@ namespace RxSockets
     public sealed class RxSocketServer : IRxSocketServer
     {
         private readonly ILogger Logger;
+        public IPEndPoint IPEndPoint { get; }
         private readonly CancellationTokenSource Cts = new CancellationTokenSource();
         private readonly SocketDisposer Disposer;
         private readonly SocketAccepter SocketAccepter;
         public IObservable<IRxSocketClient> AcceptObservable { get; }
 
-        internal RxSocketServer(Socket socket, ILogger logger)
+        public RxSocketServer(int backLog = 10, ILogger? logger = null) :
+            this(new IPEndPoint(IPAddress.IPv6Loopback, 0), backLog, logger) {}
+
+        public RxSocketServer(IPEndPoint ipEndPoint, int backLog = 10, ILogger? logger = null)
         {
-            Logger = logger;
-            Logger.LogDebug($"RxSocketServer created on {socket.LocalEndPoint}.");
-            Disposer = new SocketDisposer(socket, "RxSocketServer", logger);
+            // Backlog specifies the number of pending connections allowed before a busy error is returned to the client.
+            Logger  = logger ?? NullLogger.Instance;
+            if (backLog < 0)
+                throw new Exception($"Invalid backLog: {backLog}.");
+            var socket = Utilities.CreateSocket();
+            ipEndPoint ??= new IPEndPoint(IPAddress.IPv6Loopback, 0); // autoselect
+            socket.Bind(ipEndPoint);
+            socket.Listen(backLog);
+            IPEndPoint = (IPEndPoint)socket.LocalEndPoint;
+            Logger.LogDebug($"RxSocketServer created on {IPEndPoint}.");
+            Disposer = new SocketDisposer(socket, "RxSocketServer", Logger);
             SocketAccepter = new SocketAccepter(socket, Cts.Token, Logger);
             AcceptObservable = SocketAccepter.CreateAcceptObservable();
         }

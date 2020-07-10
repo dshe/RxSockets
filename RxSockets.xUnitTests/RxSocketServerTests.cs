@@ -17,14 +17,14 @@ namespace RxSockets.xUnitTests
         public void T01_InvalidEndPoint()
         {
             var endPoint = new IPEndPoint(IPAddress.Parse("111.111.111.111"), 1111);
-            Assert.Throws<SocketException>(() => endPoint.CreateRxSocketServer(logger: SocketServerLogger));
+            Assert.Throws<SocketException>(() => new RxSocketServer(endPoint, logger: SocketServerLogger));
         }
 
         [Fact]
         public async Task T02_AcceptSuccess()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
 
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
@@ -42,8 +42,9 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T03_DisconnectBeforeAccept()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
+
             await server.DisposeAsync();
             await Assert.ThrowsAsync<OperationCanceledException>(async () => await server.AcceptObservable.LastOrDefaultAsync());
             //await server.AcceptObservable.LastOrDefaultAsync();
@@ -52,8 +53,9 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T04_DisconnectWhileAccept()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
+
             var acceptTask = server.AcceptObservable.LastAsync().ToTask();
             await server.DisposeAsync();
             await Assert.ThrowsAnyAsync<Exception>(async () => await acceptTask);

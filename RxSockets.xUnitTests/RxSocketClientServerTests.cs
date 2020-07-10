@@ -15,11 +15,11 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T01_Handshake()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
 
-            NewThreadScheduler.Default.Schedule(async () =>
+            var task = Task.Run(async () =>
             {
-                var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
                 var accept = await server.AcceptObservable.FirstAsync();
 
                 var message1 = await accept.ReadBytesAsync().ReadStringAsync();
@@ -34,7 +34,7 @@ namespace RxSockets.xUnitTests
             });
 
             // give some time for the server to start
-            await Task.Delay(100);
+            await Task.Delay(50);
 
             var client = await endPoint.ConnectRxSocketClientAsync(logger: SocketClientLogger);
 

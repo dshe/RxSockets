@@ -23,7 +23,8 @@ namespace RxSockets
             {
                 while (true)
                 {
-                    var port = RandomInt(1024, 65535);
+                    // IANA officially recommends 49152 - 65535 for the Ephemeral Ports.
+                     var port = RandomInt(49152, 65535);
                     if (!IsPortUsed(port))
                         return port;
                 }

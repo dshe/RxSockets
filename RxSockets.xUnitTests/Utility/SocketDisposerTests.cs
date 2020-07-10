@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net.Sockets;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -30,6 +28,7 @@ namespace RxSockets.xUnitTests
         {
             var ipEndPoint = Utilities.GetEndPointOnRandomLoopbackPort();
             var serverSocket = Utilities.CreateSocket();
+
             var serverDisposer = new SocketDisposer(serverSocket, "?", Logger);
             serverSocket.Bind(ipEndPoint);
             serverSocket.Listen(10);

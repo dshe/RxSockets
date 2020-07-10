@@ -17,9 +17,9 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T01_ReceiveStrings()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var server = new RxSocketServer();
+            var endPoint = server.IPEndPoint;
 
-            var server = endPoint.CreateRxSocketServer();
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
             var client = await endPoint.ConnectRxSocketClientAsync();
             var countTask = client.ReceiveObservable.ToStrings().Count().ToTask();
@@ -57,13 +57,11 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T02_ReceiveStringsFromPrefixedBytes()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-
-            var server = endPoint.CreateRxSocketServer();
+            var server = new RxSocketServer();
+            var endPoint = server.IPEndPoint;
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
             var client = await endPoint.ConnectRxSocketClientAsync();
-
             Assert.True(client.Connected);
 
             var countTask = client.ReceiveObservable.RemoveLengthPrefix().ToStringArray().Count().ToTask();

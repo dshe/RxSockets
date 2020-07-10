@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
+using System.Net;
 
 namespace RxSockets.xUnitTests
 {
@@ -23,10 +24,10 @@ namespace RxSockets.xUnitTests
         [Fact]
         public void T01_Disconnect()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-
+            var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
             ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
+            endPoint = (IPEndPoint) ServerSocket.LocalEndPoint;
             Socket.Connect(endPoint);
 
             var accepted = ServerSocket.Accept();
@@ -41,9 +42,10 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T02_DisconnectReadByteAsync()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
             ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
+            endPoint = (IPEndPoint)ServerSocket.LocalEndPoint;
             Socket.Connect(endPoint);
 
             var accepted = ServerSocket.Accept();
@@ -59,9 +61,10 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T03_DisconnectSocketReader()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
             ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
+            endPoint = (IPEndPoint)ServerSocket.LocalEndPoint;
             Socket.Connect(endPoint);
             var accepted = ServerSocket.Accept();
 
@@ -77,9 +80,10 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T04_DisconnectAndSend()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
             ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
+            endPoint = (IPEndPoint)ServerSocket.LocalEndPoint;
             Socket.Connect(endPoint);
             var accepted = ServerSocket.Accept();
             Assert.True(Socket.Connected);
@@ -98,9 +102,10 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T05_Read()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
             ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
+            endPoint = (IPEndPoint)ServerSocket.LocalEndPoint;
             Socket.Connect(endPoint);
             var accepted = ServerSocket.Accept();
             accepted.Send(new byte[] { 1 });

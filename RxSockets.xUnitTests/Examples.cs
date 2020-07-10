@@ -18,10 +18,11 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T00_Example()
         {
-            var ipEndPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            // Create a socket server.
+            var server = new RxSocketServer(logger: SocketServerLogger);
 
-            // Create a socket server on the EndPoint.
-            var server = ipEndPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            // The IPEndPoint is chosen automatically.
+            var ipEndPoint = server.IPEndPoint;
 
             // Start accepting connections from clients.
             server.AcceptObservable.Subscribe(acceptClient =>
@@ -58,11 +59,9 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T01_SendAndReceiveStringMessage()
         {
-            //var ipEndPoint = Utilities.GetEndPointOnLoopbackRandomPort();
-            var ipEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 7530);
+            var server = new RxSocketServer(logger: SocketServerLogger);
 
-            // Create a socket server on the endpoint.
-            var server = ipEndPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            var ipEndPoint = server.IPEndPoint;
 
             // Start a task to allow the server to accept the next client connection.
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
@@ -81,9 +80,6 @@ namespace RxSockets.xUnitTests
             accept.Send("Welcome!".ToByteArray());
             Assert.Equal("Welcome!", await dataTask);
 
-            //await Task.Delay(10);
-
-            //await accept.DisposeAsync();
             await client.DisposeAsync();
             await server.DisposeAsync();
         }
@@ -91,9 +87,9 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T10_ReceiveObservable()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
 
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
             var client = await endPoint.ConnectRxSocketClientAsync(logger: SocketClientLogger);
             var accept = await acceptTask;
@@ -117,9 +113,8 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T20_AcceptObservable()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
 
             server.AcceptObservable.Subscribe(accepted => accepted.Send("Welcome!".ToByteArray()));
 
@@ -140,9 +135,8 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T30_Both()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
 
             server.AcceptObservable.Subscribe(accepted =>
             {
@@ -175,9 +169,9 @@ namespace RxSockets.xUnitTests
         {
             var semaphore = new SemaphoreSlim(0, 1);
 
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
 
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
             IRxSocketClient? acceptClient = null;
             server.AcceptObservable.Subscribe(ac =>
             {
@@ -209,7 +203,6 @@ namespace RxSockets.xUnitTests
             //client.Send("Anybody there?".ToByteArray());
 
             semaphore.Dispose();
-
         }
 
         [Fact]
@@ -217,9 +210,9 @@ namespace RxSockets.xUnitTests
         {
             var semaphore = new SemaphoreSlim(0, 1);
 
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var server = new RxSocketServer(logger: SocketServerLogger);
+            var endPoint = server.IPEndPoint;
 
-            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
             IRxSocketClient? acceptClient = null;
             server.AcceptObservable.Subscribe(ac =>
             {

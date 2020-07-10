@@ -3,19 +3,20 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Reactive.Linq;
 using Xunit;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 
 namespace RxSockets.xUnitTests
 {
     public class Example1
     {
-        // Create an IPEndPoint on the local machine on an available arbitrary port.
-        public readonly IPEndPoint IPEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 11345);
-
         [Fact]
         public async Task Example()
         {
-            // Create a socket server on the IPEndPoint.
-            IRxSocketServer server = IPEndPoint.CreateRxSocketServer();
+            // Create an IPEndPoint on the local machine on an available port.
+            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
+
+            // Create a socket server.
+            IRxSocketServer server = new RxSocketServer(ipEndPoint);
 
             // Start accepting connections from clients.
             server.AcceptObservable.Subscribe(acceptClient =>
@@ -30,8 +31,8 @@ namespace RxSockets.xUnitTests
 
 
 
-            // Create a socket client by first connecting to the server at the EndPoint.
-            IRxSocketClient client = await IPEndPoint.ConnectRxSocketClientAsync();
+            // Create a socket client by first connecting to the server at the IPEndPoint.
+            IRxSocketClient client = await ipEndPoint.ConnectRxSocketClientAsync();
 
             // Start receiving messages from the server.
             client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
@@ -46,7 +47,7 @@ namespace RxSockets.xUnitTests
             // Allow time for communication to complete.
             await Task.Delay(50);
 
-            await server.DisposeAsync(); //dispose order?
+            await server.DisposeAsync();
             await client.DisposeAsync();
         }
 
