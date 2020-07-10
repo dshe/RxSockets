@@ -7,7 +7,7 @@ using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using Xunit.Abstractions;
 
-namespace RxSockets.Tests
+namespace RxSockets.xUnitTests
 {
     public class RxSocketServerTest : TestBase
     {
@@ -17,18 +17,19 @@ namespace RxSockets.Tests
         public void T01_InvalidEndPoint()
         {
             var endPoint = new IPEndPoint(IPAddress.Parse("111.111.111.111"), 1111);
-            Assert.Throws<SocketException>(() => endPoint.CreateRxSocketServer(10, SocketServerLogger));
+            Assert.Throws<SocketException>(() => endPoint.CreateRxSocketServer(logger: SocketServerLogger));
         }
 
         [Fact]
         public async Task T02_AcceptSuccess()
         {
-            var server = IPEndPoint.CreateRxSocketServer(10, SocketServerLogger);
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
 
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
             var clientSocket = Utilities.CreateSocket();
-            clientSocket.Connect(IPEndPoint);
+            clientSocket.Connect(endPoint);
 
             var acceptedSocket = await acceptTask;
 
@@ -41,7 +42,8 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T03_DisconnectBeforeAccept()
         {
-            var server = IPEndPoint.CreateRxSocketServer(10, SocketServerLogger);
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
             await server.DisposeAsync();
             await Assert.ThrowsAsync<OperationCanceledException>(async () => await server.AcceptObservable.LastOrDefaultAsync());
             //await server.AcceptObservable.LastOrDefaultAsync();
@@ -50,7 +52,8 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T04_DisconnectWhileAccept()
         {
-            var server = IPEndPoint.CreateRxSocketServer(10, SocketServerLogger);
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
             var acceptTask = server.AcceptObservable.LastAsync().ToTask();
             await server.DisposeAsync();
             await Assert.ThrowsAnyAsync<Exception>(async () => await acceptTask);

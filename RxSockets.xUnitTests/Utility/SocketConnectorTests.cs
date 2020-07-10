@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace RxSockets.Tests
+namespace RxSockets.xUnitTests
 {
     public class SocketConnectorTest : TestBase
     {
@@ -15,33 +15,37 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T01_Connection_Refused()
         {
-            var e = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.ConnectAsync(IPEndPoint, Logger));
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var e = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.ConnectAsync(endPoint, Logger));
             Assert.Equal((int)SocketError.ConnectionRefused, e.ErrorCode);
         }
 
         [Fact]
         public async Task T02_Timeout()
         {
-            var e = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.ConnectAsync(IPEndPoint, Logger, 1));
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var e = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.ConnectAsync(endPoint, Logger, 1));
             Assert.Equal((int)SocketError.TimedOut, e.ErrorCode);
         }
 
         [Fact]
         public async Task T03_Cancellation()
         {
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
             var ct = new CancellationToken(true);
             await Assert.ThrowsAsync<OperationCanceledException>(async() =>
-               await SocketConnector.ConnectAsync(IPEndPoint, Logger, -1, ct));
+               await SocketConnector.ConnectAsync(endPoint, Logger, -1, ct));
         }
 
         [Fact]
         public async Task T10_Success()
         {
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
             var serverSocket = Utilities.CreateSocket();
-            serverSocket.Bind(IPEndPoint);
+            serverSocket.Bind(endPoint);
             serverSocket.Listen(10);
 
-            var socket = await SocketConnector.ConnectAsync(IPEndPoint, Logger);
+            var socket = await SocketConnector.ConnectAsync(endPoint, Logger);
             Assert.True(socket.Connected);
 
             socket.Close();

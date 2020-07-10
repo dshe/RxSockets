@@ -1,3 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("RxSockets.Tests")]
+[assembly: InternalsVisibleTo("RxSockets.xUnitTests")]
+[assembly: InternalsVisibleTo("RxSockets.MSTests")]
+

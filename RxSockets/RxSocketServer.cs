@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,30 +16,27 @@ namespace RxSockets
 
     public sealed class RxSocketServer : IRxSocketServer
     {
-        // Backlog specifies the number of pending connections allowed before a busy error is returned to the client.
         private readonly ILogger Logger;
         private readonly CancellationTokenSource Cts = new CancellationTokenSource();
-        private readonly Socket Socket;
+        private readonly SocketDisposer Disposer;
         private readonly SocketAccepter SocketAccepter;
-        private readonly List<RxSocketClient> Clients = new List<RxSocketClient>();
         public IObservable<IRxSocketClient> AcceptObservable { get; }
 
         internal RxSocketServer(Socket socket, ILogger logger)
         {
-            Socket = socket;
             Logger = logger;
             Logger.LogDebug($"RxSocketServer created on {socket.LocalEndPoint}.");
+            Disposer = new SocketDisposer(socket, "RxSocketServer", logger);
             SocketAccepter = new SocketAccepter(socket, Cts.Token, Logger);
-            AcceptObservable = SocketAccepter.CreateAcceptObservable()
-                .Select(acceptSocket => new RxSocketClient(acceptSocket, true, logger))
-                .Do(client => Clients.Add(client));
+            AcceptObservable = SocketAccepter.CreateAcceptObservable();
         }
 
         public async Task DisposeAsync()
         {
             Cts.Cancel();
-            await Task.WhenAll(Clients.Select(client => client.DisposeAsync())).ConfigureAwait(false);
-            Socket.Close();
+            var tasks = SocketAccepter.Clients.Select(client => client.DisposeAsync()).ToList();
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Disposer.DisposeAsync().ConfigureAwait(false);
         }
     }
 }

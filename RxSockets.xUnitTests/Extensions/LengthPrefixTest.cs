@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using Xunit;
 
-namespace RxSockets.Tests
+namespace RxSockets.xUnitTests
 {
     public class ConversionsWithLengthPrefixTest
     {

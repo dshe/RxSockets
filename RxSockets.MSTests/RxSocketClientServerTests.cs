@@ -1,36 +1,29 @@
-﻿using Xunit;
-using System;
-using System.Threading.Tasks;
-using System.Net.Sockets;
-using System.Net;
-using System.Collections.Generic;
+﻿using System.Threading.Tasks;
 using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
-using Xunit.Abstractions;
 using System.Reactive.Concurrency;
-using System.Threading;
-using System.IO;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace RxSockets.Tests
+namespace RxSockets.MSTests
 {
+    [TestClass]
     public class RxSocketClientServerTest : TestBase
     {
-        public RxSocketClientServerTest(ITestOutputHelper output) : base(output)  {}
-
-        [Fact]
+        [TestMethod]
         public async Task T01_Handshake()
         {
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+
             NewThreadScheduler.Default.Schedule(async () =>
             {
-                var server = IPEndPoint.CreateRxSocketServer(10, SocketServerLogger);
+                var server = endPoint.CreateRxSocketServer(logger: SocketServerLogger);
                 var accept = await server.AcceptObservable.FirstAsync();
 
                 var message1 = await accept.ReadBytesAsync().ReadStringAsync();
-                Assert.Equal("API", message1);
+                Assert.AreEqual("API", message1);
 
                 var message2 = await accept.ReadBytesAsync().ReadStringsAsync();
-                Assert.Equal("HelloFromClient", message2.Single());
+                Assert.AreEqual("HelloFromClient", message2.Single());
 
                 accept.Send(new[] { "HelloFromServer" }.ToByteArrayWithLengthPrefix());
 
@@ -40,7 +33,7 @@ namespace RxSockets.Tests
             // give some time for the server to start
             await Task.Delay(100);
 
-            var client = await IPEndPoint.ConnectRxSocketClientAsync(10, SocketClientLogger);
+            var client = await endPoint.ConnectRxSocketClientAsync(logger: SocketClientLogger);
 
             // Send only the first message without prefix.
             client.Send("API".ToByteArray());
@@ -49,7 +42,7 @@ namespace RxSockets.Tests
             client.Send(new[] { "HelloFromClient" }.ToByteArrayWithLengthPrefix());
 
             var message3 = await client.ReadBytesAsync().ReadStringsAsync();
-            Assert.Equal("HelloFromServer", message3.Single());
+            Assert.AreEqual("HelloFromServer", message3.Single());
 
             await client.DisposeAsync();
         }

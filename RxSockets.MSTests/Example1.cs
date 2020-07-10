@@ -2,16 +2,17 @@
 using System.Net;
 using System.Threading.Tasks;
 using System.Reactive.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace RxSockets.Tests
+namespace RxSockets.MSTests
 {
+    [TestClass]
     public class Example1
     {
         // Create an IPEndPoint on the local machine on an available arbitrary port.
-        public readonly IPEndPoint IPEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
+        public readonly IPEndPoint IPEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 11345);
 
-        [Fact]
+        [TestMethod]
         public async Task Example()
         {
             // Create a socket server on the IPEndPoint.
@@ -37,19 +38,17 @@ namespace RxSockets.Tests
             client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
             {
                 // The message received from the server is "Hello!".
-                Assert.Equal("Hello!", message);
+                Assert.AreEqual("Hello!", message);
             });
 
             // Send the message "Hello" to the server, which the server will then echo back to the client.
             client.Send("Hello!".ToByteArray());
 
-
-
             // Allow time for communication to complete.
-            await Task.Delay(100);
+            await Task.Delay(50);
 
+            await server.DisposeAsync(); //dispose order?
             await client.DisposeAsync();
-            await server.DisposeAsync();
         }
 
     }

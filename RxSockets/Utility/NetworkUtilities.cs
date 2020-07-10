@@ -9,20 +9,25 @@ namespace RxSockets
 {
     public static class Utilities
     {
+        private static readonly object Locker = new object();
+
         public static Socket CreateSocket() =>
             new Socket(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
 
-        public static IPEndPoint GetEndPointOnLoopbackRandomPort() =>
+        public static IPEndPoint GetEndPointOnRandomLoopbackPort() =>
             new IPEndPoint(IPAddress.IPv6Loopback, GetRandomAvailablePort());
 
-        public static int GetRandomAvailablePort()
+        private static int GetRandomAvailablePort()
         {
-            int port;
-            do
+            lock (Locker)
             {
-                port = RandomInt(1024, 65535);
-            } while (IsPortUsed(port));
-            return port;
+                while (true)
+                {
+                    var port = RandomInt(1024, 65535);
+                    if (!IsPortUsed(port))
+                        return port;
+                }
+            }
         }
 
         private static bool IsPortUsed(int port) =>
@@ -41,8 +46,8 @@ namespace RxSockets
         private static byte[] GetRandomBytes(int bytes)
         {
             var buffer = new byte[bytes];
-            using RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
-            rng.GetBytes(buffer);
+            using var rng = new RNGCryptoServiceProvider();
+                rng.GetBytes(buffer);
             return buffer;
         }
     }

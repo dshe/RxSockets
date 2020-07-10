@@ -1,74 +1,64 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace RxSockets
 {
     class SocketAccepter
     {
-        private readonly CancellationToken Ct;
         private readonly ILogger Logger;
-        private readonly Socket Socket;
+        private readonly CancellationToken Ct_disposed;
         private readonly SemaphoreSlim Semaphore = new SemaphoreSlim(0, 1);
+        private readonly Socket Socket;
         private readonly SocketAsyncEventArgs Args = new SocketAsyncEventArgs();
+        internal readonly List<RxSocketClient> Clients = new List<RxSocketClient>();
 
-        internal SocketAccepter(Socket socket, CancellationToken ct, ILogger logger)
+        internal SocketAccepter(Socket socket, CancellationToken ct_disposed, ILogger logger)
         {
             Socket = socket;
-            Ct = ct;
+            Ct_disposed = ct_disposed;
             Logger = logger;
             Args.Completed += (_, __) => Semaphore.Release();
         }
 
-        internal IObservable<Socket> CreateAcceptObservable()
+        internal IObservable<IRxSocketClient> CreateAcceptObservable()
         {
-            return Observable.Create<Socket>(async observer =>
+            return Observable.Create<IRxSocketClient>((observer, ct_unsubscribed) =>
             {
-                var cts = CancellationTokenSource.CreateLinkedTokenSource(Ct);
-                var ct = cts.Token;
-                try
+                return Task.Run(() =>
                 {
-                    while (true)
+                    var ct = CancellationTokenSource.CreateLinkedTokenSource(Ct_disposed, ct_unsubscribed).Token;
+                    try
                     {
-                        ct.ThrowIfCancellationRequested();
-                        var socket = await AcceptAsync().ConfigureAwait(false);
-                        observer.OnNext(socket);
-                    }
-                }
-                catch (Exception e)
-                {
-                    if (cts.IsCancellationRequested && !Ct.IsCancellationRequested)
-                        observer.OnCompleted(); // unsubscribe
-                    else
-                    {
-                        try
+                        while (true)
                         {
-                            if (!ct.IsCancellationRequested)
-                                Logger.LogDebug($"SocketAcceptor on {Socket.LocalEndPoint} Observer Exeption\r\n{e}");
+                            ct.ThrowIfCancellationRequested();
+                            Args.AcceptSocket = Utilities.CreateSocket();
+                            if (Socket.AcceptAsync(Args))
+                                Semaphore.Wait(ct);
+                            var client = new RxSocketClient(Args.AcceptSocket, Logger, true);
+                            Clients.Add(client);
+                            observer.OnNext(client);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        if (ct_unsubscribed.IsCancellationRequested)
+                            return;
+                        if (Ct_disposed.IsCancellationRequested)
+                            observer.OnError(e);
+                        else
+                        {
+                            Logger.LogDebug($"SocketAcceptor on {Socket.LocalEndPoint} Observer Exception: {e.Message}\r\n{e}");
                             observer.OnError(e);
                         }
-                        catch (Exception e2)
-                        {
-                            if (!ct.IsCancellationRequested)
-                                Logger.LogDebug($"SocketAcceptor on {Socket.LocalEndPoint} OnError Exeption\r\n{e2}");
-                        }
                     }
-                }
-                return Disposable.Create(() => cts.Cancel());
+                });
             });
-        }
-
-        private async Task<Socket> AcceptAsync()
-        {
-            Ct.ThrowIfCancellationRequested();
-            Args.AcceptSocket = Utilities.CreateSocket();
-            if (Socket.AcceptAsync(Args))
-                await Semaphore.WaitAsync(Ct).ConfigureAwait(false);
-            return Args.AcceptSocket;
         }
     }
 }

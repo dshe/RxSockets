@@ -6,7 +6,7 @@ using Xunit;
 using RxSockets;
 using System.IO;
 
-namespace RxSockets.Tests
+namespace RxSockets.xUnitTests
 {
     public class ConversionsFromByteArrayOfLengthPrefixTest
     {

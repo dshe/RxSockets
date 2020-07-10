@@ -20,22 +20,22 @@ namespace RxSockets
     public sealed class RxSocketClient : IRxSocketClient
     {
         private readonly ILogger Logger;
-        private readonly CancellationTokenSource Cts = new CancellationTokenSource();
         private readonly string Name;
+        private readonly CancellationTokenSource Cts = new CancellationTokenSource();
         private readonly Socket Socket;
         private readonly SocketDisposer Disposer;
         private readonly SocketReader SocketReader;
         public IAsyncEnumerable<byte> ReadBytesAsync() => SocketReader.ReadBytesAsync();
-        public IObservable<byte> ReceiveObservable => SocketReader.CreateReceiveObservable();
+        public IObservable<byte> ReceiveObservable => SocketReader.ReceiveObservable;
         public bool Connected =>
             !((Socket.Poll(1000, SelectMode.SelectRead) && (Socket.Available == 0)) || !Socket.Connected);
 
-        internal RxSocketClient(Socket connectedSocket, bool isAcceptSocket, ILogger logger)
+        internal RxSocketClient(Socket connectedSocket, ILogger logger, bool isAcceptSocket)
         {
             Socket = connectedSocket;
             Name = $"{(isAcceptSocket ? "Accepted " : "")}RxSocketClient";
             Logger = logger;
-            Logger.LogDebug($"{Name} created on {Socket.LocalEndPoint} connected to {Socket.RemoteEndPoint}.");
+            Logger.LogTrace($"{Name} created on {Socket.LocalEndPoint} connected to {Socket.RemoteEndPoint}.");
             Disposer = new SocketDisposer(connectedSocket, Name, logger);
             SocketReader = new SocketReader(connectedSocket, Name, Cts.Token, logger);
         }

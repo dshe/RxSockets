@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace RxSockets.Tests
+namespace RxSockets.xUnitTests
 {
     public class SocketReaderTests : TestBase, IDisposable
     {
@@ -24,9 +23,11 @@ namespace RxSockets.Tests
         [Fact]
         public void T01_Disconnect()
         {
-            ServerSocket.Bind(IPEndPoint);
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+
+            ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
-            Socket.Connect(IPEndPoint);
+            Socket.Connect(endPoint);
 
             var accepted = ServerSocket.Accept();
             accepted.Disconnect(false);
@@ -40,9 +41,10 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T02_DisconnectReadByteAsync()
         {
-            ServerSocket.Bind(IPEndPoint);
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
-            Socket.Connect(IPEndPoint);
+            Socket.Connect(endPoint);
 
             var accepted = ServerSocket.Accept();
             accepted.Disconnect(false);
@@ -57,13 +59,14 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T03_DisconnectSocketReader()
         {
-            ServerSocket.Bind(IPEndPoint);
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
-            Socket.Connect(IPEndPoint);
+            Socket.Connect(endPoint);
             var accepted = ServerSocket.Accept();
 
             var reader = new SocketReader(Socket, "?", default, Logger);
-            var observable = reader.CreateReceiveObservable();
+            var observable = reader.ReceiveObservable;
             accepted.Close();
 
             // after the remote socket disconnects, the observable completes
@@ -72,11 +75,12 @@ namespace RxSockets.Tests
         }
 
         [Fact]
-        public void T04_DisconnectAndSend()
+        public async Task T04_DisconnectAndSend()
         {
-            ServerSocket.Bind(IPEndPoint);
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
-            Socket.Connect(IPEndPoint);
+            Socket.Connect(endPoint);
             var accepted = ServerSocket.Accept();
             Assert.True(Socket.Connected);
             Assert.True(accepted.Connected);
@@ -85,6 +89,8 @@ namespace RxSockets.Tests
 
             Socket.Send(new byte[1] {1});
 
+            await Task.Delay(10);
+
             // after the remote socket disconnects, Send() throws on second usage
             Assert.Throws<SocketException>(() => Socket.Send(new byte[1] { 1 }));
         }
@@ -92,14 +98,15 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T05_Read()
         {
-            ServerSocket.Bind(IPEndPoint);
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
-            Socket.Connect(IPEndPoint);
+            Socket.Connect(endPoint);
             var accepted = ServerSocket.Accept();
             accepted.Send(new byte[] { 1 });
 
             var reader = new SocketReader(Socket, "?", default, Logger);
-            var observable = reader.CreateReceiveObservable();
+            var observable = reader.ReceiveObservable;
 
             var result = await observable.FirstAsync();
             Assert.Equal(1, result);

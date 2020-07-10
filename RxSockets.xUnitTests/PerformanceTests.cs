@@ -1,26 +1,27 @@
-﻿using System;
-using Xunit;
-using Xunit.Abstractions;
-using System.Reactive.Linq;
+﻿using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Net;
 using System.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Diagnostics;
+using Xunit;
+using Xunit.Abstractions;
 
-namespace RxSockets.Tests
+namespace RxSockets.xUnitTests
 {
-    public class PerformanceTest : TestBase
+    public class PerformanceTest1 : TestBase
     {
-        public PerformanceTest(ITestOutputHelper output) : base(output) {}
+        public PerformanceTest1(ITestOutputHelper output) : base(output) { }
         const int messages = 100_000;
 
         [Fact]
         public async Task T01_ReceiveStrings()
         {
-            var server = IPEndPoint.CreateRxSocketServer();
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+
+            var server = endPoint.CreateRxSocketServer();
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
-            var client = await IPEndPoint.ConnectRxSocketClientAsync();
+            var client = await endPoint.ConnectRxSocketClientAsync();
             var countTask = client.ReceiveObservable.ToStrings().Count().ToTask();
             var accept = await acceptTask;
 
@@ -34,7 +35,7 @@ namespace RxSockets.Tests
 
             // end count task
             await accept.DisposeAsync();
-            var count = await countTask;
+            var count = await countTask; // index out of range
 
             watch.Stop();
 
@@ -47,14 +48,21 @@ namespace RxSockets.Tests
             await client.DisposeAsync();
             await server.DisposeAsync();
         }
+    }
+    public class PerformanceTest2 : TestBase
+    {
+        public PerformanceTest2(ITestOutputHelper output) : base(output) { }
+        const int messages = 100_000;
 
         [Fact]
         public async Task T02_ReceiveStringsFromPrefixedBytes()
         {
-            var server = IPEndPoint.CreateRxSocketServer();
+            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+
+            var server = endPoint.CreateRxSocketServer();
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
-            var client = await IPEndPoint.ConnectRxSocketClientAsync();
+            var client = await endPoint.ConnectRxSocketClientAsync();
 
             Assert.True(client.Connected);
 

@@ -7,18 +7,21 @@ using System.Threading.Tasks;
 
 namespace RxSockets
 {
-    public static class RxSocketEx
+    public static class RxSocketsEx
     {
-        public static async Task<IRxSocketClient> ConnectRxSocketClientAsync(this IPEndPoint endPoint, int timeout = -1, ILogger<RxSocketClient>? logger = null, CancellationToken ct = default)
+        public static async Task<IRxSocketClient> ConnectRxSocketClientAsync(this IPEndPoint endPoint, 
+            ILogger? logger = null, int timeout = -1, CancellationToken ct = default)
         {
-            logger ??= NullLogger<RxSocketClient>.Instance;
+            logger ??= NullLogger.Instance;
             var socket = await SocketConnector.ConnectAsync(endPoint, logger, timeout, ct).ConfigureAwait(false);
-            return new RxSocketClient(socket, false, logger);
+            return new RxSocketClient(socket, logger, false);
         }
 
-        public static IRxSocketServer CreateRxSocketServer(this IPEndPoint endPoint, int backLog = 10, ILogger<RxSocketServer>? logger = null)
+        // Backlog specifies the number of pending connections allowed before a busy error is returned to the client.
+        public static IRxSocketServer CreateRxSocketServer(this IPEndPoint endPoint,
+            ILogger? logger = null, int backLog = 10)
         {
-            logger ??= NullLogger<RxSocketServer>.Instance;
+            logger ??= NullLogger.Instance;
             if (backLog < 0)
                 throw new Exception($"Invalid backLog: {backLog}.");
             var socket = Utilities.CreateSocket();
