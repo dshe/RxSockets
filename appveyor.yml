@@ -20,7 +20,7 @@ build:
   verbosity: minimal
   publish_nuget: true
 test_script:
-- ps: dotnet test .\RxSockets.MSTests\RxSockets.MSTests.csproj
+- ps: dotnet test .\RxSockets.xUnitTests\RxSockets.xUnitTests.csproj
 nuget:
   account_feed: false
   project_feed: true
