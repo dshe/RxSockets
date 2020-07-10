@@ -78,6 +78,7 @@ client.Send("Hello!".ToByteArray());
 // Allow time for communication to complete.
 await Task.Delay(50);
 
+// Disconnect.
 await client.DisposeAsync();
 await server.DisposeAsync();
 ```
