@@ -39,14 +39,14 @@ namespace RxSockets
 
         private static int RandomInt(int min, int max)
         {
-            var buffer = GetRandomBytes(4);
+            byte[] buffer = GetRandomBytes(4);
             int result = BitConverter.ToInt32(buffer, 0);
             return new Random(result).Next(min, max);
         }
 
         private static byte[] GetRandomBytes(int bytes)
         {
-            var buffer = new byte[bytes];
+            byte[] buffer = new byte[bytes];
             using var rng = new RNGCryptoServiceProvider();
                 rng.GetBytes(buffer);
             return buffer;

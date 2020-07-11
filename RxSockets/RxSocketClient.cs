@@ -21,7 +21,6 @@ namespace RxSockets
     {
         private readonly ILogger Logger;
         private readonly string Name;
-        private readonly CancellationTokenSource Cts = new CancellationTokenSource();
         private readonly Socket Socket;
         private readonly SocketDisposer Disposer;
         private readonly SocketReader SocketReader;
@@ -35,9 +34,9 @@ namespace RxSockets
             Socket = connectedSocket;
             Name = $"{(isAcceptSocket ? "Accepted " : "")}RxSocketClient";
             Logger = logger;
-            Logger.LogTrace($"{Name} created on {Socket.LocalEndPoint} connected to {Socket.RemoteEndPoint}.");
+            Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} connected to {Socket.RemoteEndPoint}.");
             Disposer = new SocketDisposer(connectedSocket, Name, logger);
-            SocketReader = new SocketReader(connectedSocket, Name, Cts.Token, logger);
+            SocketReader = new SocketReader(connectedSocket, Name, logger);
         }
 
         public void Send(byte[] buffer) => Send(buffer, 0, buffer.Length);
@@ -49,7 +48,6 @@ namespace RxSockets
 
         public async Task DisposeAsync()
         {
-            Cts.Cancel();
             await Disposer.DisposeAsync().ConfigureAwait(false);
         }
     }

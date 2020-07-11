@@ -8,7 +8,7 @@ using System.IO;
 
 namespace RxSockets.xUnitTests
 {
-    public class ConversionsFromByteArrayOfLengthPrefixTest
+    public class Conversions_From_Byte_Array_Of_Length_Prefix_Test
     {
         [Fact]
         public async Task T01()

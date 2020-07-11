@@ -9,21 +9,21 @@ using Xunit.Abstractions;
 
 namespace RxSockets.xUnitTests
 {
-    public class RxSocketServerTest : TestBase
+    public class RxSocket_Server_Test : TestBase
     {
-        public RxSocketServerTest(ITestOutputHelper output) : base(output) { }
+        public RxSocket_Server_Test(ITestOutputHelper output) : base(output) { }
 
         [Fact]
-        public void T01_InvalidEndPoint()
+        public void T01_Invalid_EndPoint()
         {
             var endPoint = new IPEndPoint(IPAddress.Parse("111.111.111.111"), 1111);
-            Assert.Throws<SocketException>(() => new RxSocketServer(endPoint, logger: SocketServerLogger));
+            Assert.Throws<SocketException>(() => new RxSocketServer(endPoint, SocketServerLogger));
         }
 
         [Fact]
-        public async Task T02_AcceptSuccess()
+        public async Task T02_Accept_Success()
         {
-            var server = new RxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
@@ -40,25 +40,20 @@ namespace RxSockets.xUnitTests
         }
 
         [Fact]
-        public async Task T03_DisconnectBeforeAccept()
+        public async Task T03_Disconnect_Before_Accept()
         {
-            var server = new RxSocketServer(logger: SocketServerLogger);
-            var endPoint = server.IPEndPoint;
-
+            var server = new RxSocketServer(SocketServerLogger);
             await server.DisposeAsync();
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await server.AcceptObservable.LastOrDefaultAsync());
-            //await server.AcceptObservable.LastOrDefaultAsync();
+            await Assert.ThrowsAsync<ObjectDisposedException> (async () => await server.AcceptObservable.LastOrDefaultAsync());
         }
 
         [Fact]
-        public async Task T04_DisconnectWhileAccept()
+        public async Task T04_Disconnect_While_Accept()
         {
-            var server = new RxSocketServer(logger: SocketServerLogger);
-            var endPoint = server.IPEndPoint;
-
+            var server = new RxSocketServer(SocketServerLogger);
             var acceptTask = server.AcceptObservable.LastAsync().ToTask();
             await server.DisposeAsync();
-            await Assert.ThrowsAnyAsync<Exception>(async () => await acceptTask);
+            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await acceptTask);
         }
     }
 }

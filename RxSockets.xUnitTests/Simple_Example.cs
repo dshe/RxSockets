@@ -3,11 +3,10 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Reactive.Linq;
 using Xunit;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 
 namespace RxSockets.xUnitTests
 {
-    public class Example1
+    public class Simple_Example
     {
         [Fact]
         public async Task Example()
@@ -47,10 +46,9 @@ namespace RxSockets.xUnitTests
             // Allow time for communication to complete.
             await Task.Delay(50);
 
-            await server.DisposeAsync();
+            // Disconnect.
             await client.DisposeAsync();
+            await server.DisposeAsync();
         }
-
     }
 }
-

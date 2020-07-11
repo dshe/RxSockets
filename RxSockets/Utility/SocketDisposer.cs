@@ -35,6 +35,9 @@ namespace RxSockets
                 var localEndPoint = Socket.LocalEndPoint;
                 if (Socket.Connected)
                 {
+                    // disables Send and Receive methods and queues up a zero-byte send packet in the send buffer
+                    Socket.Shutdown(SocketShutdown.Both);
+
                     var remoteEndPoint = Socket.RemoteEndPoint;
                     var semaphore = new SemaphoreSlim(0, 1);
                     var args = new SocketAsyncEventArgs
@@ -44,21 +47,21 @@ namespace RxSockets
                     args.Completed += (_, __) => semaphore.Release();
                     if (Socket.DisconnectAsync(args))
                         await semaphore.WaitAsync().ConfigureAwait(false);
-                    Logger.LogDebug($"{Name} on {localEndPoint} disconnected from {remoteEndPoint} and disposed.");
+                    Logger.LogTrace($"{Name} on {localEndPoint} disconnected from {remoteEndPoint} and disposed.");
                 }
                 else
                 {
-                    Socket.Dispose();
                     Logger.LogDebug($"{Name} on {localEndPoint} disposed.");
                 }
+                Tcs.SetResult(true);
             }
             catch (Exception e)
             {
-                Logger.LogWarning($"{Name} DisposeAsync Exception: {e.Message}\r\n{e}");
+                Tcs.SetException(e);
             }
             finally
             {
-                Tcs.SetResult(true);
+                Socket.Dispose();
             }
         }
     }

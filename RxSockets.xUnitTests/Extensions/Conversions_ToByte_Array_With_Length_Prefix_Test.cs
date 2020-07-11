@@ -4,7 +4,7 @@ using Xunit;
 
 namespace RxSockets.xUnitTests
 {
-    public class ConversionsToByteArrayWithLengthPrefixTest
+    public class Conversions_ToByte_Array_With_Length_Prefix_Test
     {
         [Theory]
         [InlineData(new byte[] { 0, 0, 0, 0 }, new string[] { })]
@@ -12,7 +12,7 @@ namespace RxSockets.xUnitTests
         [InlineData(new byte[] { 0, 0, 0, 2, 0, 0 }, new[] { "\0" })]
         [InlineData(new byte[] { 0, 0, 0, 2, 65, 0 }, new[] { "A" })]
         [InlineData(new byte[] { 0, 0, 0, 4, 65, 0, 66, 0 }, new[] { "A", "B" })]
-        public void T02(byte[] encoded, IEnumerable<string> str)
+        public void T01(byte[] encoded, IEnumerable<string> str)
         {
             Assert.Equal(encoded, ConversionsWithLengthPrefixEx.ToByteArrayWithLengthPrefix(str));
         }

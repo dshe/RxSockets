@@ -1,6 +1,5 @@
 ﻿using System.Reactive.Linq;
 using System.Threading.Tasks;
-using System.Net;
 using System.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Diagnostics;
@@ -9,9 +8,9 @@ using Xunit.Abstractions;
 
 namespace RxSockets.xUnitTests
 {
-    public class PerformanceTest1 : TestBase
+    public class Performance_Test1 : TestBase
     {
-        public PerformanceTest1(ITestOutputHelper output) : base(output) { }
+        public Performance_Test1(ITestOutputHelper output) : base(output) { }
         const int messages = 100_000;
 
         [Fact]
@@ -33,9 +32,9 @@ namespace RxSockets.xUnitTests
             for (var i = 0; i < messages; i++)
                 accept.Send(message);
 
-            // end count task
+            // end countTask
             await accept.DisposeAsync();
-            var count = await countTask; // index out of range
+            var count = await countTask;
 
             watch.Stop();
 
@@ -49,9 +48,9 @@ namespace RxSockets.xUnitTests
             await server.DisposeAsync();
         }
     }
-    public class PerformanceTest2 : TestBase
+    public class Performance_Test2 : TestBase
     {
-        public PerformanceTest2(ITestOutputHelper output) : base(output) { }
+        public Performance_Test2(ITestOutputHelper output) : base(output) { }
         const int messages = 100_000;
 
         [Fact]

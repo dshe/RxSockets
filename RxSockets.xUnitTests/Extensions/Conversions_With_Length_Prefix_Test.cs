@@ -7,7 +7,7 @@ using Xunit;
 
 namespace RxSockets.xUnitTests
 {
-    public class ConversionsWithLengthPrefixTest
+    public class Conversions_With_Length_Prefix_Test
     {
         private readonly MemoryStream ms = new MemoryStream();
 

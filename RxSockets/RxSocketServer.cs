@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Sockets;
 using System.Reactive.Linq;
 using Microsoft.Extensions.Logging;
 using System.Threading;
@@ -21,35 +20,33 @@ namespace RxSockets
     {
         private readonly ILogger Logger;
         public IPEndPoint IPEndPoint { get; }
-        private readonly CancellationTokenSource Cts = new CancellationTokenSource();
         private readonly SocketDisposer Disposer;
         private readonly SocketAccepter SocketAccepter;
         public IObservable<IRxSocketClient> AcceptObservable { get; }
 
-        public RxSocketServer(int backLog = 10, ILogger? logger = null) :
-            this(new IPEndPoint(IPAddress.IPv6Loopback, 0), backLog, logger) {}
+        // IPv6Loopback on auto-selected port.
+        public RxSocketServer(ILogger? logger = null, int backLog = 10) :
+            this(new IPEndPoint(IPAddress.IPv6Loopback, 0), logger, backLog) { }
 
-        public RxSocketServer(IPEndPoint ipEndPoint, int backLog = 10, ILogger? logger = null)
+        public RxSocketServer(IPEndPoint ipEndPoint, ILogger? logger = null, int backLog = 10)
         {
-            // Backlog specifies the number of pending connections allowed before a busy error is returned to the client.
-            Logger  = logger ?? NullLogger.Instance;
+            // Backlog specifies the number of pending connections allowed before a busy error is returned.
+            Logger = logger ?? NullLogger.Instance;
             if (backLog < 0)
                 throw new Exception($"Invalid backLog: {backLog}.");
             var socket = Utilities.CreateSocket();
-            ipEndPoint ??= new IPEndPoint(IPAddress.IPv6Loopback, 0); // autoselect
             socket.Bind(ipEndPoint);
             socket.Listen(backLog);
             IPEndPoint = (IPEndPoint)socket.LocalEndPoint;
             Logger.LogDebug($"RxSocketServer created on {IPEndPoint}.");
             Disposer = new SocketDisposer(socket, "RxSocketServer", Logger);
-            SocketAccepter = new SocketAccepter(socket, Cts.Token, Logger);
+            SocketAccepter = new SocketAccepter(socket, Logger);
             AcceptObservable = SocketAccepter.CreateAcceptObservable();
         }
 
         public async Task DisposeAsync()
         {
-            Cts.Cancel();
-            var tasks = SocketAccepter.Clients.Select(client => client.DisposeAsync()).ToList();
+            var tasks = SocketAccepter.AcceptedClients.Select(client => client.DisposeAsync()).ToList();
             await Task.WhenAll(tasks).ConfigureAwait(false);
             await Disposer.DisposeAsync().ConfigureAwait(false);
         }

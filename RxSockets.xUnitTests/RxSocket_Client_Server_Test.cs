@@ -8,14 +8,14 @@ using Xunit;
 
 namespace RxSockets.xUnitTests
 {
-    public class RxSocketClientServerTest : TestBase
+    public class RxSocket_Client_Server_Test : TestBase
     {
-        public RxSocketClientServerTest(ITestOutputHelper output) : base(output)  {}
+        public RxSocket_Client_Server_Test(ITestOutputHelper output) : base(output)  {}
 
         [Fact]
         public async Task T01_Handshake()
         {
-            var server = new RxSocketServer(logger: SocketServerLogger);
+            var server = new RxSocketServer(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             var task = Task.Run(async () =>
@@ -36,7 +36,7 @@ namespace RxSockets.xUnitTests
             // give some time for the server to start
             await Task.Delay(50);
 
-            var client = await endPoint.ConnectRxSocketClientAsync(logger: SocketClientLogger);
+            var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
 
             // Send only the first message without prefix.
             client.Send("API".ToByteArray());
