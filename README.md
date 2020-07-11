@@ -78,11 +78,14 @@ client.Send("Hello!".ToByteArray());
 // Allow time for communication to complete.
 await Task.Delay(50);
 
+// Disconnect.
 await client.DisposeAsync();
 await server.DisposeAsync();
 ```
 ### notes
-In order to support multiple simultaneous observers, you can use, for example:
+When ```RxSocketServer``` is constructed without specifying the ```IPEndPoint``` argument, an ```IPEndPoint``` with IPv6Loopback on an automatically assigned port is used.
+
+Use ```Publish()``` to support multiple simultaneous observers:
 ```csharp
 IObservable<byte> observable = IRxSocketClient.ReceiveObservable.Publish().AutoConnect();
 ```
