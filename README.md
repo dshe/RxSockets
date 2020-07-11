@@ -83,7 +83,7 @@ await client.DisposeAsync();
 await server.DisposeAsync();
 ```
 ### notes
-When ```RxSocketServer``` is constructed without specifying the ```IPEndPoint``` argument, an ```IPEndPoint``` with IPv6Loopback on an automatically assigned port is used.
+When ```RxSocketServer``` is constructed without an ```IPEndPoint``` argument, an automatically assigned port on IPv6Loopback is used.
 
 Use ```Publish()``` to support multiple simultaneous observers:
 ```csharp
