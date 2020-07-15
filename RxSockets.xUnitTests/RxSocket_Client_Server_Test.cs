@@ -22,10 +22,10 @@ namespace RxSockets.xUnitTests
             {
                 var accept = await server.AcceptObservable.FirstAsync();
 
-                var message1 = await accept.ReadAsync().ReadStringAsync();
+                var message1 = await accept.ReadAsync().ToStringAsync();
                 Assert.Equal("API", message1);
 
-                var message2 = await accept.ReadAsync().ReadStringsFromBufferWithLengthPrefixAsync();
+                var message2 = await accept.ReadAsync().ToStringsFromBufferWithLengthPrefixAsync();
                 Assert.Equal("HelloFromClient", message2.Single());
 
                 accept.Send(new[] { "HelloFromServer" }.ToBufferWithLengthPrefix());
@@ -44,7 +44,7 @@ namespace RxSockets.xUnitTests
             // Start sending and receiving messages with an int32 message length prefix (UseV100Plus).
             client.Send(new[] { "HelloFromClient" }.ToBufferWithLengthPrefix());
 
-            var message3 = await client.ReadAsync().ReadStringsFromBufferWithLengthPrefixAsync();
+            var message3 = await client.ReadAsync().ToStringsFromBufferWithLengthPrefixAsync();
             Assert.Equal("HelloFromServer", message3.Single());
 
             await client.DisposeAsync();

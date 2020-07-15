@@ -31,7 +31,7 @@ namespace RxSockets
             return ms.ToArray(); // array copy
         }
 
-        public static async Task<string[]> ReadStringsFromBufferWithLengthPrefixAsync(this IAsyncEnumerable<byte> bytes)
+        public static async Task<string[]> ToStringsFromBufferWithLengthPrefixAsync(this IAsyncEnumerable<byte> bytes)
         {
             byte[] prefix = await bytes.Take(4).ToArrayAsync().ConfigureAwait(false);
             int length = LengthPrefixExtensions.GetMessageLength(prefix);

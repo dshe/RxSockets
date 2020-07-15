@@ -13,7 +13,7 @@ namespace RxSockets
         public static byte[] ToBuffer(this string source) =>
             Encoding.UTF8.GetBytes(source + "\0");
 
-        public static async Task<string> ReadStringAsync(this IAsyncEnumerable<byte> source)
+        public static async Task<string> ToStringAsync(this IAsyncEnumerable<byte> source)
         {
             byte[] array = await source
                 .TakeWhile(b => b != 0)
