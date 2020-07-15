@@ -85,7 +85,13 @@ await server.DisposeAsync();
 ### notes
 When ```RxSocketServer``` is constructed without an ```IPEndPoint``` argument, an automatically assigned port on IPv6Loopback is used.
 
-Use ```Publish()``` to support multiple simultaneous observers:
+```ReadBytesAsync()``` may be used to perform handshaking before subscribing to ```ReceiveObservable```.
+
+If communicating using strings, the following provided extension methods may be helpful:
 ```csharp
-IObservable<byte> observable = IRxSocketClient.ReceiveObservable.Publish().AutoConnect();
+byte[] ToByteArray(this string s);
+async Task<string> ReadStringAsync(this IAsyncEnumerable<byte> bytes);
+IObservable<string> ToStrings(this IObservable<byte> source);
 ```
+
+Use ```ReceiveObservable.Publish().AutoConnect()``` to support multiple simultaneous observers.
