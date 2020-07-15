@@ -43,7 +43,7 @@ server.AcceptObservable.Subscribe(onNext: acceptClient =>
     acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
     {
         // echo each message received back to the client.
-        acceptClient.Send(message.ToByteArray());
+        acceptClient.Send(message.ToBuffer());
     });
 });
 ```
@@ -54,7 +54,7 @@ interface IRxSocketClient
     bool Connected { get; }
     void Send(byte[] buffer);
     void Send(byte[] buffer, int offset, int length);
-    IAsyncEnumerable<byte> ReadBytesAsync();
+    IAsyncEnumerable<byte> ReadAsync();
     IObservable<byte> ReceiveObservable { get; }
     Task DisposeAsync();
 }
@@ -71,7 +71,7 @@ client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
 });
 
 // Send the message "Hello" to the server, which the server will then echo back to the client.
-client.Send("Hello!".ToByteArray());
+client.Send("Hello!".ToBuffer());
 ```
 
 ```csharp
@@ -85,12 +85,13 @@ await server.DisposeAsync();
 ### notes
 When ```RxSocketServer``` is constructed without an ```IPEndPoint``` argument, an automatically assigned port on IPv6Loopback is used.
 
-```ReadBytesAsync()``` may be used to perform handshaking before subscribing to ```ReceiveObservable```.
+```ReadAsync()``` may be used to perform handshaking before subscribing to ```ReceiveObservable```.
 
 If communicating using strings, the following provided extension methods may be helpful:
 ```csharp
-byte[] ToByteArray(this string s);
-async Task<string> ReadStringAsync(this IAsyncEnumerable<byte> bytes);
+byte[] ToBuffer(this string s);
+Task<string> ReadStringAsync(this IAsyncEnumerable<byte> source);
+IEnumerable<string> ToStrings(this IEnumerable<byte> source);
 IObservable<string> ToStrings(this IObservable<byte> source);
 ```
 
