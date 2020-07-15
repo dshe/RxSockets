@@ -30,7 +30,7 @@ namespace RxSockets.xUnitTests
         {
             AddMessage("A\0BC\0");
             var array = ms.ToArray();
-            var messages = array.RemoveLengthPrefix().ToStringArray().ToArray();
+            var messages = array.RemoveLengthPrefix().ToStrings().ToArray();
             Assert.Single(messages); // 1 message
             var message1 = messages[0];
             Assert.Equal(3, message1.Length); // containing 3 strings
@@ -47,7 +47,7 @@ namespace RxSockets.xUnitTests
             AddMessage("");
             var array = ms.ToArray();
 
-            var messages = array.RemoveLengthPrefix().ToStringArray().ToArray();
+            var messages = array.RemoveLengthPrefix().ToStrings().ToArray();
             Assert.Equal(3, messages.Length); // 3 messages
             var message1 = messages[0]; // message 1
             Assert.Equal(3, message1.Length); // contains 3 strings

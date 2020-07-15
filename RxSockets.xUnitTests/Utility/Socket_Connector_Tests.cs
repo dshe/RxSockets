@@ -38,8 +38,10 @@ namespace RxSockets.xUnitTests
         public async Task T02_Timeout()
         {
             var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-            var e = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.ConnectAsync(endPoint, Logger, 0));
-            Assert.Equal((int)SocketError.TimedOut, e.ErrorCode);
+            var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(10));
+            var ct = cts.Token;
+            await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+               await SocketConnector.ConnectAsync(endPoint, Logger, ct));
         }
 
         [Fact]
@@ -48,7 +50,7 @@ namespace RxSockets.xUnitTests
             var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
             var ct = new CancellationToken(true);
             await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-               await SocketConnector.ConnectAsync(endPoint, Logger, -1, ct));
+               await SocketConnector.ConnectAsync(endPoint, Logger, ct));
         }
 
     }

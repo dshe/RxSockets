@@ -9,7 +9,7 @@ namespace RxSockets
 {
     internal static class SocketConnector
     {
-        internal static async Task<Socket> ConnectAsync(IPEndPoint endPoint, ILogger logger, int timeout = -1, CancellationToken ct = default)
+        internal static async Task<Socket> ConnectAsync(IPEndPoint endPoint, ILogger logger, CancellationToken ct = default)
         {
             var socket = Utilities.CreateSocket();
             var semaphore = new SemaphoreSlim(0, 1);
@@ -25,8 +25,7 @@ namespace RxSockets
                 ct.ThrowIfCancellationRequested();
 
                 if (socket.ConnectAsync(args))
-                    if (!await semaphore.WaitAsync(timeout, ct).ConfigureAwait(false))
-                        throw new SocketException((int)SocketError.TimedOut);
+                    await semaphore.WaitAsync(ct).ConfigureAwait(false);
 
                 if (args.SocketError != SocketError.Success)
                     throw new SocketException((int)args.SocketError);

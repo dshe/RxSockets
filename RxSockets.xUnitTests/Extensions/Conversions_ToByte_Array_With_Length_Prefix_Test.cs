@@ -14,7 +14,7 @@ namespace RxSockets.xUnitTests
         [InlineData(new byte[] { 0, 0, 0, 4, 65, 0, 66, 0 }, new[] { "A", "B" })]
         public void T01(byte[] encoded, IEnumerable<string> str)
         {
-            Assert.Equal(encoded, ConversionsWithLengthPrefixEx.ToByteArrayWithLengthPrefix(str));
+            Assert.Equal(encoded, str.ToBufferWithLengthPrefix());
         }
     }
 }

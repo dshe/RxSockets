@@ -24,7 +24,7 @@ namespace RxSockets.xUnitTests
                 acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
                 {
                     // Echo each message received back to the client.
-                    acceptClient.Send(message.ToByteArray());
+                    acceptClient.Send(message.ToBuffer());
                 });
             });
 
@@ -41,10 +41,10 @@ namespace RxSockets.xUnitTests
             });
 
             // Send the message "Hello" to the server, which the server will then echo back to the client.
-            client.Send("Hello!".ToByteArray());
+            client.Send("Hello!".ToBuffer());
 
             // Allow time for communication to complete.
-            await Task.Delay(50);
+            await Task.Delay(10);
 
             // Disconnect.
             await client.DisposeAsync();

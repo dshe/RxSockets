@@ -42,7 +42,7 @@ namespace RxSockets.xUnitTests
         {
             var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
             await Assert.ThrowsAsync<SocketException>(async () =>
-                await endPoint.ConnectRxSocketClientAsync(SocketClientLogger, timeout: 0));
+                await endPoint.ConnectRxSocketClientAsync(SocketClientLogger));
         }
 
         [Fact]

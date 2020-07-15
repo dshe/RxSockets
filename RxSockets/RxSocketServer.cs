@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Reactive.Linq;
 using Microsoft.Extensions.Logging;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Net;
 using Microsoft.Extensions.Logging.Abstractions;

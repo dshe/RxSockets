@@ -30,7 +30,7 @@ namespace RxSockets.xUnitTests
                 acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
                 {
                     // Echo each message received back to the client.
-                    acceptClient.Send(message.ToByteArray());
+                    acceptClient.Send(message.ToBuffer());
                 });
             });
 
@@ -45,7 +45,7 @@ namespace RxSockets.xUnitTests
             });
 
             // Send the message "Hello" to the server (which will be echoed back to the client).
-            client.Send("Hello!".ToByteArray());
+            client.Send("Hello!".ToBuffer());
 
             // Disconnect.
             await server.DisposeAsync();
@@ -72,7 +72,7 @@ namespace RxSockets.xUnitTests
             var dataTask = client.ReceiveObservable.ToStrings().FirstAsync().ToTask();
 
             // The server sends a string to the client.
-            accept.Send("Welcome!".ToByteArray());
+            accept.Send("Welcome!".ToBuffer());
             Assert.Equal("Welcome!", await dataTask);
 
             await client.DisposeAsync();
@@ -94,8 +94,8 @@ namespace RxSockets.xUnitTests
                 Write(str);
             });
 
-            accept.Send("Welcome!".ToByteArray());
-            accept.Send("Welcome Again!".ToByteArray());
+            accept.Send("Welcome!".ToBuffer());
+            accept.Send("Welcome Again!".ToBuffer());
 
             await Task.Delay(100);
 
@@ -111,7 +111,7 @@ namespace RxSockets.xUnitTests
             var server = new RxSocketServer(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
-            server.AcceptObservable.Subscribe(accepted => accepted.Send("Welcome!".ToByteArray()));
+            server.AcceptObservable.Subscribe(accepted => accepted.Send("Welcome!".ToBuffer()));
 
             var client1 = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
             var client2 = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
@@ -135,11 +135,11 @@ namespace RxSockets.xUnitTests
 
             server.AcceptObservable.Subscribe(accepted =>
             {
-                accepted.Send("Welcome!".ToByteArray());
+                accepted.Send("Welcome!".ToBuffer());
                 accepted
                     .ReceiveObservable
                     .ToStrings()
-                    .Subscribe(s => accepted.Send(s.ToByteArray()));
+                    .Subscribe(s => accepted.Send(s.ToBuffer()));
             });
 
 
@@ -147,7 +147,7 @@ namespace RxSockets.xUnitTests
             for (var i = 0; i < 3; i++)
             {
                 var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-                client.Send("Hello".ToByteArray());
+                client.Send("Hello".ToBuffer());
                 clients.Add(client);
             }
 
@@ -174,7 +174,7 @@ namespace RxSockets.xUnitTests
                 semaphore.Release();
                 acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
                 {
-                    acceptClient.Send(message.ToByteArray());
+                    acceptClient.Send(message.ToBuffer());
                 });
             });
 
@@ -184,7 +184,7 @@ namespace RxSockets.xUnitTests
                 Write(message);
             });
 
-            client.Send("Hello!".ToByteArray());
+            client.Send("Hello!".ToBuffer());
 
             await semaphore.WaitAsync();
             if (acceptClient == null)
@@ -211,7 +211,7 @@ namespace RxSockets.xUnitTests
                 semaphore.Release();
                 acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
                 {
-                    acceptClient.Send(message.ToByteArray());
+                    acceptClient.Send(message.ToBuffer());
                 });
             });
 
@@ -221,7 +221,7 @@ namespace RxSockets.xUnitTests
                 Write(message);
             });
 
-            client.Send("Hello!".ToByteArray());
+            client.Send("Hello!".ToBuffer());
             await semaphore.WaitAsync();
             if (acceptClient == null)
                 throw new NullReferenceException(nameof(acceptClient));

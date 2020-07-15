@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
@@ -12,7 +11,7 @@ namespace RxSockets
         bool Connected { get; }
         void Send(byte[] buffer);
         void Send(byte[] buffer, int offset, int length);
-        IAsyncEnumerable<byte> ReadBytesAsync();
+        IAsyncEnumerable<byte> ReadAsync();
         IObservable<byte> ReceiveObservable { get; }
         Task DisposeAsync();
     }
@@ -24,7 +23,7 @@ namespace RxSockets
         private readonly Socket Socket;
         private readonly SocketDisposer Disposer;
         private readonly SocketReader SocketReader;
-        public IAsyncEnumerable<byte> ReadBytesAsync() => SocketReader.ReadBytesAsync();
+        public IAsyncEnumerable<byte> ReadAsync() => SocketReader.ReadBytesAsync();
         public IObservable<byte> ReceiveObservable => SocketReader.ReceiveObservable;
         public bool Connected =>
             !((Socket.Poll(1000, SelectMode.SelectRead) && (Socket.Available == 0)) || !Socket.Connected);

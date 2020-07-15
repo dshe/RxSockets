@@ -2,6 +2,8 @@
 using System;
 using Xunit.Abstractions;
 using MXLogger;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace RxSockets.xUnitTests
 {
@@ -19,4 +21,5 @@ namespace RxSockets.xUnitTests
             SocketClientLogger = loggerFactory.CreateLogger("RxSocketClient");
         }
     }
+
 }

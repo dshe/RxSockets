@@ -31,9 +31,9 @@ namespace RxSockets.xUnitTests
         [Fact]
         public void T03()
         {
-            Assert.Throws<InvalidDataException>(() => ConversionsWithLengthPrefixEx.GetStringArray(new byte[] { }));
-            Assert.Throws<InvalidDataException>(() => ConversionsWithLengthPrefixEx.GetStringArray(new byte[] { 65 }));
-            Assert.Throws<InvalidDataException>(() => ConversionsWithLengthPrefixEx.GetStringArray(new byte[] { 65, 0, 65 }));
+            Assert.Throws<InvalidDataException>(() => StringsWithLengthPrefixExtensions.GetStrings(new byte[] { }));
+            Assert.Throws<InvalidDataException>(() => StringsWithLengthPrefixExtensions.GetStrings(new byte[] { 65 }));
+            Assert.Throws<InvalidDataException>(() => StringsWithLengthPrefixExtensions.GetStrings(new byte[] { 65, 0, 65 }));
         }
 
         [Theory]
@@ -43,7 +43,7 @@ namespace RxSockets.xUnitTests
         [InlineData(new byte[] { 65, 0, 65, 0, 0 }, new[] { "A", "A", "" })]
         public void T04(byte[] bytes, string[] strings)
         {
-            Assert.Equal(strings, ConversionsWithLengthPrefixEx.GetStringArray(bytes));
+            Assert.Equal(strings, StringsWithLengthPrefixExtensions.GetStrings(bytes));
         }
     }
 }

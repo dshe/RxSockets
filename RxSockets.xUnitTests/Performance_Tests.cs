@@ -28,7 +28,7 @@ namespace RxSockets.xUnitTests
             watch.Start();
 
             // send messages from server to client
-            var message = "Welcome!".ToByteArray();
+            var message = "Welcome!".ToBuffer();
             for (var i = 0; i < messages; i++)
                 accept.Send(message);
 
@@ -63,12 +63,12 @@ namespace RxSockets.xUnitTests
             var client = await endPoint.ConnectRxSocketClientAsync();
             Assert.True(client.Connected);
 
-            var countTask = client.ReceiveObservable.RemoveLengthPrefix().ToStringArray().Count().ToTask();
+            var countTask = client.ReceiveObservable.RemoveLengthPrefix().ToStrings().Count().ToTask();
 
             var accept = await acceptTask;
             Assert.True(accept.Connected);
 
-            var message = new [] { "Welcome!" }.ToByteArrayWithLengthPrefix();
+            var message = new [] { "Welcome!" }.ToBufferWithLengthPrefix();
 
             var watch = new Stopwatch();
             watch.Start();

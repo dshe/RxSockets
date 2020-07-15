@@ -22,13 +22,13 @@ namespace RxSockets.xUnitTests
             {
                 var accept = await server.AcceptObservable.FirstAsync();
 
-                var message1 = await accept.ReadBytesAsync().ReadStringAsync();
+                var message1 = await accept.ReadAsync().ReadStringAsync();
                 Assert.Equal("API", message1);
 
-                var message2 = await accept.ReadBytesAsync().ReadStringsAsync();
+                var message2 = await accept.ReadAsync().ReadStringsFromBufferWithLengthPrefixAsync();
                 Assert.Equal("HelloFromClient", message2.Single());
 
-                accept.Send(new[] { "HelloFromServer" }.ToByteArrayWithLengthPrefix());
+                accept.Send(new[] { "HelloFromServer" }.ToBufferWithLengthPrefix());
 
                 await server.DisposeAsync();
             });
@@ -39,12 +39,12 @@ namespace RxSockets.xUnitTests
             var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
 
             // Send only the first message without prefix.
-            client.Send("API".ToByteArray());
+            client.Send("API".ToBuffer());
 
             // Start sending and receiving messages with an int32 message length prefix (UseV100Plus).
-            client.Send(new[] { "HelloFromClient" }.ToByteArrayWithLengthPrefix());
+            client.Send(new[] { "HelloFromClient" }.ToBufferWithLengthPrefix());
 
-            var message3 = await client.ReadBytesAsync().ReadStringsAsync();
+            var message3 = await client.ReadAsync().ReadStringsFromBufferWithLengthPrefixAsync();
             Assert.Equal("HelloFromServer", message3.Single());
 
             await client.DisposeAsync();
