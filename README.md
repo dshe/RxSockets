@@ -90,7 +90,7 @@ When ```RxSocketServer``` is constructed without an ```IPEndPoint``` argument, a
 If communicating using strings, the following provided extension methods may be helpful:
 ```csharp
 byte[] ToBuffer(this string s);
-Task<string> ReadStringAsync(this IAsyncEnumerable<byte> source);
+Task<string> ToStringAsync(this IAsyncEnumerable<byte> source);
 IEnumerable<string> ToStrings(this IEnumerable<byte> source);
 IObservable<string> ToStrings(this IObservable<byte> source);
 ```
