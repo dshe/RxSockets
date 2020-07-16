@@ -1,8 +1,8 @@
 ## RxSockets&nbsp;&nbsp; [![Build status](https://ci.appveyor.com/api/projects/status/rfxxbpx2agq8r93n?svg=true)](https://ci.appveyor.com/project/dshe/RxSockets) [![NuGet](https://img.shields.io/nuget/vpre/RxSockets.svg)](https://www.nuget.org/packages/RxSockets/) [![License](https://img.shields.io/badge/license-Apache%202.0-7755BB.svg)](https://opensource.org/licenses/Apache-2.0)
 **Minimal Reactive Socket Implementation**
 - **asynchronous** connect and disconnect
-- **observable** receive and accept
 - **synchronous** send
+- **observable** accept and receive
 - supports **.NET Standard 2.0**
 - dependencies: Reactive Extensions
 - simple and intuitive API
@@ -20,9 +20,6 @@ using System.Threading.Tasks;
 using System.Reactive.Linq;
 using Xunit;
 using RxSockets;
-
-// Create an IPEndPoint on the local machine on an available port.
-IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
 ```
 #### server
 ```csharp
@@ -34,8 +31,11 @@ interface IRxSocketServer
 }
 ```
 ```csharp
-// Create a socket server on the IPEndPoint.
-IRxSocketServer server = new RxSocketServer(ipEndPoint);
+// Create a server using an available port on the local machine.
+IRxSocketServer server = RxSocketServer.Create();
+
+// Find the IPEndPoint of the server.
+IPEndPoint ipEndPoint = server.IPEndPoint;
 
 // Start accepting connections from clients.
 server.AcceptObservable.Subscribe(onNext: acceptClient =>
@@ -61,7 +61,7 @@ interface IRxSocketClient
 }
 ```
 ```csharp
-// Create a socket client by first connecting to the server at the IPEndPoint.
+// Create a client by connecting to the server at ipEndPoint.
 IRxSocketClient client = await ipEndPoint.ConnectRxSocketClientAsync();
 
 // Start receiving messages from the server.
@@ -77,18 +77,18 @@ client.Send("Hello!".ToBuffer());
 
 ```csharp
 // Allow time for communication to complete.
-await Task.Delay(50);
+await Task.Delay(10);
 
 // Disconnect.
 await client.DisposeAsync();
 await server.DisposeAsync();
 ```
 ### notes
-When ```RxSocketServer``` is constructed without an ```IPEndPoint``` argument, an automatically assigned port on IPv6Loopback is used.
-
 ```ReadAsync()``` may be used to perform handshaking before subscribing to ```ReceiveObservable```.
 
-If communicating using strings, the following provided extension methods may be helpful:
+Use ```ReceiveObservable.Publish().AutoConnect()``` to support multiple simultaneous observers.
+
+When communicating using strings (example above), the following provided extension methods may be helpful:
 ```csharp
 byte[] ToBuffer(this string s);
 Task<string> ToStringAsync(this IAsyncEnumerable<byte> source);
@@ -96,4 +96,4 @@ IEnumerable<string> ToStrings(this IEnumerable<byte> source);
 IObservable<string> ToStrings(this IObservable<byte> source);
 ```
 
-Use ```ReceiveObservable.Publish().AutoConnect()``` to support multiple simultaneous observers.
+
