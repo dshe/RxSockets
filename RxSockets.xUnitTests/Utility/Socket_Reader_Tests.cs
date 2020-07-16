@@ -54,7 +54,7 @@ namespace RxSockets.xUnitTests
             var reader = new SocketReader(Socket, "?", Logger);
 
             // after the remote socket disconnects, reader.ReadByteAsync() returns nothing
-            var empty = await reader.ReadBytesAsync().IsEmptyAsync();
+            var empty = await reader.ReadAsync(default).IsEmptyAsync();
             Assert.True(empty);
         }
 

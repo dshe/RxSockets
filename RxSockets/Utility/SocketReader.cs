@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net.Sockets;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -31,14 +32,14 @@ namespace RxSockets
             ReceiveObservable = CreateReceiveObservable();
         }
 
-        internal async IAsyncEnumerable<byte> ReadBytesAsync()
+        internal async IAsyncEnumerable<byte> ReadAsync([EnumeratorCancellation] CancellationToken ct)
         {
             while (true)
             {
                 if (Position == Args.BytesTransferred)
                 {
                     if (Socket.ReceiveAsync(Args))
-                        await Semaphore.WaitAsync().ConfigureAwait(false);
+                        await Semaphore.WaitAsync(ct).ConfigureAwait(false);
                     Position = 0;
                     Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {Args.BytesTransferred} bytes async from {Socket.RemoteEndPoint}.");
                     if (Args.BytesTransferred == 0)

@@ -18,7 +18,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T00_All_Ok()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
@@ -48,7 +48,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T01_Dispose_Before_Receive()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
@@ -60,7 +60,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T02_Dispose_During_Receive()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
@@ -74,7 +74,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T03_External_Dispose_Before_Receive()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
@@ -88,7 +88,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T04_External_Dispose_During_Receive()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
@@ -103,7 +103,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T05_Dispose_Before_Send()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
@@ -115,7 +115,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T06_Dispose_During_Send()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);

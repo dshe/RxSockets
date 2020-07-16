@@ -16,7 +16,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T01_ReceiveStrings()
         {
-            var server = new RxSocketServer();
+            var server = RxSocketServer.Create();
             var endPoint = server.IPEndPoint;
 
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
@@ -56,7 +56,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T02_ReceiveStringsFromPrefixedBytes()
         {
-            var server = new RxSocketServer();
+            var server = RxSocketServer.Create();
             var endPoint = server.IPEndPoint;
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 

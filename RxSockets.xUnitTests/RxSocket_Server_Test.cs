@@ -17,13 +17,13 @@ namespace RxSockets.xUnitTests
         public void T01_Invalid_EndPoint()
         {
             var endPoint = new IPEndPoint(IPAddress.Parse("111.111.111.111"), 1111);
-            Assert.Throws<SocketException>(() => new RxSocketServer(endPoint, SocketServerLogger));
+            Assert.Throws<SocketException>(() => RxSocketServer.CreateOnEndPoint(endPoint, SocketServerLogger));
         }
 
         [Fact]
         public async Task T02_Accept_Success()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
@@ -42,7 +42,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T03_Disconnect_Before_Accept()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             await server.DisposeAsync();
             await Assert.ThrowsAsync<ObjectDisposedException> (async () => await server.AcceptObservable.LastOrDefaultAsync());
         }
@@ -50,7 +50,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T04_Disconnect_While_Accept()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var acceptTask = server.AcceptObservable.LastAsync().ToTask();
             await server.DisposeAsync();
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await acceptTask);

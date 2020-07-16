@@ -18,7 +18,7 @@ namespace RxSockets.xUnitTests
         public async Task T00_Example()
         {
             // Create a socket server.
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
 
             // The IPEndPoint is chosen automatically.
             var ipEndPoint = server.IPEndPoint;
@@ -55,7 +55,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T01_Send_And_Receive_String_Message()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var ipEndPoint = server.IPEndPoint;
 
             // Start a task to allow the server to accept the next client connection.
@@ -82,7 +82,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T10_Receive_Observable()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
@@ -108,7 +108,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T20_Accept_Observable()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             server.AcceptObservable.Subscribe(accepted => accepted.Send("Welcome!".ToBuffer()));
@@ -130,7 +130,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T30_Both()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             server.AcceptObservable.Subscribe(accepted =>
@@ -164,7 +164,7 @@ namespace RxSockets.xUnitTests
         {
             var semaphore = new SemaphoreSlim(0, 1);
 
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             IRxSocketClient? acceptClient = null;
@@ -201,7 +201,7 @@ namespace RxSockets.xUnitTests
         {
             var semaphore = new SemaphoreSlim(0, 1);
 
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             IRxSocketClient? acceptClient = null;

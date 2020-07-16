@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 
 namespace RxSockets
 {
@@ -11,7 +12,7 @@ namespace RxSockets
         bool Connected { get; }
         void Send(byte[] buffer);
         void Send(byte[] buffer, int offset, int length);
-        IAsyncEnumerable<byte> ReadAsync();
+        IAsyncEnumerable<byte> ReadAsync(CancellationToken ct = default);
         IObservable<byte> ReceiveObservable { get; }
         Task DisposeAsync();
     }
@@ -23,8 +24,10 @@ namespace RxSockets
         private readonly Socket Socket;
         private readonly SocketDisposer Disposer;
         private readonly SocketReader SocketReader;
-        public IAsyncEnumerable<byte> ReadAsync() => SocketReader.ReadBytesAsync();
-        public IObservable<byte> ReceiveObservable => SocketReader.ReceiveObservable;
+        public IAsyncEnumerable<byte> ReadAsync(CancellationToken ct = default) =>
+            SocketReader.ReadAsync(ct);
+        public IObservable<byte> ReceiveObservable =>
+            SocketReader.ReceiveObservable;
         public bool Connected =>
             !((Socket.Poll(1000, SelectMode.SelectRead) && (Socket.Available == 0)) || !Socket.Connected);
 

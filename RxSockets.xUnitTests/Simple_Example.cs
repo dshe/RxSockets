@@ -11,11 +11,11 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task Example()
         {
-            // Create an IPEndPoint on the local machine on an available port.
-            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, 12345);
+            // Create a server on the local machine using an available port.
+            IRxSocketServer server = RxSocketServer.Create();
 
-            // Create a socket server.
-            IRxSocketServer server = new RxSocketServer(ipEndPoint);
+            // Find the IPEndPoint of the server.
+            IPEndPoint ipEndPoint = server.IPEndPoint;
 
             // Start accepting connections from clients.
             server.AcceptObservable.Subscribe(acceptClient =>
@@ -30,7 +30,7 @@ namespace RxSockets.xUnitTests
 
 
 
-            // Create a socket client by first connecting to the server at the IPEndPoint.
+            // Create a client by connecting to the server at ipEndPoint.
             IRxSocketClient client = await ipEndPoint.ConnectRxSocketClientAsync();
 
             // Start receiving messages from the server.

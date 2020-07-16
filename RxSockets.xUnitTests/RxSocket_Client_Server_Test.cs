@@ -15,7 +15,7 @@ namespace RxSockets.xUnitTests
         [Fact]
         public async Task T01_Handshake()
         {
-            var server = new RxSocketServer(SocketServerLogger);
+            var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
             var task = Task.Run(async () =>
