@@ -40,7 +40,8 @@ IPEndPoint ipEndPoint = server.IPEndPoint;
 // Start accepting connections from clients.
 server.AcceptObservable.Subscribe(onNext: acceptClient =>
 {
-    // After the server accepts a client connection, start receiving messages from the client and ...
+    // After the server accepts a client connection,
+    // start receiving messages from the client and ...
     acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
     {
         // echo each message received back to the client.
@@ -71,7 +72,8 @@ client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
     Assert.Equal("Hello!", message);
 });
 
-// Send the message "Hello" to the server, which the server will then echo back to the client.
+// Send the message "Hello" to the server,
+// which the server will then echo back to the client.
 client.Send("Hello!".ToBuffer());
 ```
 
@@ -86,11 +88,11 @@ await server.DisposeAsync();
 ### notes
 ```ReadAsync()``` may be used to perform handshaking before subscribing to ```ReceiveObservable```.
 
-Use ```ReceiveObservable.Publish().AutoConnect()``` to support multiple simultaneous observers.
+```Observable.Publish().AutoConnect()``` can be used to support multiple simultaneous observers.
 
 When communicating using strings (example above), the following provided extension methods may be helpful:
 ```csharp
-byte[] ToBuffer(this string s);
+byte[] ToBuffer(this string source);
 Task<string> ToStringAsync(this IAsyncEnumerable<byte> source);
 IEnumerable<string> ToStrings(this IEnumerable<byte> source);
 IObservable<string> ToStrings(this IObservable<byte> source);
