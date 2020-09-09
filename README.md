@@ -86,7 +86,7 @@ await client.DisposeAsync();
 await server.DisposeAsync();
 ```
 ### notes
-```ReadAsync()``` may be used to perform handshaking before subscribing to ```ReceiveObservable```.
+```IRxSocketClient.ReadAsync()``` may be used to perform handshaking before subscribing to ```ReceiveObservable```.
 
 ```Observable.Publish().AutoConnect()``` can be used to support multiple simultaneous observers.
 
