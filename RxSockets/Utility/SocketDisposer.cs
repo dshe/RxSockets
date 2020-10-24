@@ -51,7 +51,7 @@ namespace RxSockets
                 }
                 else
                 {
-                    Logger.LogDebug($"{Name} on {localEndPoint} disposed.");
+                    Logger.LogTrace($"{Name} on {localEndPoint} disposed.");
                 }
                 Tcs.SetResult(true);
             }

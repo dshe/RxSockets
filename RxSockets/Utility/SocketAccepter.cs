@@ -11,7 +11,7 @@ namespace RxSockets
     class SocketAccepter
     {
         private readonly ILogger Logger;
-        private readonly SemaphoreSlim Semaphore = new SemaphoreSlim(0, 1);
+        private readonly SemaphoreSlim Semaphore = new SemaphoreSlim(0, 1); // start with wait
         private readonly Socket Socket;
         private readonly SocketAsyncEventArgs Args = new SocketAsyncEventArgs();
         internal readonly List<RxSocketClient> AcceptedClients = new List<RxSocketClient>();
@@ -37,14 +37,14 @@ namespace RxSockets
                             Args.AcceptSocket = Utilities.CreateSocket();
                             if (Socket.AcceptAsync(Args))
                                 Semaphore.Wait(ct);
-                            var client = new RxSocketClient(Args.AcceptSocket, Logger, true);
+                            var client = new RxSocketClient(Args.AcceptSocket, Logger, isAcceptSocket: true);
                             AcceptedClients.Add(client);
                             observer.OnNext(client);
                         }
                     }
                     catch (Exception e)
                     {
-                        Logger.LogDebug($"SocketAcceptor on {Socket.LocalEndPoint} Exception: {e.Message}");
+                        Logger.LogDebug(e, $"SocketAcceptor on {Socket.LocalEndPoint}. {e.Message}");
                         observer.OnCompleted();
                     }
                 });

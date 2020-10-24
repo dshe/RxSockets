@@ -32,20 +32,18 @@ namespace RxSockets
 
                 return socket;
             }
-            catch (SocketException e)
-            {
-                var errorName = "SocketException: " + Enum.GetName(typeof(SocketError), e.ErrorCode);
-                logger.LogInformation($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}. {errorName}.\r\n{e}");
-                throw;
-            }
-            catch (OperationCanceledException e)
-            {
-                logger.LogInformation($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}. {e.Message}\r\n{e}");
-                throw;
-            }
             catch (Exception e)
             {
-                logger.LogWarning($"Socket at {socket.LocalEndPoint} could not connect to {endPoint}. {e.Message}\r\n{e}");
+                var msg = $"Socket at {socket.LocalEndPoint} could not connect to {endPoint}. {e.Message}";
+                if (e is SocketException se)
+                {
+                    var errorName = "SocketException: " + Enum.GetName(typeof(SocketError), se.ErrorCode);
+                    logger.LogDebug(e, $"{msg}. {errorName}.");
+                }
+                else if (e is OperationCanceledException)
+                    logger.LogDebug(e, msg);
+                else
+                    logger.LogWarning(e, msg);
                 throw;
             }
             finally

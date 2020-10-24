@@ -190,7 +190,7 @@ namespace RxSockets.xUnitTests
             if (acceptClient == null)
                 throw new NullReferenceException(nameof(acceptClient));
 
-            await server.DisposeAsync();
+            await server.DisposeAsync(); 
             await client.DisposeAsync();
 
             semaphore.Dispose();
