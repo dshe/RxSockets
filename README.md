@@ -31,7 +31,7 @@ interface IRxSocketServer
 }
 ```
 ```csharp
-// Create a server using an available port on the local machine.
+// Create a server using a random available port on the local machine.
 IRxSocketServer server = RxSocketServer.Create();
 
 // Find the IPEndPoint of the server.
