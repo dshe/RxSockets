@@ -88,9 +88,9 @@ await server.DisposeAsync();
 ### notes
 ```IRxSocketClient.ReadAsync()``` may be used to perform handshaking before subscribing to ```ReceiveObservable```.
 
-```Observable.Publish().AutoConnect()``` can be used to support multiple simultaneous observers.
+```Observable.Publish().AutoConnect()``` may be used to support multiple simultaneous observers.
 
-When communicating using strings (example above), the following provided extension methods may be helpful:
+To communicate using strings (example above), the following extension methods are provided:
 ```csharp
 byte[] ToBuffer(this string source);
 Task<string> ToStringAsync(this IAsyncEnumerable<byte> source);
