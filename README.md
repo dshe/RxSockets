@@ -34,9 +34,6 @@ interface IRxSocketServer
 // Create a server using a random available port on the local machine.
 IRxSocketServer server = RxSocketServer.Create();
 
-// Find the IPEndPoint of the server.
-IPEndPoint ipEndPoint = server.IPEndPoint;
-
 // Start accepting connections from clients.
 server.AcceptObservable.Subscribe(onNext: acceptClient =>
 {
@@ -62,6 +59,9 @@ interface IRxSocketClient
 }
 ```
 ```csharp
+// Find the IPEndPoint of the server.
+IPEndPoint ipEndPoint = server.IPEndPoint;
+
 // Create a client by connecting to the server at ipEndPoint.
 IRxSocketClient client = await ipEndPoint.ConnectRxSocketClientAsync();
 
