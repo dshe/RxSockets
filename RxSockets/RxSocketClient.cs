@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -24,10 +24,13 @@ namespace RxSockets
         private readonly Socket Socket;
         private readonly SocketDisposer Disposer;
         private readonly SocketReader SocketReader;
+
         public IAsyncEnumerable<byte> ReadAsync(CancellationToken ct = default) =>
             SocketReader.ReadAsync(ct);
+
         public IObservable<byte> ReceiveObservable =>
             SocketReader.ReceiveObservable;
+
         public bool Connected =>
             !((Socket.Poll(1000, SelectMode.SelectRead) && (Socket.Available == 0)) || !Socket.Connected);
 
