@@ -83,7 +83,7 @@ namespace RxSockets
                         Logger.LogTrace(e, $"{Name} on {Socket.LocalEndPoint} SocketReader Exception: {e.Message}");
                         observer.OnError(e);
                     }
-                });
+                }, ct);
             });
         }
     }

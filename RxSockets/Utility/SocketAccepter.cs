@@ -47,7 +47,7 @@ namespace RxSockets
                         Logger.LogDebug(e, $"SocketAcceptor on {Socket.LocalEndPoint}. {e.Message}");
                         observer.OnCompleted();
                     }
-                });
+                }, ct);
             });
         }
     }
