@@ -13,7 +13,7 @@ namespace RxSockets
         {
             var socket = Utilities.CreateSocket();
             var semaphore = new SemaphoreSlim(0, 1);
-            void handler(object sender, SocketAsyncEventArgs a) => semaphore.Release();
+            void handler(object? sender, SocketAsyncEventArgs a) => semaphore.Release();
             var args = new SocketAsyncEventArgs
             {
                 RemoteEndPoint = endPoint

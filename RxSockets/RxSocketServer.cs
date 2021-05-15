@@ -47,7 +47,7 @@ namespace RxSockets
         private RxSocketServer(Socket socket, ILogger logger)
         {
             Logger = logger;
-            IPEndPoint = (IPEndPoint)socket.LocalEndPoint;
+            IPEndPoint = (IPEndPoint)(socket.LocalEndPoint ?? throw new Exception("LocalEndPoint"));
             Disposer = new SocketDisposer(socket, "RxSocketServer", Logger);
             SocketAccepter = new SocketAccepter(socket, Logger);
             AcceptObservable = SocketAccepter.CreateAcceptObservable();
