@@ -24,7 +24,9 @@ namespace RxSockets.xUnitTests
         public async Task T01_To_Strings()
         {
             await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                 await ((byte[]?)null).ToObservable().ToStrings().ToList()); // should have warning?
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
             // no termination
             Assert.Throws<InvalidDataException>(() => new byte[] { 65 }.ToStrings().ToList());

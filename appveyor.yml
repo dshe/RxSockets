@@ -1,5 +1,5 @@
 environment:
-  base_version: '2.0.5'
+  base_version: '2.0.7'
   version_suffix: ''
 version: $(base_version).{build}
 image: Visual Studio 2019

@@ -27,7 +27,7 @@ namespace RxSockets.xUnitTests
             var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
             ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
-            endPoint = (IPEndPoint) ServerSocket.LocalEndPoint;
+            endPoint = (IPEndPoint) (ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint"));
             Socket.Connect(endPoint);
 
             var accepted = ServerSocket.Accept();
@@ -45,7 +45,7 @@ namespace RxSockets.xUnitTests
             var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
             ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
-            endPoint = (IPEndPoint)ServerSocket.LocalEndPoint;
+            endPoint = (IPEndPoint)(ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint"));
             Socket.Connect(endPoint);
 
             var accepted = ServerSocket.Accept();
@@ -64,7 +64,7 @@ namespace RxSockets.xUnitTests
             var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
             ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
-            endPoint = (IPEndPoint)ServerSocket.LocalEndPoint;
+            endPoint = (IPEndPoint)(ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint"));
             Socket.Connect(endPoint);
             var accepted = ServerSocket.Accept();
 
@@ -83,7 +83,7 @@ namespace RxSockets.xUnitTests
             var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
             ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
-            endPoint = (IPEndPoint)ServerSocket.LocalEndPoint;
+            endPoint = (IPEndPoint)(ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint"));
             Socket.Connect(endPoint);
             var accepted = ServerSocket.Accept();
             Assert.True(Socket.Connected);
@@ -105,7 +105,7 @@ namespace RxSockets.xUnitTests
             var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
             ServerSocket.Bind(endPoint);
             ServerSocket.Listen(10);
-            endPoint = (IPEndPoint)ServerSocket.LocalEndPoint;
+            endPoint = (IPEndPoint)(ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint"));
             Socket.Connect(endPoint);
             var accepted = ServerSocket.Accept();
             accepted.Send(new byte[] { 1 });
