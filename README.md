@@ -1,5 +1,5 @@
-## RxSockets&nbsp;&nbsp; [![Build status](https://ci.appveyor.com/api/projects/status/rfxxbpx2agq8r93n?svg=true)](https://ci.appveyor.com/project/dshe/RxSockets) [![NuGet](https://img.shields.io/nuget/vpre/RxSockets.svg)](https://www.nuget.org/packages/RxSockets/) [![License](https://img.shields.io/badge/license-Apache%202.0-7755BB.svg)](https://opensource.org/licenses/Apache-2.0)
-**Minimal Reactive Socket Implementation**
+## RxSockets&nbsp;&nbsp; [![Build status](https://ci.appveyor.com/api/projects/status/rfxxbpx2agq8r93n?svg=true)](https://ci.appveyor.com/project/dshe/RxSockets) [![NuGet](https://img.shields.io/nuget/vpre/RxSockets.svg)](https://www.nuget.org/packages/RxSockets/) [![NuGet](https://img.shields.io/nuget/dt/RxSockets?color=orange)](https://www.nuget.org/packages/RxSockets/) [![License](https://img.shields.io/badge/license-Apache%202.0-7755BB.svg)](https://opensource.org/licenses/Apache-2.0)
+***Minimal Reactive Socket Implementation***
 - **asynchronous** connect and disconnect
 - **synchronous** send
 - **observable** accept and receive
@@ -31,11 +31,8 @@ interface IRxSocketServer
 }
 ```
 ```csharp
-// Create a server using an available port on the local machine.
+// Create a server using a random available port on the local machine.
 IRxSocketServer server = RxSocketServer.Create();
-
-// Find the IPEndPoint of the server.
-IPEndPoint ipEndPoint = server.IPEndPoint;
 
 // Start accepting connections from clients.
 server.AcceptObservable.Subscribe(onNext: acceptClient =>
@@ -62,6 +59,9 @@ interface IRxSocketClient
 }
 ```
 ```csharp
+// Find the IPEndPoint of the server.
+IPEndPoint ipEndPoint = server.IPEndPoint;
+
 // Create a client by connecting to the server at ipEndPoint.
 IRxSocketClient client = await ipEndPoint.ConnectRxSocketClientAsync();
 
@@ -88,14 +88,12 @@ await server.DisposeAsync();
 ### notes
 ```IRxSocketClient.ReadAsync()``` may be used to perform handshaking before subscribing to ```ReceiveObservable```.
 
-```Observable.Publish().AutoConnect()``` can be used to support multiple simultaneous observers.
+```Observable.Publish().AutoConnect()``` may be used to support multiple simultaneous observers.
 
-When communicating using strings (example above), the following provided extension methods may be helpful:
+To communicate using strings (example above), the following extension methods are provided:
 ```csharp
 byte[] ToBuffer(this string source);
 Task<string> ToStringAsync(this IAsyncEnumerable<byte> source);
 IEnumerable<string> ToStrings(this IEnumerable<byte> source);
 IObservable<string> ToStrings(this IObservable<byte> source);
 ```
-
-
