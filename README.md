@@ -59,11 +59,8 @@ interface IRxSocketClient
 }
 ```
 ```csharp
-// Find the IPEndPoint of the server.
-IPEndPoint ipEndPoint = server.IPEndPoint;
-
-// Create a client by connecting to the server at ipEndPoint.
-IRxSocketClient client = await ipEndPoint.ConnectRxSocketClientAsync();
+// Create a client by connecting to the server.
+IRxSocketClient client = await server.IPEndPoint.ConnectRxSocketClientAsync();
 
 // Start receiving messages from the server.
 client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
