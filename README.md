@@ -4,7 +4,7 @@
 - **synchronous** send
 - **observable** accept and receive
 - supports **.NET Standard 2.0**
-- dependencies: Reactive Extensions
+- dependencies: Reactive Extensions, System.Linq.Async
 - simple and intuitive API
 - fast
 
