@@ -3,7 +3,7 @@
 - **asynchronous** connect
 - **synchronous** send
 - **observable** accept
-- **async enumerable and observable receive***
+- **async enumerable and observable receive**
 - supports **.NET Standard 2.0**
 - dependencies: Reactive Extensions, System.Linq.Async
 - simple and intuitive API
