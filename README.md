@@ -1,8 +1,9 @@
 ## RxSockets&nbsp;&nbsp; [![Build status](https://ci.appveyor.com/api/projects/status/rfxxbpx2agq8r93n?svg=true)](https://ci.appveyor.com/project/dshe/RxSockets) [![NuGet](https://img.shields.io/nuget/vpre/RxSockets.svg)](https://www.nuget.org/packages/RxSockets/) [![NuGet](https://img.shields.io/nuget/dt/RxSockets?color=orange)](https://www.nuget.org/packages/RxSockets/) [![License](https://img.shields.io/badge/license-Apache%202.0-7755BB.svg)](https://opensource.org/licenses/Apache-2.0)
 ***Minimal Reactive Socket Implementation***
-- **asynchronous** connect and disconnect
+- **asynchronous** connect
 - **synchronous** send
-- **observable** accept and receive
+- **observable** accept
+- **async enumerable and observable receive***
 - supports **.NET Standard 2.0**
 - dependencies: Reactive Extensions, System.Linq.Async
 - simple and intuitive API
