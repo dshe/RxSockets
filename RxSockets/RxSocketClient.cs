@@ -1,59 +1,51 @@
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
-using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace RxSockets
 {
-    public interface IRxSocketClient
+    public interface IRxSocketClient: IAsyncDisposable
     {
         bool Connected { get; }
-        void Send(byte[] buffer);
-        void Send(byte[] buffer, int offset, int length);
-        IAsyncEnumerable<byte> ReadAsync(CancellationToken ct = default);
-        IObservable<byte> ReceiveObservable { get; }
-        Task DisposeAsync();
+        void Send(ReadOnlySpan<byte> buffer);
+        IAsyncEnumerable<byte> ReceiveAllAsync();
     }
 
-    public sealed class RxSocketClient : IRxSocketClient
+    public class RxSocketClient: IRxSocketClient
     {
-        private readonly ILogger Logger;
         private readonly string Name;
+        private readonly ILogger Logger;
+        private readonly CancellationTokenSource Cts = new();
         private readonly Socket Socket;
+        private readonly SocketReceiver Receiver;
         private readonly SocketDisposer Disposer;
-        private readonly SocketReader SocketReader;
 
-        public IAsyncEnumerable<byte> ReadAsync(CancellationToken ct = default) =>
-            SocketReader.ReadAsync(ct);
-
-        public IObservable<byte> ReceiveObservable =>
-            SocketReader.ReceiveObservable;
+        internal RxSocketClient(Socket socket, ILogger logger, string name)
+        {
+            Socket = socket;
+            Logger = logger;
+            Name = name;
+            Receiver = new SocketReceiver(socket, logger, Name);
+            Disposer = new SocketDisposer(Socket, Cts, logger, Name);
+        }
 
         public bool Connected =>
             !((Socket.Poll(1000, SelectMode.SelectRead) && (Socket.Available == 0)) || !Socket.Connected);
 
-        internal RxSocketClient(Socket connectedSocket, ILogger logger, bool isAcceptSocket)
+        public void Send(ReadOnlySpan<byte> buffer)
         {
-            Socket = connectedSocket;
-            Name = $"{(isAcceptSocket ? "Accepted " : "")}RxSocketClient";
-            Logger = logger;
-            Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} connected to {Socket.RemoteEndPoint}.");
-            Disposer = new SocketDisposer(connectedSocket, Name, logger);
-            SocketReader = new SocketReader(connectedSocket, Name, logger);
+            Socket.Send(buffer);
+            Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} sent {buffer.Length} bytes to {Socket.RemoteEndPoint}.");
         }
 
-        public void Send(byte[] buffer) => Send(buffer, 0, buffer.Length);
-        public void Send(byte[] buffer, int offset, int length)
-        {
-            Socket.Send(buffer, offset, length, SocketFlags.None);
-            Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} sent {length} bytes to {Socket.RemoteEndPoint}.");
-        }
+        public IAsyncEnumerable<byte> ReceiveAllAsync() =>
+            Receiver.ReceiveAllAsync(Cts.Token);
 
-        public async Task DisposeAsync()
-        {
+        public async ValueTask DisposeAsync() =>
             await Disposer.DisposeAsync().ConfigureAwait(false);
-        }
     }
 }

@@ -5,11 +5,11 @@ using System.Net;
 using System.Text;
 using Xunit;
 
-namespace RxSockets.xUnitTests
+namespace RxSockets.Tests
 {
-    public class Conversions_With_Length_Prefix_Test
+    public class ToStringArraysTest
     {
-        private readonly MemoryStream ms = new MemoryStream();
+        private readonly MemoryStream ms = new();
 
         private void AddMessage(string str)
         {
@@ -29,8 +29,7 @@ namespace RxSockets.xUnitTests
         public void T01_Test_String()
         {
             AddMessage("A\0BC\0");
-            var array = ms.ToArray();
-            var messages = array.RemoveLengthPrefix().ToStrings().ToArray();
+            var messages = ms.ToArray().ToArraysFromBytesWithLengthPrefix().ToStringArrays().ToArray();
             Assert.Single(messages); // 1 message
             var message1 = messages[0];
             Assert.Equal(3, message1.Length); // containing 3 strings
@@ -47,7 +46,7 @@ namespace RxSockets.xUnitTests
             AddMessage("");
             var array = ms.ToArray();
 
-            var messages = array.RemoveLengthPrefix().ToStrings().ToArray();
+            var messages = array.ToArraysFromBytesWithLengthPrefix().ToStringArrays().ToArray();
             Assert.Equal(3, messages.Length); // 3 messages
             var message1 = messages[0]; // message 1
             Assert.Equal(3, message1.Length); // contains 3 strings

@@ -9,13 +9,13 @@ namespace RxSockets
 {
     public static class Utilities
     {
-        private static readonly object Locker = new object();
+        private static readonly object Locker = new();
 
         public static Socket CreateSocket() =>
-            new Socket(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+            new(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
 
         public static IPEndPoint GetEndPointOnRandomLoopbackPort() =>
-            new IPEndPoint(IPAddress.IPv6Loopback, GetRandomAvailablePort());
+            new(IPAddress.IPv6Loopback, GetRandomAvailablePort());
 
         private static int GetRandomAvailablePort()
         {
@@ -24,7 +24,7 @@ namespace RxSockets
                 while (true)
                 {
                     // IANA officially recommends 49152 - 65535 for the Ephemeral Ports.
-                     var port = RandomInt(49152, 65535);
+                    var port = RandomInt(49152, 65535);
                     if (!IsPortUsed(port))
                         return port;
                 }
@@ -48,7 +48,7 @@ namespace RxSockets
         {
             byte[] buffer = new byte[bytes];
             using var rng = new RNGCryptoServiceProvider();
-                rng.GetBytes(buffer);
+            rng.GetBytes(buffer);
             return buffer;
         }
     }

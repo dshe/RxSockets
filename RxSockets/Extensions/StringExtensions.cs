@@ -3,30 +3,35 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RxSockets
 {
     public static class StringExtensions
     {
-        public static byte[] ToBuffer(this string source) =>
+        /// <summary>
+        /// Convert a string to a byte array.
+        /// </summary>
+        public static byte[] ToByteArray(this string source) =>
             Encoding.UTF8.GetBytes(source + "\0");
 
-        public static async Task<string> ToStringAsync(this IAsyncEnumerable<byte> source)
-        {
-            byte[] array = await source
-                .TakeWhile(b => b != 0)
-                .ToArrayAsync()
-                .ConfigureAwait(false);
+        /// <summary>
+        /// Convert a sequence of strings to a byte array.
+        /// </summary>
+        public static byte[] ToByteArray(this IEnumerable<string> source) =>
+            source.Select(s => s.ToByteArray()).SelectMany(x => x).ToArray();
 
-            return Encoding.UTF8.GetString(array);
-        }
+        ///////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Convert a sequence of bytes into a sequence of strings.
+        /// </summary>
         public static IEnumerable<string> ToStrings(this IEnumerable<byte> source)
         {
             using var ms = new MemoryStream();
-
             foreach (byte b in source)
             {
                 if (b == 0)
@@ -41,10 +46,32 @@ namespace RxSockets
                 throw new InvalidDataException("ToStrings: no termination(1).");
         }
 
+        /// <summary>
+        /// Transform a sequence of bytes into a sequence of strings.
+        /// </summary>
+        public static async IAsyncEnumerable<string> ToStrings(this IAsyncEnumerable<byte> source, [EnumeratorCancellation] CancellationToken ct = default)
+        {
+            using MemoryStream ms = new();
+            await foreach (byte b in source.WithCancellation(ct).ConfigureAwait(false))
+            {
+                if (b != 0)
+                {
+                    ms.WriteByte(b);
+                    continue;
+                }
+                yield return Encoding.UTF8.GetString(ms.ToArray());
+                ms.SetLength(0);
+            }
+            if (ms.Position != 0)
+                throw new InvalidDataException("ToStrings: invalid termination.");
+        }
+
+        /// <summary>
+        /// Convert a sequence of bytes into a sequence of strings.
+        /// </summary>
         public static IObservable<string> ToStrings(this IObservable<byte> source)
         {
             var ms = new MemoryStream();
-
             return Observable.Create<string>(observer =>
             {
                 return source.Subscribe(
@@ -65,7 +92,7 @@ namespace RxSockets
                         if (ms.Position == 0)
                             observer.OnCompleted();
                         else
-                            observer.OnError(new InvalidDataException("ToStrings: no termination(2)."));
+                            observer.OnError(new InvalidDataException("ToStrings: invalid termination."));
                     });
             });
         }

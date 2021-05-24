@@ -1,64 +1,69 @@
 ﻿using System;
-using System.Linq;
-using System.Reactive.Linq;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System.Net;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace RxSockets
 {
-    public interface IRxSocketServer
+    public interface IRxSocketServer: IAsyncDisposable
     {
         IPEndPoint IPEndPoint { get; }
         IObservable<IRxSocketClient> AcceptObservable { get; }
-        Task DisposeAsync();
     }
 
     public sealed class RxSocketServer : IRxSocketServer
     {
-        private readonly ILogger Logger;
-        public IPEndPoint IPEndPoint { get; }
+        private readonly CancellationTokenSource Cts = new();
+        private readonly SocketAcceptor Acceptor;
         private readonly SocketDisposer Disposer;
-        private readonly SocketAccepter SocketAccepter;
+        public IPEndPoint IPEndPoint { get; }
         public IObservable<IRxSocketClient> AcceptObservable { get; }
 
+        private RxSocketServer(Socket socket, ILogger logger)
+        {
+            IPEndPoint = (IPEndPoint)(socket.LocalEndPoint ?? throw new ArgumentException("LocalEndPoint"));
+            Acceptor = new SocketAcceptor(socket, logger);
+            AcceptObservable = Acceptor.CreateAcceptObservable(Cts.Token);
+            Disposer = new SocketDisposer(socket, Cts, logger, "Server", Acceptor);
+            logger.LogTrace($"Server created on {IPEndPoint}.");
+        }
+
+        public async ValueTask DisposeAsync() =>
+            await Disposer.DisposeAsync().ConfigureAwait(false);
+
+        /// <summary>
+        /// Create an RxSocketServer on a random port on the localhost.
+        /// </summary>
         public static IRxSocketServer Create(int backLog = 10) =>
-            CreateOnEndPoint(new IPEndPoint(IPAddress.IPv6Loopback, 0), NullLogger.Instance, backLog);
+            Create(new IPEndPoint(IPAddress.IPv6Loopback, 0), NullLogger.Instance, backLog);
 
+        /// <summary>
+        /// Create an RxSocketServer on a random port on the localhost.
+        /// </summary>
         public static IRxSocketServer Create(ILogger logger, int backLog = 10) =>
-            CreateOnEndPoint(new IPEndPoint(IPAddress.IPv6Loopback, 0), logger, backLog);
+            Create(new IPEndPoint(IPAddress.IPv6Loopback, 0), logger, backLog);
 
-        public static IRxSocketServer CreateOnEndPoint(IPEndPoint ipEndPoint, int backLog = 10) =>
-            CreateOnEndPoint(ipEndPoint, NullLogger.Instance, backLog);
+        /// <summary>
+        /// Create an RxSocketServer on IPEndPoint.
+        /// </summary>
+        public static IRxSocketServer Create(IPEndPoint ipEndPoint, int backLog = 10) =>
+            Create(ipEndPoint, NullLogger.Instance, backLog);
 
-        public static IRxSocketServer CreateOnEndPoint(IPEndPoint ipEndPoint, ILogger logger, int backLog = 10)
+        /// <summary>
+        /// Create an RxSocketServer on IPEndPoint.
+        /// </summary>
+        public static IRxSocketServer Create(IPEndPoint ipEndPoint, ILogger logger, int backLog = 10)
         {
             // Backlog specifies the number of pending connections allowed before a busy error is returned.
             if (backLog < 0)
-                throw new Exception($"Invalid backLog: {backLog}.");
+                throw new ArgumentException($"Invalid backLog: {backLog}.");
             var socket = Utilities.CreateSocket();
             socket.Bind(ipEndPoint);
             socket.Listen(backLog);
             return new RxSocketServer(socket, logger);
-        }
-
-        private RxSocketServer(Socket socket, ILogger logger)
-        {
-            Logger = logger;
-            IPEndPoint = (IPEndPoint)(socket.LocalEndPoint ?? throw new Exception("LocalEndPoint"));
-            Disposer = new SocketDisposer(socket, "RxSocketServer", Logger);
-            SocketAccepter = new SocketAccepter(socket, Logger);
-            AcceptObservable = SocketAccepter.CreateAcceptObservable();
-            Logger.LogDebug($"RxSocketServer created on {IPEndPoint}.");
-        }
-
-        public async Task DisposeAsync()
-        {
-            var tasks = SocketAccepter.AcceptedClients.Select(client => client.DisposeAsync()).ToList();
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-            await Disposer.DisposeAsync().ConfigureAwait(false);
         }
     }
 }

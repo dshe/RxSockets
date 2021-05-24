@@ -1,48 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Text;
 using System.Linq;
+using System.Net;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RxSockets
 {
     public static class LengthPrefixExtensions
     {
-        public static byte[] InsertLengthPrefix(this byte[] sourceArray)
+        /// <summary>
+        /// Prepend a 4 byte payload length to a byte array.
+        /// </summary>
+        public static byte[] ToByteArrayWithLengthPrefix(this byte[] source)
         {
-            int length = sourceArray.Length;
-            byte[] prefixArray = SetMessageLength(length);
-            byte[] newArray = new byte[length + 4];
-            Array.Copy(prefixArray, 0, newArray, 0, 4);
-            Array.Copy(sourceArray, 0, newArray, 4, length);
-            return newArray;
+            var buffer = new byte[source.Length + 4];
+            EncodeMessageLength(buffer);
+            source.CopyTo(buffer, 4);
+            return buffer;
         }
 
-        public static async Task<byte[]> RemoveLengthPrefix(this IAsyncEnumerable<byte> bytes)
-        {
-            byte[] prefix = await bytes.Take(4).ToArrayAsync().ConfigureAwait(false);
-            int messageLength = GetMessageLength(prefix);
-            byte[] message = await bytes.Take(messageLength).ToArrayAsync().ConfigureAwait(false);
-            return message;
-        }
+        /////////////////////////////////////////////////////////////////////
 
-        public static IEnumerable<byte[]> RemoveLengthPrefix(this IEnumerable<byte> source)
+        /// <summary>
+        /// Transform a sequence of bytes which is preceded by length prefix into a sequence of byte arrays.
+        /// </summary>
+        public static IEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IEnumerable<byte> source)
         {
             int length = -1;
-            using var ms = new MemoryStream();
-
+            var ms = new MemoryStream();
             foreach (var b in source)
             {
                 ms.WriteByte(b);
                 if (length == -1 && ms.Position == 4)
                 {
-                    length = GetMessageLength(ms.GetBuffer());
+                    length = DecodeMessageLength(ms);
                     ms.SetLength(0);
                 }
-                else if (ms.Length == length)
+                else if (length == ms.Length)
                 {
                     yield return ms.ToArray(); // array copy
                     length = -1;
@@ -50,10 +48,39 @@ namespace RxSockets
                 }
             }
             if (ms.Position != 0)
-                throw new InvalidDataException("Incomplete.");
+                throw new InvalidDataException($"Invalid length: {length}.");
         }
 
-        public static IObservable<byte[]> RemoveLengthPrefix(this IObservable<byte> source)
+        /// <summary>
+        /// Transform a sequence of bytes which is preceded by length prefix into a sequence of byte arrays.
+        /// </summary>
+        public static async IAsyncEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IAsyncEnumerable<byte> source, [EnumeratorCancellation] CancellationToken ct = default)
+        {
+            int length = -1;
+            using var ms = new MemoryStream();
+            await foreach (byte b in source.WithCancellation(ct).ConfigureAwait(false))
+            {
+                ms.WriteByte(b);
+                if (length == -1 && ms.Position == 4)
+                {
+                    length = DecodeMessageLength(ms);
+                    ms.SetLength(0);
+                }
+                else if (length == ms.Length)
+                {
+                    yield return ms.ToArray(); // array copy
+                    length = -1;
+                    ms.SetLength(0);
+                }
+            }
+            if (ms.Position != 0)
+                throw new InvalidDataException("ToArraysFromBytesWithLengthPrefix: invalid termination.");
+        }
+
+        /// <summary>
+        /// Transform a sequence of bytes which is preceded by length prefix into a sequence of byte arrays.
+        /// </summary>
+        public static IObservable<byte[]> ToArraysFromBytesWithLengthPrefix(this IObservable<byte> source)
         {
             int length = -1;
             var ms = new MemoryStream();
@@ -66,7 +93,7 @@ namespace RxSockets
                         ms.WriteByte(b);
                         if (length == -1 && ms.Position == 4)
                         {
-                            length = GetMessageLength(ms.GetBuffer());
+                            length = DecodeMessageLength(ms);
                             ms.SetLength(0);
                         }
                         else if (length == ms.Length)
@@ -75,31 +102,34 @@ namespace RxSockets
                             length = -1;
                             ms.SetLength(0);
                         }
-                    }, 
-                    onError: observer.OnError, 
-                    onCompleted: () => 
+                    },
+                    onError: observer.OnError,
+                    onCompleted: () =>
                     {
                         if (ms.Position == 0)
                             observer.OnCompleted();
                         else
-                            observer.OnError(new InvalidDataException("RemoveLengthPrefix: incomplete."));
+                            observer.OnError(new InvalidDataException("ToArraysFromBytesWithLengthPrefix: incomplete."));
                     });
             });
         }
 
-        // Encode using a 4 byte BigEndian integer length prefix. 
-        internal static byte[] SetMessageLength(int length)
+        // Encode 4 byte BigEndian integer length prefix. 
+        private static void EncodeMessageLength(byte[] buffer)
         {
+            int length = buffer.Length - 4;
             int i = IPAddress.HostToNetworkOrder(length);
-            return BitConverter.GetBytes(i);
+            if (!BitConverter.TryWriteBytes(buffer, i))
+                throw new InvalidDataException($"TryWriteBytes.");
         }
 
-        internal static int GetMessageLength(in byte[] bytes)
+        private static int DecodeMessageLength(MemoryStream ms)
         {
-            int i = BitConverter.ToInt32(bytes, 0);
+            var buffer = ms.GetBuffer();
+            int i = BitConverter.ToInt32(buffer, 0);
             int length = IPAddress.NetworkToHostOrder(i);
             if (length <= 0)
-                throw new InvalidOperationException($"Invalid length: {length}.");
+                throw new InvalidDataException($"Invalid length: {length}.");
             return length;
         }
     }

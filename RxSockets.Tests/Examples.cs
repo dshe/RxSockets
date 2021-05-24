@@ -7,8 +7,9 @@ using System.Reactive.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
-namespace RxSockets.xUnitTests
+namespace RxSockets.Tests
 {
     public class Examples : TestBase
     {
@@ -27,29 +28,31 @@ namespace RxSockets.xUnitTests
             server.AcceptObservable.Subscribe(acceptClient =>
             {
                 // After the server accepts a client connection...
-                acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
+                acceptClient.ReceiveAllAsync().ToStrings().ToObservable().Subscribe(onNext: message =>
                 {
                     // Echo each message received back to the client.
-                    acceptClient.Send(message.ToBuffer());
+                    acceptClient.Send(message.ToByteArray());
                 });
             });
 
             // Create a socket client by first connecting to the server at the EndPoint.
-            var client = await ipEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
+            var client = await ipEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
 
             // Start receiving messages from the server.
-            client.ReceiveObservable.ToStrings().Subscribe(onNext:message =>
+            client.ReceiveAllAsync().ToStrings().ToObservableFromAsyncEnumerable().Subscribe(onNext: message =>
             {
                 // The message received from the server is "Hello!".
                 Assert.Equal("Hello!", message);
             });
 
             // Send the message "Hello" to the server (which will be echoed back to the client).
-            client.Send("Hello!".ToBuffer());
+            client.Send("Hello!".ToByteArray());
 
-            // Disconnect.
-            await server.DisposeAsync();
+            await Task.Delay(100);
+
+            // Disconnect and dispose.
             await client.DisposeAsync();
+            await server.DisposeAsync();
         }
 
         [Fact]
@@ -62,17 +65,17 @@ namespace RxSockets.xUnitTests
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
 
             // Create a socket client by successfully connecting to the server at EndPoint.
-            var client = await ipEndPoint.ConnectRxSocketClientAsync(SocketClientLogger);
+            var client = await ipEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
 
             // Get the client socket accepted by the server.
             var accept = await acceptTask;
             Assert.True(accept.Connected && client.Connected);
 
             // start a task to receive the first string from the server.
-            var dataTask = client.ReceiveObservable.ToStrings().FirstAsync().ToTask();
+            var dataTask = client.ReceiveAllAsync().ToStrings().ToObservableFromAsyncEnumerable().FirstAsync().ToTask();
 
             // The server sends a string to the client.
-            accept.Send("Welcome!".ToBuffer());
+            accept.Send("Welcome!".ToByteArray());
             Assert.Equal("Welcome!", await dataTask);
 
             await client.DisposeAsync();
@@ -86,16 +89,16 @@ namespace RxSockets.xUnitTests
             var endPoint = server.IPEndPoint;
 
             var acceptTask = server.AcceptObservable.FirstAsync().ToTask();
-            var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
+            var client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
             var accept = await acceptTask;
 
-            var sub = client.ReceiveObservable.ToStrings().Subscribe(str =>
+            var sub = client.ReceiveAllAsync().ToStrings().ToObservableFromAsyncEnumerable().Subscribe(str =>
             {
                 Write(str);
             });
 
-            accept.Send("Welcome!".ToBuffer());
-            accept.Send("Welcome Again!".ToBuffer());
+            accept.Send("Welcome!".ToByteArray());
+            accept.Send("Welcome Again!".ToByteArray());
 
             await Task.Delay(100);
 
@@ -111,15 +114,15 @@ namespace RxSockets.xUnitTests
             var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
-            server.AcceptObservable.Subscribe(accepted => accepted.Send("Welcome!".ToBuffer()));
+            server.AcceptObservable.Subscribe(accepted => accepted.Send("Welcome!".ToByteArray()));
 
-            var client1 = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-            var client2 = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-            var client3 = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
+            var client1 = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+            var client2 = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+            var client3 = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
 
-            Assert.Equal("Welcome!", await client1.ReceiveObservable.ToStrings().Take(1).FirstAsync());
-            Assert.Equal("Welcome!", await client2.ReceiveObservable.ToStrings().Take(1).FirstAsync());
-            Assert.Equal("Welcome!", await client3.ReceiveObservable.ToStrings().Take(1).FirstAsync());
+            Assert.Equal("Welcome!", await client1.ReceiveAllAsync().ToStrings().ToObservableFromAsyncEnumerable().Take(1).FirstAsync());
+            Assert.Equal("Welcome!", await client2.ReceiveAllAsync().ToStrings().ToObservableFromAsyncEnumerable().Take(1).FirstAsync());
+            Assert.Equal("Welcome!", await client3.ReceiveAllAsync().ToStrings().ToObservableFromAsyncEnumerable().Take(1).FirstAsync());
 
             await client1.DisposeAsync();
             await client2.DisposeAsync();
@@ -135,24 +138,25 @@ namespace RxSockets.xUnitTests
 
             server.AcceptObservable.Subscribe(accepted =>
             {
-                accepted.Send("Welcome!".ToBuffer());
+                accepted.Send("Welcome!".ToByteArray());
                 accepted
-                    .ReceiveObservable
+                    .ReceiveAllAsync()
+                    .ToObservableFromAsyncEnumerable()
                     .ToStrings()
-                    .Subscribe(s => accepted.Send(s.ToBuffer()));
+                    .Subscribe(s => accepted.Send(s.ToByteArray()));
             });
 
 
             var clients = new List<IRxSocketClient>();
             for (var i = 0; i < 3; i++)
             {
-                var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-                client.Send("Hello".ToBuffer());
+                var client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+                client.Send("Hello".ToByteArray());
                 clients.Add(client);
             }
 
             foreach (var client in clients)
-                Assert.Equal("Hello", await client.ReceiveObservable.ToStrings().Skip(1).Take(1).FirstAsync());
+                Assert.Equal("Hello", await client.ReceiveAllAsync().ToObservableFromAsyncEnumerable().ToStrings().Skip(1).Take(1).FirstAsync());
 
             foreach (var client in clients)
                 await client.DisposeAsync();
@@ -172,19 +176,19 @@ namespace RxSockets.xUnitTests
             {
                 acceptClient = ac;
                 semaphore.Release();
-                acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
+                acceptClient.ReceiveAllAsync().ToObservableFromAsyncEnumerable().ToStrings().Subscribe(onNext: message =>
                 {
-                    acceptClient.Send(message.ToBuffer());
+                    acceptClient.Send(message.ToByteArray());
                 });
             });
 
-            var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-            client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
+            var client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+            client.ReceiveAllAsync().ToObservableFromAsyncEnumerable().ToStrings().Subscribe(onNext: message =>
             {
                 Write(message);
             });
 
-            client.Send("Hello!".ToBuffer());
+            client.Send("Hello!".ToByteArray());
 
             await semaphore.WaitAsync();
             if (acceptClient == null)
@@ -209,19 +213,19 @@ namespace RxSockets.xUnitTests
             {
                 acceptClient = ac;
                 semaphore.Release();
-                acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
+                acceptClient.ReceiveAllAsync().ToObservableFromAsyncEnumerable().ToStrings().Subscribe(onNext: message =>
                 {
-                    acceptClient.Send(message.ToBuffer());
+                    acceptClient.Send(message.ToByteArray());
                 });
             });
 
-            var client = await endPoint.ConnectRxSocketClientAsync(SocketClientLogger);
-            client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
+            var client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+            client.ReceiveAllAsync().ToObservableFromAsyncEnumerable().ToStrings().Subscribe(onNext: message =>
             {
                 Write(message);
             });
 
-            client.Send("Hello!".ToBuffer());
+            client.Send("Hello!".ToByteArray());
             await semaphore.WaitAsync();
             if (acceptClient == null)
                 throw new NullReferenceException(nameof(acceptClient));

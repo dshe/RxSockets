@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 using System.Net;
 
-namespace RxSockets.xUnitTests
+namespace RxSockets.Tests
 {
-    public class Socket_Reader_Tests : TestBase, IDisposable
+    public class Socket_Recieve_Tests : TestBase, IDisposable
     {
         private readonly Socket ServerSocket = Utilities.CreateSocket();
         private readonly Socket Socket = Utilities.CreateSocket();
-        public Socket_Reader_Tests(ITestOutputHelper output) : base(output) { }
+        public Socket_Recieve_Tests(ITestOutputHelper output) : base(output) { }
 
         public void Dispose()
         {
@@ -40,7 +39,7 @@ namespace RxSockets.xUnitTests
         }
 
         [Fact]
-        public async Task T02_Disconnect_ReadBytesAsync()
+        public async Task T02_Disconnect_ReceiveBytesAsync()
         {
             var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
             ServerSocket.Bind(endPoint);
@@ -51,15 +50,15 @@ namespace RxSockets.xUnitTests
             var accepted = ServerSocket.Accept();
             accepted.Disconnect(false);
 
-            var reader = new SocketReader(Socket, "?", Logger);
+            var reader = new SocketReceiver(Socket, Logger, "?");
 
-            // after the remote socket disconnects, reader.ReadByteAsync() returns nothing
-            var any = await reader.ReadAsync(default).AnyAsync();
+            // after the remote socket disconnects, reader.ReceiveByteAsync() returns nothing
+            var any = await reader.ReceiveAllAsync(default).AnyAsync();
             Assert.False(any);
         }
 
         [Fact]
-        public async Task T03_Disconnect_SocketReader()
+        public async Task T03_Disconnect_SocketReceiver()
         {
             var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
             ServerSocket.Bind(endPoint);
@@ -68,12 +67,16 @@ namespace RxSockets.xUnitTests
             Socket.Connect(endPoint);
             var accepted = ServerSocket.Accept();
 
-            var reader = new SocketReader(Socket, "?", Logger);
-            var observable = reader.ReceiveObservable;
+            var reader = new SocketReceiver(Socket, Logger, "?");
+            //var observable = reader.ReceiveObservable;
+            var xxx = reader.ReceiveAllAsync(default);
+
             accepted.Close();
 
             // after the remote socket disconnects, the observable completes
-            var result = await observable.SingleOrDefaultAsync();
+            //var result = await observable.SingleOrDefaultAsync();
+            var result = await xxx.SingleOrDefaultAsync();
+
             Assert.Equal(0, result); // default
         }
 
@@ -100,7 +103,7 @@ namespace RxSockets.xUnitTests
         }
 
         [Fact]
-        public async Task T05_Read()
+        public async Task T05_Receive()
         {
             var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
             ServerSocket.Bind(endPoint);
@@ -110,12 +113,10 @@ namespace RxSockets.xUnitTests
             var accepted = ServerSocket.Accept();
             accepted.Send(new byte[] { 1 });
 
-            var reader = new SocketReader(Socket, "?", Logger);
-            var observable = reader.ReceiveObservable;
-
-            var result = await observable.FirstAsync();
+            var reader = new SocketReceiver(Socket, Logger, "?");
+            var xxx = reader.ReceiveAllAsync(default);
+            var result = await xxx.FirstAsync();
             Assert.Equal(1, result);
-
             accepted.Close();
         }
 

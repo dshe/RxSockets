@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace RxSockets.xUnitTests
+namespace RxSockets.Tests
 {
-    public class Socket_Connector_Tests : TestBase
+    public class SocketConnectTests : TestBase
     {
-        public Socket_Connector_Tests(ITestOutputHelper output) : base(output) { }
+        public SocketConnectTests(ITestOutputHelper output) : base(output) { }
 
         [Fact]
         public async Task T00_Success()
@@ -19,10 +19,10 @@ namespace RxSockets.xUnitTests
             serverSocket.Bind(endPoint);
             serverSocket.Listen(10);
 
-            var socket = await SocketConnector.ConnectAsync(endPoint, Logger);
-            Assert.True(socket.Connected);
+            var client = await endPoint.CreateRxSocketClientAsync(Logger);
+            Assert.True(client.Connected);
 
-            socket.Close();
+            await client.DisposeAsync();
             serverSocket.Dispose();
         }
 
@@ -30,7 +30,7 @@ namespace RxSockets.xUnitTests
         public async Task T01_Connection_Refused_Test()
         {
             var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-            var e = await Assert.ThrowsAsync<SocketException>(async () => await SocketConnector.ConnectAsync(endPoint, Logger));
+            var e = await Assert.ThrowsAsync<SocketException>(async () => await endPoint.CreateRxSocketClientAsync(Logger));
             Assert.Equal((int)SocketError.ConnectionRefused, e.ErrorCode);
         }
 
@@ -42,7 +42,7 @@ namespace RxSockets.xUnitTests
             var ct = cts.Token;
             //await Assert.ThrowsAsync<OperationCanceledException>(async () =>
             await Assert.ThrowsAnyAsync<Exception>(async () =>
-               await SocketConnector.ConnectAsync(endPoint, Logger, ct));
+               await endPoint.CreateRxSocketClientAsync(Logger, ct));
         }
 
         [Fact]
@@ -50,8 +50,8 @@ namespace RxSockets.xUnitTests
         {
             var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
             var ct = new CancellationToken(true);
-            await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-               await SocketConnector.ConnectAsync(endPoint, Logger, ct));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+               await endPoint.CreateRxSocketClientAsync(Logger, ct));
         }
 
     }
