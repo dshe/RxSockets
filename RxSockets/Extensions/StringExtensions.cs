@@ -31,16 +31,17 @@ namespace RxSockets
         /// </summary>
         public static IEnumerable<string> ToStrings(this IEnumerable<byte> source)
         {
-            using var ms = new MemoryStream();
+            MemoryStream ms = new();
             foreach (byte b in source)
             {
-                if (b == 0)
+                if (b != 0)
                 {
-                    yield return Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
-                    ms.SetLength(0);
-                }
-                else
                     ms.WriteByte(b);
+                    continue;
+                }
+                var s = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
+                ms.SetLength(0);
+                yield return s;
             }
             if (ms.Position != 0)
                 throw new InvalidDataException("ToStrings: no termination(1).");
@@ -49,18 +50,19 @@ namespace RxSockets
         /// <summary>
         /// Transform a sequence of bytes into a sequence of strings.
         /// </summary>
-        public static async IAsyncEnumerable<string> ToStrings(this IAsyncEnumerable<byte> source, [EnumeratorCancellation] CancellationToken ct = default)
+        public static async IAsyncEnumerable<string> ToStrings(this IAsyncEnumerable<byte> source)
         {
-            using MemoryStream ms = new();
-            await foreach (byte b in source.WithCancellation(ct).ConfigureAwait(false))
+            MemoryStream ms = new();
+            await foreach (byte b in source.ConfigureAwait(false))
             {
                 if (b != 0)
                 {
                     ms.WriteByte(b);
                     continue;
                 }
-                yield return Encoding.UTF8.GetString(ms.ToArray());
+                var s = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
                 ms.SetLength(0);
+                yield return s;
             }
             if (ms.Position != 0)
                 throw new InvalidDataException("ToStrings: invalid termination.");
@@ -71,20 +73,20 @@ namespace RxSockets
         /// </summary>
         public static IObservable<string> ToStrings(this IObservable<byte> source)
         {
-            var ms = new MemoryStream();
+            MemoryStream ms = new();
             return Observable.Create<string>(observer =>
             {
                 return source.Subscribe(
                     onNext: b =>
                     {
-                        if (b == 0)
+                        if (b != 0)
                         {
-                            string s = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
-                            observer.OnNext(s);
-                            ms.SetLength(0);
-                        }
-                        else
                             ms.WriteByte(b);
+                            return;
+                        }
+                        string s = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
+                        observer.OnNext(s);
+                        ms.SetLength(0);
                     },
                     onError: observer.OnError,
                     onCompleted: () =>

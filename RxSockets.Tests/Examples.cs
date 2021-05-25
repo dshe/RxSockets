@@ -111,6 +111,14 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T20_Accept_Observable()
         {
+            var s = String.Create<double>(10, 99, (span, state) =>
+            {
+                //Span<char> xxx;
+                span[1] = 's';
+                //span.
+                return;
+            });
+
             var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 

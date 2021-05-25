@@ -10,20 +10,18 @@ namespace RxSockets
     internal class SocketReceiver
     {
         public const int BufferLength = 0x1000;
-        private readonly byte[] Buffer = new byte[BufferLength];
-        private readonly Memory<byte> Memory;
+        private readonly Memory<byte> Memory = new(new byte[BufferLength]);
         private readonly ILogger Logger;
         private readonly Socket Socket;
         private readonly string Name;
         private int Position = 0;
-        private int BytesReceived = 0; // state
+        private int BytesReceived = 0;
 
         internal SocketReceiver(Socket socket, ILogger logger, string name)
         {
             Socket = socket;
             Name = name;
             Logger = logger;
-            Memory = new Memory<byte>(Buffer);
         }
 
         internal async IAsyncEnumerable<byte> ReceiveAllAsync([EnumeratorCancellation] CancellationToken ct = default)
@@ -47,7 +45,7 @@ namespace RxSockets
                     Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {BytesReceived} bytes from {Socket.RemoteEndPoint}.");
                     Position = 0;
                 }
-                yield return Buffer[Position++];
+                yield return Memory.Span[Position++];
             }
         }
     }

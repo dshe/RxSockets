@@ -17,9 +17,9 @@ namespace RxSockets
         /// </summary>
         public static byte[] ToByteArrayWithLengthPrefix(this byte[] source)
         {
-            var buffer = new byte[source.Length + 4];
-            EncodeMessageLength(buffer);
+            byte[] buffer = new byte[source.Length + 4];
             source.CopyTo(buffer, 4);
+            EncodeMessageLength(buffer);
             return buffer;
         }
 
@@ -31,7 +31,7 @@ namespace RxSockets
         public static IEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IEnumerable<byte> source)
         {
             int length = -1;
-            var ms = new MemoryStream();
+            MemoryStream ms = new();
             foreach (var b in source)
             {
                 ms.WriteByte(b);
@@ -54,11 +54,11 @@ namespace RxSockets
         /// <summary>
         /// Transform a sequence of bytes which is preceded by length prefix into a sequence of byte arrays.
         /// </summary>
-        public static async IAsyncEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IAsyncEnumerable<byte> source, [EnumeratorCancellation] CancellationToken ct = default)
+        public static async IAsyncEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IAsyncEnumerable<byte> source)
         {
             int length = -1;
-            using var ms = new MemoryStream();
-            await foreach (byte b in source.WithCancellation(ct).ConfigureAwait(false))
+            MemoryStream ms = new();
+            await foreach (byte b in source.ConfigureAwait(false))
             {
                 ms.WriteByte(b);
                 if (length == -1 && ms.Position == 4)
@@ -83,8 +83,7 @@ namespace RxSockets
         public static IObservable<byte[]> ToArraysFromBytesWithLengthPrefix(this IObservable<byte> source)
         {
             int length = -1;
-            var ms = new MemoryStream();
-
+            MemoryStream ms = new();
             return Observable.Create<byte[]>(observer =>
             {
                 return source.Subscribe(

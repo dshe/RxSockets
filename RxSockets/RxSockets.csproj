@@ -9,7 +9,7 @@
     <PackageTags>sockets socket rx reactive extensions observable async async enumerable linq network</PackageTags>
     <Description>A minimal reactive socket implementation.</Description>
     <Authors>DavidS</Authors>
-    <Version>3.0.0</Version>
+    <Version>3.0.0-beta</Version>
     <AssemblyVersion>3.0.0</AssemblyVersion>
     <FileVersion>3.0.0</FileVersion>
     <OutputType>Library</OutputType>
@@ -17,6 +17,7 @@
     <RepositoryType>github</RepositoryType>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

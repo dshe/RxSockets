@@ -7,9 +7,9 @@ using Xunit.Abstractions;
 
 namespace RxSockets.Tests
 {
-    public class Performance_Test1 : TestBase
+    public class PerformanceTest1 : TestBase
     {
-        public Performance_Test1(ITestOutputHelper output) : base(output) { }
+        public PerformanceTest1(ITestOutputHelper output) : base(output) { }
         const int numberOfMessages = 100_000;
 
         [Fact]
@@ -46,9 +46,9 @@ namespace RxSockets.Tests
         }
     }
 
-    public class Performance_Test2 : TestBase
+    public class PerformanceTest2 : TestBase
     {
-        public Performance_Test2(ITestOutputHelper output) : base(output) { }
+        public PerformanceTest2(ITestOutputHelper output) : base(output) { }
         const int numberOfMessages = 100_000;
 
         [Fact]
