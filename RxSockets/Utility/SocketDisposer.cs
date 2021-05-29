@@ -12,7 +12,6 @@ namespace RxSockets
         private readonly Socket Socket;
         private readonly IAsyncDisposable? Disposable;
         private readonly SemaphoreSlim Semaphore = new(0, 1);
-        private readonly SocketAsyncEventArgs Args = new() { DisconnectReuseSocket = false };
         private readonly string Name;
         private readonly TaskCompletionSource<bool> Tcs = new();
         private readonly CancellationTokenSource Cts;
@@ -27,7 +26,6 @@ namespace RxSockets
             Logger = logger;
             Name = name;
             Disposable = disposable;
-            Args.Completed += ArgsCompleted;
         }
 
         public async ValueTask DisposeAsync()
@@ -49,14 +47,23 @@ namespace RxSockets
                     // disables Send and Receive methods and queues up a zero-byte send packet in the send buffer
                     Socket.Shutdown(SocketShutdown.Both);
 
-                    if (Socket.DisconnectAsync(Args))
+                    var args = new SocketAsyncEventArgs() { DisconnectReuseSocket = false };
+                    args.Completed += ArgsCompleted;
+
+                    if (Socket.DisconnectAsync(args))
                         await Semaphore.WaitAsync().ConfigureAwait(false);
                     Logger.LogTrace($"{Name} on {localEndPoint} disconnected from {remoteEndPoint} and disposed.");
+
+                    args.Completed -= ArgsCompleted;
                 }
                 else
                 {
                     Logger.LogTrace($"{Name} on {localEndPoint} disposed.");
                 }
+
+                if (Disposable != null) // SocketAcceptor
+                    await Disposable.DisposeAsync().ConfigureAwait(false);
+
                 Tcs.SetResult(true);
             }
             catch (Exception e)
@@ -65,11 +72,8 @@ namespace RxSockets
             }
             finally
             {
-                if (Disposable != null) // SocketAcceptor
-                    await Disposable.DisposeAsync().ConfigureAwait(false);
                 Socket.Dispose();
                 Cts.Dispose();
-                Args.Completed -= ArgsCompleted;
                 Semaphore.Dispose();
             }
         }

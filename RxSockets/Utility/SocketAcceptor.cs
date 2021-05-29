@@ -29,7 +29,6 @@ namespace RxSockets
         {
             return Observable.Create<IRxSocketClient>(async (observer, ct2) =>
             {
-                Logger.LogWarning("test!");
                 var cts = CancellationTokenSource.CreateLinkedTokenSource(ct1, ct2);
                 var ct = cts.Token;
                 try

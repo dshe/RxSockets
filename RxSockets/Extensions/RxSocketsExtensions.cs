@@ -44,12 +44,10 @@ namespace RxSockets
                 if (e is SocketException se)
                 {
                     var errorName = "SocketException: " + Enum.GetName(typeof(SocketError), se.ErrorCode);
-                    logger.LogDebug(e, $"{msg}. {errorName}.");
+                    logger.LogTrace(e, $"{msg}. {errorName}.");
                 }
-                else if (e is OperationCanceledException)
-                    logger.LogDebug(e, msg);
                 else
-                    logger.LogWarning(e, msg);
+                    logger.LogTrace(e, msg);
                 throw;
             }
         }
