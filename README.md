@@ -24,7 +24,7 @@ using RxSockets;
 ```
 #### server
 ```csharp
-public interface IRxSocketServer: IAsyncDisposable
+interface IRxSocketServer: IAsyncDisposable
 {
     IPEndPoint IPEndPoint { get; }
     IObservable<IRxSocketClient> AcceptObservable { get; }
@@ -51,7 +51,7 @@ server.AcceptObservable.Subscribe(onNext: acceptClient =>
 ```
 #### client
 ```csharp
-public interface IRxSocketClient: IAsyncDisposable
+interface IRxSocketClient: IAsyncDisposable
 {
     bool Connected { get; }
     void Send(ReadOnlySpan<byte> buffer);
