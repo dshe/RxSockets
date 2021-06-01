@@ -34,9 +34,6 @@ interface IRxSocketServer: IAsyncDisposable
 // Create a server using a random available port on the local machine.
 IRxSocketServer server = RxSocketServer.Create();
 
-// Find the address of the server.
-var ipEndPoint = server.IPEndPoint;
-
 // Start accepting connections from clients.
 server.AcceptObservable.Subscribe(onNext: acceptClient =>
 {
@@ -59,6 +56,9 @@ interface IRxSocketClient: IAsyncDisposable
 }
 ```
 ```csharp
+// Find the address of the server.
+var ipEndPoint = server.IPEndPoint;
+
 // Create a client by connecting to the server.
 IRxSocketClient client = await ipEndPoint.CreateRxSocketClientAsync();
 
@@ -82,6 +82,7 @@ To communicate using strings (example above), the following extension methods ar
 ```csharp
 byte[] ToByteArray(this string source);
 byte[] ToByteArray(this IEnumerable<string> source)
+
 IEnumerable<string>      ToStrings(this IEnumerable<byte> source)
 IAsyncEnumerable<string> ToStrings(this IAsyncEnumerable<byte> source)
 IObservable<string>      ToStrings(this IObservable<byte> source)
