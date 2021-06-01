@@ -34,12 +34,13 @@ interface IRxSocketServer: IAsyncDisposable
 // Create a server using a random available port on the local machine.
 IRxSocketServer server = RxSocketServer.Create();
 
-// Start accepting connections from clients.
+// Prepare to start accepting connections from clients.
 server.AcceptObservable.Subscribe(onNext: acceptClient =>
 {
     // After the server accepts a client connection,
     // start receiving messages from the client and ...
-    acceptClient.ReceiveAllAsync().ToObservableFromAsyncEnumerable().ToStrings().Subscribe(onNext: message =>
+    acceptClient.ReceiveAllAsync().ToObservableFromAsyncEnumerable()
+        .ToStrings().Subscribe(onNext: message =>
     {
         // echo each message received back to the client.
         acceptClient.Send(message.ToByteArray());
@@ -74,7 +75,7 @@ await client.DisposeAsync();
 await server.DisposeAsync();
 ```
 ### notes
-The extension method ```ToObservableFromAsyncEnumerable()``` may be used to create an observable from ```IRxSocketClient.ReceiveAllAsync()```.
+The extension method ```ToObservableFromAsyncEnumerable<T>()``` may be used to create an observable from ```IRxSocketClient.ReceiveAllAsync()```.
 
 ```Observable.Publish().AutoConnect()``` may be used to support multiple simultaneous observers.
 
