@@ -42,6 +42,7 @@ namespace RxSockets
 
                 var localEndPoint = Socket.LocalEndPoint;
                 var remoteEndPoint = Socket.RemoteEndPoint;
+
                 if (Socket.Connected)
                 {
                     // disables Send and Receive methods and queues up a zero-byte send packet in the send buffer
@@ -70,7 +71,7 @@ namespace RxSockets
             {
                 Tcs.SetException(e);
             }
-            finally
+            finally 
             {
                 Socket.Dispose();
                 Cts.Dispose();

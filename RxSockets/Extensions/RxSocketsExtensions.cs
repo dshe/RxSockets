@@ -40,11 +40,11 @@ namespace RxSockets
             }
             catch (Exception e)
             {
-                var msg = $"Socket at {socket.LocalEndPoint} could not connect to {endPoint}. {e.Message}";
+                var msg = $"Socket could not connect to {endPoint}. {e.Message}";
                 if (e is SocketException se)
                 {
                     var errorName = "SocketException: " + Enum.GetName(typeof(SocketError), se.ErrorCode);
-                    logger.LogTrace(e, $"{msg}. {errorName}.");
+                    logger.LogTrace(e, $"{msg} {errorName}.");
                 }
                 else
                     logger.LogTrace(e, msg);

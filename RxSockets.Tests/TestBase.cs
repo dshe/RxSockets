@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using Xunit.Abstractions;
-using MXLogger;
 
 namespace RxSockets.Tests
 {

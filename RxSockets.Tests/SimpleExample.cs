@@ -10,22 +10,23 @@ namespace RxSockets.Tests
         [Fact]
         public async Task Example()
         {
-            // Create a server on the local machine using an available port.
+            // Create a server using a random available port on the local machine.
             IRxSocketServer server = RxSocketServer.Create();
-
-            // Find the address of the server.
-            var ipEndPoint = server.IPEndPoint;
 
             // Start accepting connections from clients.
             server.AcceptObservable.Subscribe(acceptClient =>
             {
-                // After the server accepts a client connection, start receiving messages from the client and ...
+                // After the server accepts a client connection,
+                // start receiving messages from the client and ...
                 acceptClient.ReceiveAllAsync().ToObservableFromAsyncEnumerable().ToStrings().Subscribe(message =>
                 {
-                    // Echo each string received back to the client.
+                    // echo each message received back to the client.
                     acceptClient.Send(message.ToByteArray());
                 });
             });
+
+            // Find the address of the server.
+            var ipEndPoint = server.IPEndPoint;
 
             // Create a client by connecting to the server.
             IRxSocketClient client = await ipEndPoint.CreateRxSocketClientAsync();
