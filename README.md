@@ -31,7 +31,7 @@ interface IRxSocketServer: IAsyncDisposable
 }
 ```
 ```csharp
-// Create a server using a random available port on the local machine.
+// Create a server using an available port on the local machine.
 IRxSocketServer server = RxSocketServer.Create();
 
 // Prepare to start accepting connections from clients.
@@ -77,7 +77,7 @@ await server.DisposeAsync();
 ### notes
 The extension method ```ToObservableFromAsyncEnumerable<T>()``` may be used to create an observable from the AsyncEnumerable ```IRxSocketClient.ReceiveAllAsync()```. ```Observable.Publish().AutoConnect()``` may be used to support multiple simultaneous observers.
 
-To communicate using strings (example above), the following extension methods are provided:
+To communicate using strings (see example above), the following extension methods are provided:
 ```csharp
 byte[] ToByteArray(this string source);
 byte[] ToByteArray(this IEnumerable<string> source)
