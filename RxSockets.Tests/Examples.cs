@@ -7,7 +7,6 @@ using System.Reactive.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit;
 using System.Threading;
-using Microsoft.Extensions.Logging;
 
 namespace RxSockets.Tests
 {

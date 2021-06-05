@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace RxSockets
@@ -11,14 +10,14 @@ namespace RxSockets
     public static partial class ToObservableFromAsyncEnum
     {
         /// <summary>
-        /// Converts an async enumerable sequence to an observable sequence.
+        /// Converts an async enumerable sequence into an observable sequence.
         /// </summary>
         public static IObservable<T> ToObservableFromAsyncEnumerable<T>(this IAsyncEnumerable<T> source, IScheduler? scheduler = null)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            scheduler ??= Scheduler.Default; // TaskPoolScheduler.Default;
+            scheduler ??= Scheduler.Default;
 
             return Observable.Create<T>(observer =>
             {
@@ -98,6 +97,7 @@ namespace RxSockets
                 return ctd;
             }
         }
+
         internal sealed class CancellationTokenDisposable : IDisposable
         {
             private readonly CancellationTokenSource _cts = new ();

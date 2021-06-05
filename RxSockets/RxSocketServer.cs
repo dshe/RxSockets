@@ -35,13 +35,13 @@ namespace RxSockets
             await Disposer.DisposeAsync().ConfigureAwait(false);
 
         /// <summary>
-        /// Create an RxSocketServer on a random port on the localhost.
+        /// Create an RxSocketServer on an available port on the localhost.
         /// </summary>
         public static IRxSocketServer Create(int backLog = 10) =>
             Create(new IPEndPoint(IPAddress.IPv6Loopback, 0), NullLogger.Instance, backLog);
 
         /// <summary>
-        /// Create an RxSocketServer on a random port on the localhost.
+        /// Create an RxSocketServer on an available port on the localhost.
         /// </summary>
         public static IRxSocketServer Create(ILogger logger, int backLog = 10) =>
             Create(new IPEndPoint(IPAddress.IPv6Loopback, 0), logger, backLog);

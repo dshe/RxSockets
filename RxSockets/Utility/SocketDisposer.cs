@@ -13,7 +13,7 @@ namespace RxSockets
         private readonly IAsyncDisposable? Disposable;
         private readonly SemaphoreSlim Semaphore = new(0, 1);
         private readonly string Name;
-        private readonly TaskCompletionSource<bool> Tcs = new();
+        private readonly TaskCompletionSource<bool> Tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly CancellationTokenSource Cts;
         private int Disposals = 0; // state
         internal bool DisposeRequested => Disposals > 0;
@@ -64,15 +64,14 @@ namespace RxSockets
 
                 if (Disposable != null) // SocketAcceptor
                     await Disposable.DisposeAsync().ConfigureAwait(false);
-
-                Tcs.SetResult(true);
             }
             catch (Exception e)
             {
-                Tcs.SetException(e);
+                Logger.LogError(e, "Error on DisposeAsync().");
             }
             finally 
             {
+                Tcs.SetResult(true);
                 Socket.Dispose();
                 Cts.Dispose();
                 Semaphore.Dispose();

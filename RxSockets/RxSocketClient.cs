@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace RxSockets
 {
