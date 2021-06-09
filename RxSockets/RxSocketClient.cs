@@ -37,8 +37,14 @@ namespace RxSockets
 
         public void Send(ReadOnlySpan<byte> buffer)
         {
-            Socket.Send(buffer);
-            Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} sent {buffer.Length} bytes to {Socket.RemoteEndPoint}.");
+            try
+            {
+                Socket.Send(buffer);
+                Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} sent {buffer.Length} bytes to {Socket.RemoteEndPoint}.");
+            }
+            catch (Exception) when (Cts.IsCancellationRequested)
+            {
+            }
         }
 
         public IAsyncEnumerable<byte> ReceiveAllAsync() =>
