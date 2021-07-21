@@ -5,13 +5,14 @@ using System.Net;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Net.Sockets;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace RxSockets
 {
     public interface IRxSocketServer: IAsyncDisposable
     {
         IPEndPoint IPEndPoint { get; }
-        IObservable<IRxSocketClient> AcceptObservable { get; }
+        IAsyncEnumerable<IRxSocketClient> AcceptAllAsync();
     }
 
     public sealed class RxSocketServer : IRxSocketServer
@@ -20,16 +21,16 @@ namespace RxSockets
         private readonly SocketAcceptor Acceptor;
         private readonly SocketDisposer Disposer;
         public IPEndPoint IPEndPoint { get; }
-        public IObservable<IRxSocketClient> AcceptObservable { get; }
 
         private RxSocketServer(Socket socket, ILogger logger)
         {
             IPEndPoint = (IPEndPoint)(socket.LocalEndPoint ?? throw new ArgumentException("LocalEndPoint"));
             Acceptor = new SocketAcceptor(socket, logger);
-            AcceptObservable = Acceptor.CreateAcceptObservable(Cts.Token);
             Disposer = new SocketDisposer(socket, Cts, logger, "Server", Acceptor);
             logger.LogTrace($"Server created on {IPEndPoint}.");
         }
+
+        public IAsyncEnumerable<IRxSocketClient> AcceptAllAsync() => Acceptor.AcceptAllAsync(Cts.Token);
 
         public async ValueTask DisposeAsync() =>
             await Disposer.DisposeAsync().ConfigureAwait(false);

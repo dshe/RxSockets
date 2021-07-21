@@ -15,7 +15,7 @@ namespace RxSockets.Tests
             IRxSocketServer server = RxSocketServer.Create();
 
             // Start accepting connections from clients.
-            server.AcceptObservable.Subscribe(acceptClient =>
+            server.AcceptAllAsync().ToObservableFromAsyncEnumerable().Subscribe(acceptClient =>
             {
                 // After the server accepts a client connection,
                 // start receiving messages from the client and ...

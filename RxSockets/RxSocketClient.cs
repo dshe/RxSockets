@@ -37,18 +37,11 @@ namespace RxSockets
 
         public void Send(ReadOnlySpan<byte> buffer)
         {
-            try
-            {
-                Socket.Send(buffer);
-                Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} sent {buffer.Length} bytes to {Socket.RemoteEndPoint}.");
-            }
-            catch (Exception) when (Cts.IsCancellationRequested)
-            {
-            }
+            Socket.Send(buffer);
+            Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} sent {buffer.Length} bytes to {Socket.RemoteEndPoint}.");
         }
 
-        public IAsyncEnumerable<byte> ReceiveAllAsync() =>
-            Receiver.ReceiveAllAsync(Cts.Token);
+        public IAsyncEnumerable<byte> ReceiveAllAsync() => Receiver.ReceiveAllAsync(Cts.Token);
 
         public async ValueTask DisposeAsync() =>
             await Disposer.DisposeAsync().ConfigureAwait(false);

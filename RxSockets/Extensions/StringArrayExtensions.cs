@@ -28,7 +28,7 @@ namespace RxSockets
             source.Select(buffer => buffer.ToStringArray());
 
         /// <summary>
-        /// Transform a sequence of byte array into a string array.
+        /// Transform a byte array into an array of strings.
         /// </summary>
         internal static string[] ToStringArray(this byte[] buffer)
         {

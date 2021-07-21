@@ -18,7 +18,7 @@ namespace RxSockets.Tests
             var server = RxSocketServer.Create();
             var endPoint = server.IPEndPoint;
 
-            var acceptFirstClientTask = server.AcceptObservable.FirstAsync();
+            var acceptFirstClientTask = server.AcceptAllAsync().FirstAsync();
             var client = await endPoint.CreateRxSocketClientAsync();
             var acceptClient = await acceptFirstClientTask;
             var countTask = acceptClient.ReceiveAllAsync().ToStrings().CountAsync();
@@ -56,7 +56,7 @@ namespace RxSockets.Tests
         {
             var server = RxSocketServer.Create();
             var endPoint = server.IPEndPoint;
-            var acceptFirstClientTask = server.AcceptObservable.FirstAsync();
+            var acceptFirstClientTask = server.AcceptAllAsync().FirstAsync();
 
             var client = await endPoint.CreateRxSocketClientAsync();
             Assert.True(client.Connected);

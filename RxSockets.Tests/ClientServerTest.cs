@@ -19,7 +19,7 @@ namespace RxSockets.Tests
             var server = RxSocketServer.Create(SocketServerLogger);
             var endPoint = server.IPEndPoint;
 
-            server.AcceptObservable.Subscribe(async acceptClient =>
+            server.AcceptAllAsync().ToObservableFromAsyncEnumerable().Subscribe(async acceptClient =>
             {
                 var message1 = await acceptClient.ReceiveAllAsync().ToStrings().FirstAsync();
                 Assert.Equal("Hello1FromClient", message1);

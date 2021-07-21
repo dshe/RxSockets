@@ -19,7 +19,9 @@ namespace RxSockets.Tests
             var server = RxSocketServer.Create(SocketServerLogger);
             var client = await server.IPEndPoint.CreateRxSocketClientAsync(Logger);
 
-            await server.AcceptObservable.FirstAsync();
+            //await server.AcceptObservable.FirstAsync();
+            //await server.AcceptAllAsync().ToObservableFromAsyncEnumerable().FirstAsync();
+            await server.AcceptAllAsync().FirstAsync();
 
             await client.DisposeAsync();
             await server.DisposeAsync();
@@ -68,7 +70,7 @@ namespace RxSockets.Tests
         {
             var server = RxSocketServer.Create(SocketServerLogger);
             var client = await server.IPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
-            var accept = await server.AcceptObservable.FirstAsync();
+            var accept = await server.AcceptAllAsync().FirstAsync();
             await accept.DisposeAsync();
             await client.ReceiveAllAsync().LastOrDefaultAsync();
             await client.DisposeAsync();
@@ -80,7 +82,7 @@ namespace RxSockets.Tests
         {
             var server = RxSocketServer.Create(SocketServerLogger);
             var client = await server.IPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
-            var accept = await server.AcceptObservable.FirstAsync();
+            var accept = await server.AcceptAllAsync().FirstAsync();
             var receiveTask = client.ReceiveAllAsync().FirstAsync();
             await accept.DisposeAsync();
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await receiveTask);
