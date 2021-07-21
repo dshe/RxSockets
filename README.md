@@ -81,7 +81,7 @@ await client.DisposeAsync();
 await server.DisposeAsync();
 ```
 ### notes
-The extension method ```ToObservableFromAsyncEnumerable()``` may be used to create observables from the AsyncEnumerables ```IRxSocketClient.ReceiveAllAsync()``` and ```IRxSocketServer.AcceptAllAsync()```.
+The extension method ```ToObservableFromAsyncEnumerable()``` may be used to create observables from the async enumerables ```IRxSocketClient.ReceiveAllAsync()``` and ```IRxSocketServer.AcceptAllAsync()```.
 
 ```Observable.Publish()[.RefCount() | .AutoConnect()]``` may be used to support multiple simultaneous observers.
 
