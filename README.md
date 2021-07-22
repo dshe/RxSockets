@@ -24,7 +24,7 @@ using RxSockets;
 ```
 #### server
 ```csharp
-interface IRxSocketServer: IAsyncDisposable
+interface IRxSocketServer : IAsyncDisposable
 {
     IPEndPoint IPEndPoint { get; }
     IAsyncEnumerable<IRxSocketClient> AcceptAllAsync();
@@ -55,7 +55,7 @@ server
 ```
 #### client
 ```csharp
-interface IRxSocketClient: IAsyncDisposable
+interface IRxSocketClient : IAsyncDisposable
 {
     bool Connected { get; }
     void Send(ReadOnlySpan<byte> buffer);
