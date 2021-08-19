@@ -4,7 +4,7 @@
 - send: *synchronous*
 - receive: *async enumerable* | *observable*
 - accept: *async enumerable* | *observable*
-- supports **.NET 5.0**
+- supports **.NET 5**
 - dependencies: Reactive Extensions, System.Linq.Async
 - simple and intuitive API
 - fast
