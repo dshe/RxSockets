@@ -1,10 +1,10 @@
 # RxSockets&nbsp;&nbsp; [![Build status](https://ci.appveyor.com/api/projects/status/rfxxbpx2agq8r93n?svg=true)](https://ci.appveyor.com/project/dshe/RxSockets) [![NuGet](https://img.shields.io/nuget/vpre/RxSockets.svg)](https://www.nuget.org/packages/RxSockets/) [![NuGet](https://img.shields.io/nuget/dt/RxSockets?color=orange)](https://www.nuget.org/packages/RxSockets/) [![License](https://img.shields.io/badge/license-Apache%202.0-7755BB.svg)](https://opensource.org/licenses/Apache-2.0)
 ***Minimal Reactive Socket Implementation***
 - connect: *asynchronous*
-- receive: *async enumerable*, *observable*
-- accept: *observable*
 - send: *synchronous*
-- supports **.NET 5.0**
+- receive: *async enumerable* or *observable*
+- accept: *async enumerable* or *observable*
+- supports **.NET 5**
 - dependencies: Reactive Extensions, System.Linq.Async
 - simple and intuitive API
 - fast
@@ -24,10 +24,10 @@ using RxSockets;
 ```
 #### server
 ```csharp
-interface IRxSocketServer: IAsyncDisposable
+interface IRxSocketServer : IAsyncDisposable
 {
     IPEndPoint IPEndPoint { get; }
-    IObservable<IRxSocketClient> AcceptObservable { get; }
+    IAsyncEnumerable<IRxSocketClient> AcceptAllAsync();
 }
 ```
 ```csharp
@@ -35,21 +35,27 @@ interface IRxSocketServer: IAsyncDisposable
 IRxSocketServer server = RxSocketServer.Create();
 
 // Prepare to start accepting connections from clients.
-server.AcceptObservable.Subscribe(onNext: acceptClient =>
-{
-    // After the server accepts a client connection,
-    // start receiving messages from the client and ...
-    acceptClient.ReceiveAllAsync().ToObservableFromAsyncEnumerable()
-        .ToStrings().Subscribe(onNext: message =>
+server
+    .AcceptAllAsync()
+    .ToObservableFromAsyncEnumerable()
+    .Subscribe(onNext: acceptClient =>
     {
-        // echo each message received back to the client.
-        acceptClient.Send(message.ToByteArray());
+        // After the server accepts a client connection,
+        // start receiving messages from the client and ...
+        acceptClient
+            .ReceiveAllAsync()
+            .ToObservableFromAsyncEnumerable()
+            .ToStrings()
+            .Subscribe(onNext: message =>
+            {
+                // echo each message received back to the client.
+                acceptClient.Send(message.ToByteArray());
+            });
     });
-});
 ```
 #### client
 ```csharp
-interface IRxSocketClient: IAsyncDisposable
+interface IRxSocketClient : IAsyncDisposable
 {
     bool Connected { get; }
     void Send(ReadOnlySpan<byte> buffer);
@@ -58,7 +64,7 @@ interface IRxSocketClient: IAsyncDisposable
 ```
 ```csharp
 // Find the address of the server.
-var ipEndPoint = server.IPEndPoint;
+IPEndPoint ipEndPoint = server.IPEndPoint;
 
 // Create a client by connecting to the server.
 IRxSocketClient client = await ipEndPoint.CreateRxSocketClientAsync();
@@ -75,7 +81,7 @@ await client.DisposeAsync();
 await server.DisposeAsync();
 ```
 ### notes
-The extension method ```ToObservableFromAsyncEnumerable()``` may be used to create an observable from the AsyncEnumerable ```IRxSocketClient.ReceiveAllAsync()```.
+The extension method ```ToObservableFromAsyncEnumerable()``` may be used to create observables from the async enumerables ```IRxSocketClient.ReceiveAllAsync()``` and ```IRxSocketServer.AcceptAllAsync()```.
 
 ```Observable.Publish()[.RefCount() | .AutoConnect()]``` may be used to support multiple simultaneous observers.
 
