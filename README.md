@@ -2,8 +2,8 @@
 ***Minimal Reactive Socket Implementation***
 - connect: *asynchronous*
 - send: *synchronous*
-- receive: *async enumerable* | *observable*
-- accept: *async enumerable* | *observable*
+- receive: *async enumerable* or *observable*
+- accept: *async enumerable* or *observable*
 - supports **.NET 5**
 - dependencies: Reactive Extensions, System.Linq.Async
 - simple and intuitive API
