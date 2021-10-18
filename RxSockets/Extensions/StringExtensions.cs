@@ -37,7 +37,7 @@ namespace RxSockets
                     ms.WriteByte(b);
                     continue;
                 }
-                var s = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
+                string s = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
                 ms.SetLength(0);
                 yield return s;
             }
@@ -58,7 +58,7 @@ namespace RxSockets
                     ms.WriteByte(b);
                     continue;
                 }
-                var s = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
+                string s = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
                 ms.SetLength(0);
                 yield return s;
             }

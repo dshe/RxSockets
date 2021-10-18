@@ -1,4 +1,6 @@
 ﻿using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -87,5 +89,34 @@ namespace RxSockets.Tests
             socket.Dispose();
             await disposer.DisposeAsync();
         }
+
+        /*
+        [Fact]
+        public async Task T06_Disposal_Temp()
+        {
+            var ipEndPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var serverSocket = Utilities.CreateSocket();
+            serverSocket.Bind(ipEndPoint);
+            serverSocket.Listen(10);
+
+            var client = await ipEndPoint.CreateRxSocketClientAsync();
+
+            var observable = Observable.Create<byte>(async observer =>
+            {
+                await foreach (var xx in client.ReceiveAllAsync())
+                    observer.OnNext(xx);
+
+                return Disposable.Create(() =>
+                {
+                    client.Send(new byte[] { 1, 2, 3 });
+                });
+
+            });
+
+            await observable;
+
+            await client.DisposeAsync();
+        }
+        */
     }
 }

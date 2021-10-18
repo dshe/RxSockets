@@ -47,7 +47,7 @@ namespace RxSockets
         private static byte[] GetRandomBytes(int bytes)
         {
             byte[] buffer = new byte[bytes];
-            using var rng = new RNGCryptoServiceProvider();
+            using RNGCryptoServiceProvider rng = new();
             rng.GetBytes(buffer);
             return buffer;
         }

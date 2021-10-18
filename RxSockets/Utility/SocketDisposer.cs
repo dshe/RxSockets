@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,15 +15,15 @@ namespace RxSockets
         private readonly SemaphoreSlim Semaphore = new(0, 1);
         private readonly string Name;
         private readonly TaskCompletionSource<bool> Tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly CancellationTokenSource Cts;
+        private readonly CancellationTokenSource ReceiveCts;
         private int Disposals = 0; // state
         internal bool DisposeRequested => Disposals > 0;
         private void ArgsCompleted(object? sender, SocketAsyncEventArgs e) => Semaphore.Release();
 
-        internal SocketDisposer(Socket socket, CancellationTokenSource cts, ILogger logger, string name, IAsyncDisposable? disposable = null)
+        internal SocketDisposer(Socket socket, CancellationTokenSource receiveCts, ILogger logger, string name, IAsyncDisposable? disposable = null)
         {
             Socket = socket;
-            Cts = cts;
+            ReceiveCts = receiveCts;
             Logger = logger;
             Name = name;
             Disposable = disposable;
@@ -38,17 +39,17 @@ namespace RxSockets
 
             try
             {
-                Cts.Cancel();
+                ReceiveCts.Cancel();
 
-                var localEndPoint = Socket.LocalEndPoint;
-                var remoteEndPoint = Socket.RemoteEndPoint;
+                EndPoint? localEndPoint = Socket.LocalEndPoint;
+                EndPoint? remoteEndPoint = Socket.RemoteEndPoint;
 
                 if (Socket.Connected)
                 {
-                    // disables Send and Receive methods and queues up a zero-byte send packet in the send buffer
-                    Socket.Shutdown(SocketShutdown.Both);
+                    // disables Send method and queues up a zero-byte send packet in the send buffer
+                    Socket.Shutdown(SocketShutdown.Send);
 
-                    var args = new SocketAsyncEventArgs() { DisconnectReuseSocket = false };
+                    SocketAsyncEventArgs args = new() { DisconnectReuseSocket = false };
                     args.Completed += ArgsCompleted;
 
                     if (Socket.DisconnectAsync(args))
@@ -62,7 +63,7 @@ namespace RxSockets
                     Logger.LogTrace($"{Name} on {localEndPoint} disposed.");
                 }
 
-                if (Disposable != null) // SocketAcceptor
+                if (Disposable is not null) // SocketAcceptor
                     await Disposable.DisposeAsync().ConfigureAwait(false);
             }
             catch (Exception e)
@@ -73,7 +74,7 @@ namespace RxSockets
             {
                 Tcs.SetResult(true);
                 Socket.Dispose();
-                Cts.Dispose();
+                ReceiveCts.Dispose();
                 Semaphore.Dispose();
             }
         }

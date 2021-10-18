@@ -46,7 +46,7 @@ namespace RxSockets
                 }
 
                 Logger.LogTrace($"AcceptClient on {Socket.LocalEndPoint} connected to {Args.AcceptSocket.RemoteEndPoint}.");
-                var client = new RxSocketClient(Args.AcceptSocket, Logger, "AcceptClient");
+                RxSocketClient client = new(Args.AcceptSocket, Logger, "AcceptClient");
                 AcceptedClients.Add(client);
                 yield return client;
             }
@@ -56,8 +56,8 @@ namespace RxSockets
         {
             return Observable.Create<IRxSocketClient>(async (observer, ct2) =>
             {
-                var cts = CancellationTokenSource.CreateLinkedTokenSource(ct1, ct2);
-                var ct = cts.Token;
+                CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct1, ct2);
+                CancellationToken ct = cts.Token;
                 try
                 {
                     while (true)
@@ -68,7 +68,7 @@ namespace RxSockets
                         if (Socket.AcceptAsync(Args))
                             await Semaphore.WaitAsync(ct).ConfigureAwait(false);
                         Logger.LogTrace($"AcceptClient on {Socket.LocalEndPoint} connected to {Args.AcceptSocket.RemoteEndPoint}.");
-                        var client = new RxSocketClient(Args.AcceptSocket, Logger, "AcceptClient");
+                        RxSocketClient client = new(Args.AcceptSocket, Logger, "AcceptClient");
                         AcceptedClients.Add(client);
                         observer.OnNext(client);
                     }
@@ -92,7 +92,7 @@ namespace RxSockets
 
         public async ValueTask DisposeAsync()
         {
-            var tasks = AcceptedClients.Select(client => client.DisposeAsync().AsTask()).ToList();
+            List<Task> tasks = AcceptedClients.Select(client => client.DisposeAsync().AsTask()).ToList();
             await Task.WhenAll(tasks).ConfigureAwait(false);
             Args.Completed -= ArgsCompleted;
             Args.Dispose();

@@ -199,7 +199,7 @@ namespace RxSockets.Tests
             client.Send("Hello!".ToByteArray());
 
             await semaphore.WaitAsync();
-            if (acceptClient == null)
+            if (acceptClient is null)
                 throw new NullReferenceException(nameof(acceptClient));
 
             await server.DisposeAsync(); 
@@ -235,7 +235,7 @@ namespace RxSockets.Tests
 
             client.Send("Hello!".ToByteArray());
             await semaphore.WaitAsync();
-            if (acceptClient == null)
+            if (acceptClient is null)
                 throw new NullReferenceException(nameof(acceptClient));
 
             await server.DisposeAsync();

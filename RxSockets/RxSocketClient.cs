@@ -18,7 +18,7 @@ namespace RxSockets
     {
         private readonly string Name;
         private readonly ILogger Logger;
-        private readonly CancellationTokenSource Cts = new();
+        private readonly CancellationTokenSource ReceiveCts = new();
         private readonly Socket Socket;
         private readonly SocketReceiver Receiver;
         private readonly SocketDisposer Disposer;
@@ -29,7 +29,7 @@ namespace RxSockets
             Logger = logger;
             Name = name;
             Receiver = new SocketReceiver(socket, logger, Name);
-            Disposer = new SocketDisposer(Socket, Cts, logger, Name);
+            Disposer = new SocketDisposer(Socket, ReceiveCts, logger, Name);
         }
 
         public bool Connected =>
@@ -41,7 +41,7 @@ namespace RxSockets
             Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} sent {buffer.Length} bytes to {Socket.RemoteEndPoint}.");
         }
 
-        public IAsyncEnumerable<byte> ReceiveAllAsync() => Receiver.ReceiveAllAsync(Cts.Token);
+        public IAsyncEnumerable<byte> ReceiveAllAsync() => Receiver.ReceiveAllAsync(ReceiveCts.Token);
 
         public async ValueTask DisposeAsync() =>
             await Disposer.DisposeAsync().ConfigureAwait(false);

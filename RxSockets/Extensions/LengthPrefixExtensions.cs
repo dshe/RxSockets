@@ -29,7 +29,7 @@ namespace RxSockets
         {
             int length = -1;
             MemoryStream ms = new();
-            foreach (var b in source)
+            foreach (byte b in source)
             {
                 ms.WriteByte(b);
                 if (length == -1 && ms.Position == 4)
@@ -121,7 +121,7 @@ namespace RxSockets
 
         private static int DecodeMessageLength(MemoryStream ms)
         {
-            var buffer = ms.GetBuffer();
+            byte[] buffer = ms.GetBuffer();
             int i = BitConverter.ToInt32(buffer, 0);
             int length = IPAddress.NetworkToHostOrder(i);
             if (length <= 0)

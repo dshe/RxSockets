@@ -57,11 +57,16 @@ namespace RxSockets.Tests
         public async Task T02_Dispose_During_Receive()
         {
             var server = RxSocketServer.Create(SocketServerLogger);
+
             var client = await server.IPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
             var receiveTask = client.ReceiveAllAsync().LastOrDefaultAsync();
-            await Task.Delay(10);
+            //await Task.Delay(100);
             await client.DisposeAsync();
+
+            //await Assert.ThrowsAsync<SocketException>(async () =>
+            //    await receiveTask);
             await receiveTask;
+
             await server.DisposeAsync();
         }
 

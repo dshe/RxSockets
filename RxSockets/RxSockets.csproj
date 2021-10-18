@@ -6,12 +6,12 @@
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/dshe/RxSockets</PackageProjectUrl>
     <PackageIcon>worm64.png</PackageIcon>
-    <PackageTags>sockets socket rx reactive extensions observable async async enumerable linq network</PackageTags>
+    <PackageTags>sockets reactive extensions observable async enumerable linq</PackageTags>
     <Description>A minimal reactive socket implementation.</Description>
     <Authors>DavidS</Authors>
-    <Version>3.0.1</Version>
-    <AssemblyVersion>3.0.1</AssemblyVersion>
-    <FileVersion>3.0.1</FileVersion>
+    <Version>3.0.2</Version>
+    <AssemblyVersion>3.0.2</AssemblyVersion>
+    <FileVersion>3.0.2</FileVersion>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/dshe/RxSockets</RepositoryUrl>
     <RepositoryType>github</RepositoryType>

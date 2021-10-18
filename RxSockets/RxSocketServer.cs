@@ -61,7 +61,7 @@ namespace RxSockets
             // Backlog specifies the number of pending connections allowed before a busy error is returned.
             if (backLog < 0)
                 throw new ArgumentException($"Invalid backLog: {backLog}.");
-            var socket = Utilities.CreateSocket();
+            Socket socket = Utilities.CreateSocket();
             socket.Bind(ipEndPoint);
             socket.Listen(backLog);
             return new RxSocketServer(socket, logger);

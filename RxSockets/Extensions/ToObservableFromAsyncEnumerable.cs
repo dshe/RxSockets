@@ -14,7 +14,7 @@ namespace RxSockets
         /// </summary>
         public static IObservable<T> ToObservableFromAsyncEnumerable<T>(this IAsyncEnumerable<T> source, IScheduler? scheduler = null)
         {
-            if (source == null)
+            if (source is null)
                 throw new ArgumentNullException(nameof(source));
 
             scheduler ??= Scheduler.Default;
@@ -48,7 +48,7 @@ namespace RxSockets
         /// </summary>
         public static IObservable<TSource> ToObservable<TSource>(this IAsyncEnumerable<TSource> source)
         {
-            if (source == null)
+            if (source is null)
                 throw new ArgumentNullException(nameof(source));
             return new ToObservableObservable<TSource>(source);
         }

@@ -24,14 +24,14 @@ namespace RxSockets
         public static async Task<IRxSocketClient> CreateRxSocketClientAsync(
             this IPEndPoint endPoint, ILogger logger, CancellationToken ct = default)
         {
-            var socket = await ConnectAsync(endPoint, logger, ct)
+            Socket socket = await ConnectAsync(endPoint, logger, ct)
                 .ConfigureAwait(false);
             return new RxSocketClient(socket, logger, "Client");
         }
 
         private static async Task<Socket> ConnectAsync(IPEndPoint endPoint, ILogger logger, CancellationToken ct)
         {
-            var socket = Utilities.CreateSocket();
+            Socket socket = Utilities.CreateSocket();
             try
             {
                 await socket.ConnectAsync(endPoint, ct).ConfigureAwait(false);
@@ -40,10 +40,10 @@ namespace RxSockets
             }
             catch (Exception e)
             {
-                var msg = $"Socket could not connect to {endPoint}. {e.Message}";
+                string msg = $"Socket could not connect to {endPoint}. {e.Message}";
                 if (e is SocketException se)
                 {
-                    var errorName = "SocketException: " + Enum.GetName(typeof(SocketError), se.ErrorCode);
+                    string errorName = "SocketException: " + Enum.GetName(typeof(SocketError), se.ErrorCode);
                     logger.LogTrace(e, $"{msg} {errorName}.");
                 }
                 else
