@@ -4,7 +4,7 @@
 - send: *synchronous*
 - receive: *async enumerable* or *observable*
 - accept: *async enumerable* or *observable*
-- supports **.NET 5**
+- supports **.NET 6**
 - dependencies: Reactive Extensions, System.Linq.Async
 - simple and intuitive API
 - fast
@@ -58,7 +58,7 @@ server
 interface IRxSocketClient : IAsyncDisposable
 {
     bool Connected { get; }
-    void Send(ReadOnlySpan<byte> buffer);
+    int Send(ReadOnlySpan<byte> buffer);
     IAsyncEnumerable<byte> ReceiveAllAsync();
 }
 ```
