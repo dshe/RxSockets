@@ -42,7 +42,7 @@ namespace RxSockets
                     }
                     if (BytesReceived == 0)
                         yield break;
-                    Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} received {BytesReceived} bytes from {Socket.RemoteEndPoint}.");
+                    Logger.LogTrace("{Name} on {LocalEndPoint} received {BytesReceived} bytes from {RemoteEndPoint}.", Name, Socket.LocalEndPoint, BytesReceived, Socket.RemoteEndPoint);
                     Position = 0;
                 }
                 yield return Memory.Span[Position++];

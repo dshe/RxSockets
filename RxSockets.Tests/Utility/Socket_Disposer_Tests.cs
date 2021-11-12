@@ -26,7 +26,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T02_Dispose_Connected_Socket()
         {
-            var ipEndPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var ipEndPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
             var serverSocket = Utilities.CreateSocket();
             var serverDisposer = new SocketDisposer(serverSocket, Cts, Logger, "?");
             serverSocket.Bind(ipEndPoint);
@@ -55,7 +55,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T04_Dispose_Multi()
         {
-            var ipEndPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var ipEndPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
             var serverSocket = Utilities.CreateSocket();
             serverSocket.Bind(ipEndPoint);
             serverSocket.Listen(10);
@@ -74,7 +74,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T05_Dispose_Disposed_Socket()
         {
-            var ipEndPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var ipEndPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
             var serverSocket = Utilities.CreateSocket();
             serverSocket.Bind(ipEndPoint);
             serverSocket.Listen(10);

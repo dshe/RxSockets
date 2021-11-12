@@ -12,13 +12,11 @@ namespace RxSockets
         private readonly ILogger Logger;
         private readonly Socket Socket;
         private readonly IAsyncDisposable? Disposable;
-        private readonly SemaphoreSlim Semaphore = new(0, 1);
         private readonly string Name;
         private readonly TaskCompletionSource<bool> Tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly CancellationTokenSource ReceiveCts;
         private int Disposals = 0; // state
         internal bool DisposeRequested => Disposals > 0;
-        private void ArgsCompleted(object? sender, SocketAsyncEventArgs e) => Semaphore.Release();
 
         internal SocketDisposer(Socket socket, CancellationTokenSource receiveCts, ILogger logger, string name, IAsyncDisposable? disposable = null)
         {
@@ -48,19 +46,12 @@ namespace RxSockets
                 {
                     // disables Send method and queues up a zero-byte send packet in the send buffer
                     Socket.Shutdown(SocketShutdown.Send);
-
-                    SocketAsyncEventArgs args = new() { DisconnectReuseSocket = false };
-                    args.Completed += ArgsCompleted;
-
-                    if (Socket.DisconnectAsync(args))
-                        await Semaphore.WaitAsync().ConfigureAwait(false);
-                    Logger.LogTrace($"{Name} on {localEndPoint} disconnected from {remoteEndPoint} and disposed.");
-
-                    args.Completed -= ArgsCompleted;
+                    await Socket.DisconnectAsync(false).ConfigureAwait(false);
+                    Logger.LogTrace("{Name} on {LocalEndPoint} disconnected from {RemoteEndPoint} and disposed.", Name, localEndPoint, remoteEndPoint);
                 }
                 else
                 {
-                    Logger.LogTrace($"{Name} on {localEndPoint} disposed.");
+                    Logger.LogTrace("{Name} on {LocalEndPoint} disposed.", Name, localEndPoint);
                 }
 
                 if (Disposable is not null) // SocketAcceptor
@@ -75,7 +66,6 @@ namespace RxSockets
                 Tcs.SetResult(true);
                 Socket.Dispose();
                 ReceiveCts.Dispose();
-                Semaphore.Dispose();
             }
         }
     }

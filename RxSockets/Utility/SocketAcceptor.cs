@@ -13,40 +13,34 @@ namespace RxSockets
     class SocketAcceptor : IAsyncDisposable
     {
         private readonly ILogger Logger;
-        private readonly SemaphoreSlim Semaphore = new(0, 1); // start with wait
         private readonly Socket Socket;
-        private readonly SocketAsyncEventArgs Args = new();
         private readonly List<IRxSocketClient> AcceptedClients = new(); // state
-        private void ArgsCompleted(object? sender, SocketAsyncEventArgs e) => Semaphore.Release();
 
         internal SocketAcceptor(Socket socket, ILogger logger)
         {
             Socket = socket;
             Logger = logger;
-            Args.Completed += ArgsCompleted;
         }
 
         internal async IAsyncEnumerable<IRxSocketClient> AcceptAllAsync([EnumeratorCancellation] CancellationToken ct = default)
         {
             while (!ct.IsCancellationRequested)
             {
-                Args.AcceptSocket = Utilities.CreateSocket();
+                Socket acceptSocket;
                 try
                 {
-                    // AcceptAsync(Args) is used here because other overloads do not accept a CancellationToken.
-                    if (Socket.AcceptAsync(Args))
-                        await Semaphore.WaitAsync(ct).ConfigureAwait(false);
+                    acceptSocket = await Socket.AcceptAsync(ct).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
                     if (ct.IsCancellationRequested)
                         yield break;
-                    Logger.LogWarning(e, $"SocketAcceptor on {Socket.LocalEndPoint}. {e.Message}");
+                    Logger.LogWarning(e, "SocketAcceptor on {LocalEndPoint}. {Message}", Socket.LocalEndPoint, e.Message);
                     throw; // ??
                 }
 
-                Logger.LogTrace($"AcceptClient on {Socket.LocalEndPoint} connected to {Args.AcceptSocket.RemoteEndPoint}.");
-                RxSocketClient client = new(Args.AcceptSocket, Logger, "AcceptClient");
+                Logger.LogTrace("AcceptClient on {LocalEndPoint} connected to {RemoteEndPoint}.", Socket.LocalEndPoint, acceptSocket.RemoteEndPoint);
+                RxSocketClient client = new(acceptSocket, Logger, "AcceptClient");
                 AcceptedClients.Add(client);
                 yield return client;
             }
@@ -63,12 +57,9 @@ namespace RxSockets
                     while (true)
                     {
                         cts.Token.ThrowIfCancellationRequested();
-                        Args.AcceptSocket = Utilities.CreateSocket();
-                        // AcceptAsync(Args) is used here because other overloads do not accept a CancellationToken.
-                        if (Socket.AcceptAsync(Args))
-                            await Semaphore.WaitAsync(ct).ConfigureAwait(false);
-                        Logger.LogTrace($"AcceptClient on {Socket.LocalEndPoint} connected to {Args.AcceptSocket.RemoteEndPoint}.");
-                        RxSocketClient client = new(Args.AcceptSocket, Logger, "AcceptClient");
+                        Socket acceptSocket = await Socket.AcceptAsync(ct).ConfigureAwait(false);
+                        Logger.LogTrace("AcceptClient on {LocalEndPoint} connected to {RemoteEndPoint}.", Socket.LocalEndPoint, acceptSocket.RemoteEndPoint);
+                        RxSocketClient client = new(acceptSocket, Logger, "AcceptClient");
                         AcceptedClients.Add(client);
                         observer.OnNext(client);
                     }
@@ -79,7 +70,7 @@ namespace RxSockets
                         observer.OnCompleted();
                     else
                     {
-                        Logger.LogWarning(e, $"SocketAcceptor on {Socket.LocalEndPoint}. {e.Message}");
+                        Logger.LogWarning(e, "SocketAcceptor on {LocalEndPoint}. {Message}", Socket.LocalEndPoint, e.Message);
                         observer.OnError(e);
                     }
                 }
@@ -94,9 +85,6 @@ namespace RxSockets
         {
             List<Task> tasks = AcceptedClients.Select(client => client.DisposeAsync().AsTask()).ToList();
             await Task.WhenAll(tasks).ConfigureAwait(false);
-            Args.Completed -= ArgsCompleted;
-            Args.Dispose();
-            Semaphore.Dispose();
         }
     }
 }

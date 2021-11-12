@@ -30,7 +30,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T00_Cancellation_During_Connect()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
             await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
                 await endPoint.CreateRxSocketClientAsync(SocketClientLogger, ct: new CancellationToken(true)));
         }
@@ -38,7 +38,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T00_Timeout_During_Connect()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
             await Assert.ThrowsAsync<SocketException>(async () =>
                 await endPoint.CreateRxSocketClientAsync(SocketClientLogger));
         }

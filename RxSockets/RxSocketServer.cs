@@ -2,10 +2,10 @@
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System.Net;
-using Microsoft.Extensions.Logging.Abstractions;
 using System.Net.Sockets;
 using System.Threading;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace RxSockets
 {
@@ -27,7 +27,7 @@ namespace RxSockets
             IPEndPoint = (IPEndPoint)(socket.LocalEndPoint ?? throw new ArgumentException("LocalEndPoint"));
             Acceptor = new SocketAcceptor(socket, logger);
             Disposer = new SocketDisposer(socket, Cts, logger, "Server", Acceptor);
-            logger.LogTrace($"Server created on {IPEndPoint}.");
+            logger.LogTrace("Server created on {IPEndPoint}.", IPEndPoint);
         }
 
         public IAsyncEnumerable<IRxSocketClient> AcceptAllAsync() => Acceptor.AcceptAllAsync(Cts.Token);
@@ -36,22 +36,9 @@ namespace RxSockets
             await Disposer.DisposeAsync().ConfigureAwait(false);
 
         /// <summary>
-        /// Create an RxSocketServer on an available port on the localhost.
+        /// Create an RxSocketServer.
         /// </summary>
-        public static IRxSocketServer Create(int backLog = 10) =>
-            Create(new IPEndPoint(IPAddress.IPv6Loopback, 0), NullLogger.Instance, backLog);
-
-        /// <summary>
-        /// Create an RxSocketServer on an available port on the localhost.
-        /// </summary>
-        public static IRxSocketServer Create(ILogger logger, int backLog = 10) =>
-            Create(new IPEndPoint(IPAddress.IPv6Loopback, 0), logger, backLog);
-
-        /// <summary>
-        /// Create an RxSocketServer on IPEndPoint.
-        /// </summary>
-        public static IRxSocketServer Create(IPEndPoint ipEndPoint, int backLog = 10) =>
-            Create(ipEndPoint, NullLogger.Instance, backLog);
+        public static IRxSocketServer Create(Socket socket, ILogger logger) => new RxSocketServer(socket, logger);
 
         /// <summary>
         /// Create an RxSocketServer on IPEndPoint.
@@ -64,7 +51,19 @@ namespace RxSockets
             Socket socket = Utilities.CreateSocket();
             socket.Bind(ipEndPoint);
             socket.Listen(backLog);
-            return new RxSocketServer(socket, logger);
+            return Create(socket, logger);
         }
+
+        /// <summary>
+        /// Create an RxSocketServer on an available port on the localhost.
+        /// </summary>
+        public static IRxSocketServer Create(int backLog = 10) =>
+            Create(new IPEndPoint(IPAddress.IPv6Loopback, 0), NullLogger.Instance, backLog);
+
+        /// <summary>
+        /// Create an RxSocketServer on an available port on the localhost.
+        /// </summary>
+        public static IRxSocketServer Create(ILogger logger, int backLog = 10) =>
+            Create(new IPEndPoint(IPAddress.IPv6Loopback, 0), logger, backLog);
     }
 }

@@ -10,11 +10,11 @@ namespace RxSockets
     public interface IRxSocketClient: IAsyncDisposable
     {
         bool Connected { get; }
-        void Send(ReadOnlySpan<byte> buffer);
+        int Send(ReadOnlySpan<byte> buffer);
         IAsyncEnumerable<byte> ReceiveAllAsync();
     }
 
-    public class RxSocketClient: IRxSocketClient
+    public sealed class RxSocketClient: IRxSocketClient
     {
         private readonly string Name;
         private readonly ILogger Logger;
@@ -35,10 +35,11 @@ namespace RxSockets
         public bool Connected =>
             !((Socket.Poll(1000, SelectMode.SelectRead) && (Socket.Available == 0)) || !Socket.Connected);
 
-        public void Send(ReadOnlySpan<byte> buffer)
+        public int Send(ReadOnlySpan<byte> buffer)
         {
-            Socket.Send(buffer);
-            Logger.LogTrace($"{Name} on {Socket.LocalEndPoint} sent {buffer.Length} bytes to {Socket.RemoteEndPoint}.");
+            int bytes = Socket.Send(buffer);
+            Logger.LogTrace("{Name} on {LocalEndPoint} sent {Bytes} bytes to {RemoteEndPoint}.", Name, Socket.LocalEndPoint, bytes, Socket.RemoteEndPoint);
+            return bytes;
         }
 
         public IAsyncEnumerable<byte> ReceiveAllAsync() => Receiver.ReceiveAllAsync(ReceiveCts.Token);

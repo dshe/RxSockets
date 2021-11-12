@@ -19,7 +19,7 @@ namespace RxSockets.Tests
         [Fact]
         public async Task T00_Success()
         {
-            var endPoint = Utilities.GetEndPointOnRandomLoopbackPort();
+            var endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
             var serverSocket = Utilities.CreateSocket();
             serverSocket.Bind(endPoint);
             serverSocket.Listen(10);
