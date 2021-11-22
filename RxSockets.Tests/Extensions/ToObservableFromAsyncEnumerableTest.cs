@@ -2,56 +2,51 @@
 using System.Reactive.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
-using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Runtime.CompilerServices;
 
-namespace RxSockets.Tests
+namespace RxSockets.Tests;
+
+public class ToObservableFromAsyncEnumerableTest : TestBase
 {
-    public class ToObservableFromAsyncEnumerableTest : TestBase
+    public ToObservableFromAsyncEnumerableTest(ITestOutputHelper output) : base(output) { }
+
+    private static async IAsyncEnumerable<string> GetSource([EnumeratorCancellation] CancellationToken ct = default)
     {
-        public ToObservableFromAsyncEnumerableTest(ITestOutputHelper output) : base(output) { }
-
-        private static async IAsyncEnumerable<string> GetSource([EnumeratorCancellation] CancellationToken ct = default)
+        for (int i = 0; i < 10; i++)
         {
-            for (int i = 0; i < 10; i++)
+            try
             {
-                try
-                {
-                    await Task.Delay(10, ct);
-                }
-                catch (OperationCanceledException)
-                {
-                    yield break;
-                }
-                yield return i.ToString();
+                await Task.Delay(10, ct);
             }
-            yield break;
-        }
-
-        [Fact]
-        public async Task Test()
-        {
-            Logger.LogInformation("start");
-
-            var observable = GetSource().ToObservableFromAsyncEnumerable(TaskPoolScheduler.Default);
-            //var observable = GetSource().ToObservable();
-
-            var subscription = observable.Subscribe(x =>
+            catch (OperationCanceledException)
             {
-                Logger.LogInformation(x);
-            });
-
-            await Task.Delay(70);
-            subscription.Dispose();
+                yield break;
+            }
+            yield return i.ToString();
         }
-
+        yield break;
     }
+
+    [Fact]
+    public async Task Test()
+    {
+        Logger.LogInformation("start");
+
+        var observable = GetSource().ToObservableFromAsyncEnumerable(TaskPoolScheduler.Default);
+        //var observable = GetSource().ToObservable();
+
+        var subscription = observable.Subscribe(x =>
+        {
+            Logger.LogInformation(x);
+        });
+
+        await Task.Delay(70);
+        subscription.Dispose();
+    }
+
 }
