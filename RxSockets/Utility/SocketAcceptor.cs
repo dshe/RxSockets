@@ -33,11 +33,12 @@ class SocketAcceptor : IAsyncDisposable
             {
                 if (ct.IsCancellationRequested)
                     yield break;
-                Logger.LogWarning(e, "SocketAcceptor on {LocalEndPoint}. {Message}", Socket.LocalEndPoint, e.Message);
+                Logger.LogError(e, "SocketAcceptor on {LocalEndPoint}. {Message}", Socket.LocalEndPoint, e.Message);
                 throw; // ??
             }
 
-            Logger.LogTrace("AcceptClient on {LocalEndPoint} connected to {RemoteEndPoint}.", Socket.LocalEndPoint, acceptSocket.RemoteEndPoint);
+            Logger.LogDebug("AcceptClient on {LocalEndPoint} connected to {RemoteEndPoint}.", Socket.LocalEndPoint, acceptSocket.RemoteEndPoint);
+
             RxSocketClient client = new(acceptSocket, Logger, "AcceptClient");
             AcceptedClients.Add(client);
             yield return client;
@@ -56,7 +57,9 @@ class SocketAcceptor : IAsyncDisposable
                 {
                     cts.Token.ThrowIfCancellationRequested();
                     Socket acceptSocket = await Socket.AcceptAsync(ct).ConfigureAwait(false);
-                    Logger.LogTrace("AcceptClient on {LocalEndPoint} connected to {RemoteEndPoint}.", Socket.LocalEndPoint, acceptSocket.RemoteEndPoint);
+
+                    Logger.LogDebug("AcceptClient on {LocalEndPoint} connected to {RemoteEndPoint}.", Socket.LocalEndPoint, acceptSocket.RemoteEndPoint);
+
                     RxSocketClient client = new(acceptSocket, Logger, "AcceptClient");
                     AcceptedClients.Add(client);
                     observer.OnNext(client);
@@ -68,7 +71,7 @@ class SocketAcceptor : IAsyncDisposable
                     observer.OnCompleted();
                 else
                 {
-                    Logger.LogWarning(e, "SocketAcceptor on {LocalEndPoint}. {Message}", Socket.LocalEndPoint, e.Message);
+                    Logger.LogError(e, "SocketAcceptor on {LocalEndPoint}. {Message}", Socket.LocalEndPoint, e.Message);
                     observer.OnError(e);
                 }
             }

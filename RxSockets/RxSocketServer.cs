@@ -25,7 +25,7 @@ public sealed class RxSocketServer : IRxSocketServer
         IPEndPoint = (IPEndPoint)(socket.LocalEndPoint ?? throw new ArgumentException("LocalEndPoint"));
         Acceptor = new SocketAcceptor(socket, logger);
         Disposer = new SocketDisposer(socket, Cts, logger, "Server", Acceptor);
-        logger.LogTrace("Server created on {IPEndPoint}.", IPEndPoint);
+        logger.LogDebug("Server created on {IPEndPoint}.", IPEndPoint);
     }
 
     public IAsyncEnumerable<IRxSocketClient> AcceptAllAsync() => Acceptor.AcceptAllAsync(Cts.Token);
@@ -43,7 +43,6 @@ public sealed class RxSocketServer : IRxSocketServer
     public static IRxSocketServer Create(Socket socket, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(socket);
-
         return new RxSocketServer(socket, logger);
     }
 

@@ -26,8 +26,8 @@ public sealed class RxSocketClient : IRxSocketClient
         Socket = socket;
         Logger = logger;
         Name = name;
-        Receiver = new SocketReceiver(socket, logger, Name);
-        Disposer = new SocketDisposer(Socket, ReceiveCts, logger, Name);
+        Receiver = new SocketReceiver(socket, Logger, Name);
+        Disposer = new SocketDisposer(Socket, ReceiveCts, Logger, Name);
     }
 
     public bool Connected =>
@@ -36,7 +36,8 @@ public sealed class RxSocketClient : IRxSocketClient
     public int Send(ReadOnlySpan<byte> buffer)
     {
         int bytes = Socket.Send(buffer);
-        Logger.LogTrace("{Name} on {LocalEndPoint} sent {Bytes} bytes to {RemoteEndPoint}.", Name, Socket.LocalEndPoint, bytes, Socket.RemoteEndPoint);
+        if (Logger.IsEnabled(LogLevel.Trace))
+            Logger.LogTrace("{Name} on {LocalEndPoint} sent {Bytes} bytes to {RemoteEndPoint}.", Name, Socket.LocalEndPoint, bytes, Socket.RemoteEndPoint);
         return bytes;
     }
 

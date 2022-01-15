@@ -45,11 +45,11 @@ internal class SocketDisposer : IAsyncDisposable
                 // disables Send method and queues up a zero-byte send packet in the send buffer
                 Socket.Shutdown(SocketShutdown.Send);
                 await Socket.DisconnectAsync(false).ConfigureAwait(false);
-                Logger.LogTrace("{Name} on {LocalEndPoint} disconnected from {RemoteEndPoint} and disposed.", Name, localEndPoint, remoteEndPoint);
+                Logger.LogDebug("{Name} on {LocalEndPoint} disconnected from {RemoteEndPoint} and disposed.", Name, localEndPoint, remoteEndPoint);
             }
             else
             {
-                Logger.LogTrace("{Name} on {LocalEndPoint} disposed.", Name, localEndPoint);
+                Logger.LogDebug("{Name} on {LocalEndPoint} disposed.", Name, localEndPoint);
             }
 
             if (Disposable is not null) // SocketAcceptor
@@ -57,7 +57,7 @@ internal class SocketDisposer : IAsyncDisposable
         }
         catch (Exception e)
         {
-            Logger.LogError(e, "DisposeAsync.");
+            Logger.LogWarning(e, "DisposeAsync.");
         }
         finally
         {

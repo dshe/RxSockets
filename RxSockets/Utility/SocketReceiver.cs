@@ -40,8 +40,11 @@ internal class SocketReceiver
                 }
                 if (BytesReceived == 0)
                     yield break;
-                Logger.LogTrace("{Name} on {LocalEndPoint} received {BytesReceived} bytes from {RemoteEndPoint}.", Name, Socket.LocalEndPoint, BytesReceived, Socket.RemoteEndPoint);
+
                 Position = 0;
+
+                if (Logger.IsEnabled(LogLevel.Trace))
+                    Logger.LogTrace("{Name} on {LocalEndPoint} received {BytesReceived} bytes from {RemoteEndPoint}.", Name, Socket.LocalEndPoint, BytesReceived, Socket.RemoteEndPoint);
             }
             yield return Memory.Span[Position++];
         }

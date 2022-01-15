@@ -43,7 +43,7 @@ public static partial class Xtensions
         try
         {
             await socket.ConnectAsync(endPoint, ct).ConfigureAwait(false);
-            logger.LogTrace("Client on {LocalEndPoint} connected to {EndPoint}.", socket.LocalEndPoint, endPoint);
+            logger.LogDebug("Client on {LocalEndPoint} connected to {EndPoint}.", socket.LocalEndPoint, endPoint);
             return socket;
         }
         catch (Exception e)
@@ -51,10 +51,10 @@ public static partial class Xtensions
             if (e is SocketException se)
             {
                 string errorName = "SocketException: " + Enum.GetName(typeof(SocketError), se.ErrorCode);
-                logger.LogTrace(e, "Socket could not connect to { EndPoint}. {Message} {ErrorName}.", endPoint, e.Message, errorName);
+                logger.LogWarning(e, "Socket could not connect to { EndPoint}. {Message} {ErrorName}.", endPoint, e.Message, errorName);
             }
             else
-                logger.LogTrace(e, "Socket could not connect to {EndPoint}. {Message}", endPoint, e.Message);
+                logger.LogWarning(e, "Socket could not connect to {EndPoint}. {Message}", endPoint, e.Message);
             throw;
         }
     }
