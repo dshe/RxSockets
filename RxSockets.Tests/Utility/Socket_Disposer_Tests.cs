@@ -80,13 +80,14 @@ public class Socket_Disposer_Tests : TestBase
 
         var clientSocket = Utilities.CreateSocket();
         var disposer = new SocketDisposer(clientSocket, Cts, Logger, "?");
+        Assert.False(disposer.DisposeRequested);
 
         clientSocket.Connect(ipEndPoint);
         Assert.True(clientSocket.Connected);
-        Assert.False(disposer.DisposeRequested);
 
         clientSocket.Dispose();
-        await disposer.DisposeAsync();
+        await disposer.DisposeAsync(); // dispose disposed
+        Assert.True(disposer.DisposeRequested);
     }
 
     /*
