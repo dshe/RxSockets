@@ -3,11 +3,11 @@
 - **.NET 6.0** library
 - connect: *asynchronous*
 - send: *synchronous*
-- receive: *async enumerable* or *observable*
-- accept: *async enumerable* or *observable*
+- receive: *observable* or *async enumerable*
+- accept:  *observable* or *async enumerable*
 - simple and intuitive API
 - fast
-- dependencies: Reactive Extensions, System.Linq.Async
+- dependencies: System.Reactive, System.Linq.Async
 
 ### installation
 ```csharp
