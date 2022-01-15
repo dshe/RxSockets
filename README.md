@@ -7,7 +7,7 @@
 - accept:  *observable* or *async enumerable*
 - simple and intuitive API
 - fast
-- dependencies: System.Reactive, System.Linq.Async
+- dependencies: System.Reactive, System.Linq.Async, Microsoft.Extensions.Logging
 
 ### installation
 ```csharp
