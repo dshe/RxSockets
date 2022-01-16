@@ -95,7 +95,7 @@ To communicate using bytes with a 4 byte BigEndian integer length prefix, the fo
 ```csharp
 byte[] ToByteArrayWithLengthPrefix(this byte[] source)
 
-IEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IEnumerable<byte> source)
+IEnumerable<byte[]>      ToArraysFromBytesWithLengthPrefix(this IEnumerable<byte> source)
 IAsyncEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IAsyncEnumerable<byte> source)
-IObservable<byte[]> ToArraysFromBytesWithLengthPrefix(this IObservable<byte> source)
+IObservable<byte[]>      ToArraysFromBytesWithLengthPrefix(this IObservable<byte> source)
 ```
