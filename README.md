@@ -91,3 +91,11 @@ IEnumerable<string>      ToStrings(this IEnumerable<byte> source)
 IAsyncEnumerable<string> ToStrings(this IAsyncEnumerable<byte> source)
 IObservable<string>      ToStrings(this IObservable<byte> source)
 ```
+To communicate using bytes with a 4 byte BigEndian integer length prefix, the following extension methods are provided:
+```csharp
+byte[] ToByteArrayWithLengthPrefix(this byte[] source)
+
+IEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IEnumerable<byte> source)
+IAsyncEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IAsyncEnumerable<byte> source)
+IObservable<byte[]> ToArraysFromBytesWithLengthPrefix(this IObservable<byte> source)
+```
