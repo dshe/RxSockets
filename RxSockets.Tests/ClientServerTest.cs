@@ -5,7 +5,6 @@ using Xunit;
 using System.Reactive.Linq;
 using System;
 using Microsoft.Extensions.Logging;
-
 namespace RxSockets.Tests;
 
 public class ClientServerTest : TestBase

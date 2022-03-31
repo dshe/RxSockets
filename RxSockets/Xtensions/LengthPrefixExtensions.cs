@@ -23,7 +23,7 @@ public static partial class Xtensions
     /////////////////////////////////////////////////////////////////////
 
     /// <summary>
-    /// Transform a sequence of bytes which is preceded by length prefix into a sequence of byte arrays.
+    /// Transform a sequence of bytes with a length prefix into a sequence of byte arrays.
     /// </summary>
     public static IEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IEnumerable<byte> source)
     {
@@ -51,7 +51,7 @@ public static partial class Xtensions
     }
 
     /// <summary>
-    /// Transform a sequence of bytes which is preceded by length prefix into a sequence of byte arrays.
+    /// Transform a sequence of bytes with a length prefix into a sequence of byte arrays.
     /// </summary>
     public static async IAsyncEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IAsyncEnumerable<byte> source)
     {
@@ -79,7 +79,7 @@ public static partial class Xtensions
     }
 
     /// <summary>
-    /// Transform a sequence of bytes which is preceded by length prefix into a sequence of byte arrays.
+    /// Transform a sequence of bytes with a length prefix into a sequence of byte arrays.
     /// </summary>
     public static IObservable<byte[]> ToArraysFromBytesWithLengthPrefix(this IObservable<byte> source)
     {
