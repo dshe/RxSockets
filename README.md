@@ -63,11 +63,8 @@ interface IRxSocketClient : IAsyncDisposable
 }
 ```
 ```csharp
-// Find the address of the server.
-IPEndPoint ipEndPoint = server.IPEndPoint;
-
-// Create a client by connecting to the server.
-IRxSocketClient client = await ipEndPoint.CreateRxSocketClientAsync();
+// Create a client connected to the IPEndPoint of the server.
+IRxSocketClient client = await server.IPEndPoint.CreateRxSocketClientAsync();
 
 // Send the message "Hello!" to the server,
 // which the server will then echo back to the client.
@@ -93,4 +90,12 @@ byte[] ToByteArray(this IEnumerable<string> source)
 IEnumerable<string>      ToStrings(this IEnumerable<byte> source)
 IAsyncEnumerable<string> ToStrings(this IAsyncEnumerable<byte> source)
 IObservable<string>      ToStrings(this IObservable<byte> source)
+```
+To communicate using byte arrays with a 4 byte BigEndian integer length prefix, the following extension methods are provided:
+```csharp
+byte[] ToByteArrayWithLengthPrefix(this byte[] source)
+
+IEnumerable<byte[]>      ToArraysFromBytesWithLengthPrefix(this IEnumerable<byte> source)
+IAsyncEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IAsyncEnumerable<byte> source)
+IObservable<byte[]>      ToArraysFromBytesWithLengthPrefix(this IObservable<byte> source)
 ```
