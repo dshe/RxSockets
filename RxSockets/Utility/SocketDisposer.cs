@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 namespace RxSockets;
 
-internal class SocketDisposer : IAsyncDisposable
+internal sealed class SocketDisposer : IAsyncDisposable
 {
     private readonly ILogger Logger;
     private readonly Socket Socket;

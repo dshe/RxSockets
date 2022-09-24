@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 namespace RxSockets;
 
-internal class SocketReceiver
+internal sealed class SocketReceiver
 {
     public const int BufferLength = 0x1000;
     private readonly Memory<byte> Memory = new(new byte[BufferLength]);

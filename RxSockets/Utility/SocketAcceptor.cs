@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 namespace RxSockets;
 
-class SocketAcceptor : IAsyncDisposable
+internal sealed class SocketAcceptor : IAsyncDisposable
 {
     private readonly ILogger Logger;
     private readonly Socket Socket;
