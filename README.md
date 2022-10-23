@@ -65,7 +65,7 @@ interface IRxSocketClient : IAsyncDisposable
 ```
 ```csharp
 // Create a client connected to the IPEndPoint of the server.
-IRxSocketClient client = await server.IPEndPoint.CreateRxSocketClientAsync();
+IRxSocketClient client = await server.LocalIPEndPoint.CreateRxSocketClientAsync();
 
 // Send the message "Hello!" to the server,
 // which the server will then echo back to the client.
