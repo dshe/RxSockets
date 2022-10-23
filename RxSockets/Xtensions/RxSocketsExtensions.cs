@@ -9,18 +9,6 @@ namespace RxSockets;
 public static partial class Xtensions
 {
     /// <summary>
-    /// Create an RxSocketServer on IPEndPoint.
-    /// </summary>
-    public static IRxSocketServer CreateRxSocketServer(this IPEndPoint ipEndPoint, int backLog = 10) =>
-        RxSocketServer.Create(ipEndPoint, NullLogger.Instance, backLog);
-
-    /// <summary>
-    /// Create an RxSocketServer on IPEndPoint.
-    /// </summary>
-    public static IRxSocketServer CreateRxSocketServer(this IPEndPoint ipEndPoint, ILogger logger, int backLog = 10) =>
-        RxSocketServer.Create(ipEndPoint, logger, backLog);
-
-    /// <summary>
     ///  Create a connected RxSocketClient.
     /// </summary>
     public static async Task<IRxSocketClient> CreateRxSocketClientAsync(this IPEndPoint endPoint, CancellationToken ct = default) =>
@@ -51,11 +39,24 @@ public static partial class Xtensions
             if (e is SocketException se)
             {
                 string errorName = "SocketException: " + Enum.GetName(typeof(SocketError), se.ErrorCode);
-                logger.LogWarning(e, "Socket could not connect to { EndPoint}. {Message} {ErrorName}.", endPoint, e.Message, errorName);
+                logger.LogWarning(e, "Socket could not connect to {EndPoint}. {Message} {ErrorName}.", endPoint, e.Message, errorName);
             }
             else
                 logger.LogWarning(e, "Socket could not connect to {EndPoint}. {Message}", endPoint, e.Message);
             throw;
         }
     }
+
+    /// <summary>
+    /// Create an RxSocketServer on IPEndPoint.
+    /// </summary>
+    public static IRxSocketServer CreateRxSocketServer(this IPEndPoint ipEndPoint, int backLog = 10) =>
+        RxSocketServer.Create(ipEndPoint, NullLogger.Instance, backLog);
+
+    /// <summary>
+    /// Create an RxSocketServer on IPEndPoint.
+    /// </summary>
+    public static IRxSocketServer CreateRxSocketServer(this IPEndPoint ipEndPoint, ILogger logger, int backLog = 10) =>
+        RxSocketServer.Create(ipEndPoint, logger, backLog);
+
 }

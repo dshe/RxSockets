@@ -17,9 +17,9 @@ public class ClientTests : TestBase
     public async Task T00_All_Ok()
     {
         var server = RxSocketServer.Create(SocketServerLogger);
-        var client = await server.IPEndPoint.CreateRxSocketClientAsync(Logger);
 
-        //await server.AcceptObservable.FirstAsync();
+        var client = await server.LocalIPEndPoint.CreateRxSocketClientAsync(Logger);
+
         //await server.AcceptAllAsync().ToObservableFromAsyncEnumerable().FirstAsync();
         await server.AcceptAllAsync().FirstAsync();
 
@@ -47,7 +47,7 @@ public class ClientTests : TestBase
     public async Task T01_Dispose_Before_Receive()
     {
         var server = RxSocketServer.Create(SocketServerLogger);
-        var client = await server.IPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        var client = await server.LocalIPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
         await client.DisposeAsync();
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await client.ReceiveAllAsync().ToListAsync());
         await server.DisposeAsync();
@@ -58,7 +58,7 @@ public class ClientTests : TestBase
     {
         var server = RxSocketServer.Create(SocketServerLogger);
 
-        var client = await server.IPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        var client = await server.LocalIPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
         var receiveTask = client.ReceiveAllAsync().LastOrDefaultAsync();
         //await Task.Delay(100);
         await client.DisposeAsync();
@@ -74,7 +74,7 @@ public class ClientTests : TestBase
     public async Task T03_External_Dispose_Before_Receive()
     {
         var server = RxSocketServer.Create(SocketServerLogger);
-        var client = await server.IPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        var client = await server.LocalIPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
         var accept = await server.AcceptAllAsync().FirstAsync();
         await accept.DisposeAsync();
         await client.ReceiveAllAsync().LastOrDefaultAsync();
@@ -86,7 +86,7 @@ public class ClientTests : TestBase
     public async Task T04_External_Dispose_During_Receive()
     {
         var server = RxSocketServer.Create(SocketServerLogger);
-        var client = await server.IPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        var client = await server.LocalIPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
         var accept = await server.AcceptAllAsync().FirstAsync();
         var receiveTask = client.ReceiveAllAsync().FirstAsync();
         await accept.DisposeAsync();
@@ -99,8 +99,7 @@ public class ClientTests : TestBase
     public async Task T05_Dispose_Before_Send()
     {
         var server = RxSocketServer.Create(SocketServerLogger);
-        var endPoint = server.IPEndPoint;
-        var client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        var client = await server.LocalIPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
         await client.DisposeAsync();
         Assert.ThrowsAny<Exception>(() => client.Send(new byte[] { 0 }));
         await server.DisposeAsync();
@@ -110,9 +109,8 @@ public class ClientTests : TestBase
     public async Task T06_Dispose_During_Send()
     {
         var server = RxSocketServer.Create(SocketServerLogger);
-        var endPoint = server.IPEndPoint;
 
-        var client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        var client = await server.LocalIPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
         var sendTask = Task.Run(() => client.Send(new byte[100_000_000]));
         await client.DisposeAsync();
         await Assert.ThrowsAnyAsync<Exception>(async () => await sendTask);

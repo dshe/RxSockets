@@ -32,7 +32,7 @@ public static partial class Xtensions
     {
         int length = buffer.Length;
         if (length == 0 || buffer[length - 1] != 0)
-            throw new InvalidDataException("ToStringArray: no termination found.");
+            throw new InvalidDataException("ToStringArray: no termination.");
         return Encoding.UTF8.GetString(buffer, 0, length - 1).Split('\0');
     }
 }

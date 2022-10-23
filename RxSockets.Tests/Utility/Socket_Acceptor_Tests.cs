@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
-using System.Threading;
+using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -14,29 +14,26 @@ public class Socket_Acceptor_Tests : TestBase
     [Fact]
     public async Task T00_Success()
     {
-        var endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
+        var endPoint = Utilities.CreateIPEndPointOnPortZero();
         var serverSocket = Utilities.CreateSocket();
         serverSocket.Bind(endPoint);
         serverSocket.Listen(10);
+        endPoint = serverSocket.LocalEndPoint as IPEndPoint ?? throw new InvalidOperationException();
 
-        var acceptor = new SocketAcceptor(serverSocket, SocketServerLogger);
-        var ctsServer = new CancellationTokenSource();
-        var observable = acceptor.CreateAcceptObservable(ctsServer.Token);
-        var subscription = observable.Subscribe((x) =>
+        var task = Task.Run(async () => 
         {
-            Logger.LogDebug("client");
+            var acceptor = new SocketAcceptor(serverSocket, SocketServerLogger);
+            await foreach(var cli in acceptor.AcceptAllAsync(default))
+            {
+                Logger.LogDebug("client");
+            }
         });
 
-        var ctsClient = new CancellationTokenSource();
-        var client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger, ctsClient.Token);
+        var client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger, default);
         Assert.True(client.Connected);
 
         await Task.Delay(100);
-        //subscription.Dispose();
-        //Assert.False(client.Connected);
 
         await client.DisposeAsync();
     }
-
-
 }

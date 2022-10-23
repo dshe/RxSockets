@@ -16,7 +16,7 @@ public class PerformanceTest1 : TestBase
     public async Task T01_ReceiveStrings()
     {
         var server = RxSocketServer.Create();
-        var endPoint = server.IPEndPoint;
+        var endPoint = server.LocalIPEndPoint;
 
         var acceptFirstClientTask = server.AcceptAllAsync().FirstAsync();
         var client = await endPoint.CreateRxSocketClientAsync();
@@ -55,7 +55,7 @@ public class PerformanceTest2 : TestBase
     public async Task T02_ReceiveStringsFromPrefixedBytes()
     {
         var server = RxSocketServer.Create();
-        var endPoint = server.IPEndPoint;
+        var endPoint = server.LocalIPEndPoint;
         var acceptFirstClientTask = server.AcceptAllAsync().FirstAsync();
 
         var client = await endPoint.CreateRxSocketClientAsync();

@@ -17,17 +17,15 @@ public class Examples : TestBase
     [Fact]
     public async Task T00_Example()
     {
-        // Create a socket server.
+        // Create a socket server on an available port on the local host.
         var server = RxSocketServer.Create(SocketServerLogger);
-
-        // The IPEndPoint is chosen automatically.
-        var ipEndPoint = server.IPEndPoint;
+        var ipEndPoint = server.LocalIPEndPoint;
 
         // Start accepting connections from clients.
         server.AcceptAllAsync().ToObservableFromAsyncEnumerable().Subscribe(acceptClient =>
         {
-                // After the server accepts a client connection...
-                acceptClient.ReceiveAllAsync().ToStrings().ToObservable().Subscribe(onNext: message =>
+            // After the server accepts a client connection...
+            acceptClient.ReceiveAllAsync().ToStrings().ToObservable().Subscribe(onNext: message =>
             {
                     // Echo each message received back to the client.
                     acceptClient.Send(message.ToByteArray());
@@ -49,6 +47,9 @@ public class Examples : TestBase
 
         await Task.Delay(100);
 
+        var addr = ipEndPoint.Address;
+        var port = ipEndPoint.Port;
+
         // Disconnect and dispose.
         await client.DisposeAsync();
         await server.DisposeAsync();
@@ -58,7 +59,7 @@ public class Examples : TestBase
     public async Task T01_Send_And_Receive_String_Message()
     {
         var server = RxSocketServer.Create(SocketServerLogger);
-        var ipEndPoint = server.IPEndPoint;
+        var ipEndPoint = server.LocalIPEndPoint;
 
         // Start a task to allow the server to accept the next client connection.
         var acceptTask = server.AcceptAllAsync().FirstAsync();
@@ -85,7 +86,7 @@ public class Examples : TestBase
     public async Task T10_Receive_Observable()
     {
         var server = RxSocketServer.Create(SocketServerLogger);
-        var endPoint = server.IPEndPoint;
+        var endPoint = server.LocalIPEndPoint;
 
         var acceptTask = server.AcceptAllAsync().FirstAsync();
         var client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
@@ -119,7 +120,7 @@ public class Examples : TestBase
         });
 
         var server = RxSocketServer.Create(SocketServerLogger);
-        var endPoint = server.IPEndPoint;
+        var endPoint = server.LocalIPEndPoint;
 
         server.AcceptAllAsync().ToObservableFromAsyncEnumerable()
             .Subscribe(accepted => accepted.Send("Welcome!".ToByteArray()));
@@ -142,7 +143,7 @@ public class Examples : TestBase
     public async Task T30_Both()
     {
         var server = RxSocketServer.Create(SocketServerLogger);
-        var endPoint = server.IPEndPoint;
+        var endPoint = server.LocalIPEndPoint;
 
         server.AcceptAllAsync().ToObservableFromAsyncEnumerable().Subscribe(accepted =>
         {
@@ -177,7 +178,7 @@ public class Examples : TestBase
         var semaphore = new SemaphoreSlim(0, 1);
 
         var server = RxSocketServer.Create(SocketServerLogger);
-        var endPoint = server.IPEndPoint;
+        var endPoint = server.LocalIPEndPoint;
 
         IRxSocketClient? acceptClient = null;
         server.AcceptAllAsync().ToObservableFromAsyncEnumerable().Subscribe(ac =>
@@ -214,7 +215,7 @@ public class Examples : TestBase
         var semaphore = new SemaphoreSlim(0, 1);
 
         var server = RxSocketServer.Create(SocketServerLogger);
-        var endPoint = server.IPEndPoint;
+        var endPoint = server.LocalIPEndPoint;
 
         IRxSocketClient? acceptClient = null;
         server.AcceptAllAsync().ToObservableFromAsyncEnumerable().Subscribe(ac =>
@@ -242,4 +243,3 @@ public class Examples : TestBase
         await client.DisposeAsync();
     }
 }
-

@@ -3,10 +3,13 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Net;
+
 namespace RxSockets;
 
 public interface IRxSocketClient : IAsyncDisposable
 {
+    IPEndPoint RemoteIPEndPoint { get; }
     bool Connected { get; }
     int Send(ReadOnlySpan<byte> buffer);
     IAsyncEnumerable<byte> ReceiveAllAsync();
@@ -20,6 +23,9 @@ public sealed class RxSocketClient : IRxSocketClient
     private readonly Socket Socket;
     private readonly SocketReceiver Receiver;
     private readonly SocketDisposer Disposer;
+    public IPEndPoint RemoteIPEndPoint => Socket.RemoteEndPoint as IPEndPoint ?? throw new InvalidOperationException();
+    public bool Connected =>
+        !((Socket.Poll(1000, SelectMode.SelectRead) && (Socket.Available == 0)) || !Socket.Connected);
 
     internal RxSocketClient(Socket socket, ILogger logger, string name)
     {
@@ -27,11 +33,8 @@ public sealed class RxSocketClient : IRxSocketClient
         Logger = logger;
         Name = name;
         Receiver = new SocketReceiver(socket, Logger, Name);
-        Disposer = new SocketDisposer(Socket, ReceiveCts, Logger, Name);
+        Disposer = new SocketDisposer(socket, ReceiveCts, Logger, Name);
     }
-
-    public bool Connected =>
-        !((Socket.Poll(1000, SelectMode.SelectRead) && (Socket.Available == 0)) || !Socket.Connected);
 
     public int Send(ReadOnlySpan<byte> buffer)
     {

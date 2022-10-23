@@ -30,7 +30,9 @@ public static partial class Xtensions
                     }
                     observer.OnCompleted();
                 }
+#pragma warning disable CA1031
                 catch (Exception e)
+#pragma warning restore CA1031
                 {
                     if (!ct.IsCancellationRequested)
                         observer.OnError(e);
@@ -38,72 +40,4 @@ public static partial class Xtensions
             });
         });
     }
-
-    /*
-    /// <summary>
-    /// Rx\reactive-main\Ix.NET\Source\System.Linq.Async\System\Linq\Operators\ToObservable.cs
-    /// </summary>
-    public static IObservable<TSource> ToObservable<TSource>(this IAsyncEnumerable<TSource> source)
-    {
-        if (source is null)
-            throw new ArgumentNullException(nameof(source));
-        return new ToObservableObservable<TSource>(source);
-    }
-
-    private sealed class ToObservableObservable<T> : IObservable<T>
-    {
-        private readonly IAsyncEnumerable<T> _source;
-        public ToObservableObservable(IAsyncEnumerable<T> source) => _source = source;
-
-        public IDisposable Subscribe(IObserver<T> observer)
-        {
-            var ctd = new CancellationTokenDisposable();
-
-            async void Core()
-            {
-                await using var e = _source.GetAsyncEnumerator(ctd.Token); // takes cancellation token
-                do
-                {
-                    bool hasNext;
-                    var value = default(T)!; // note!
-                    try
-                    {
-                        // note that this does not take cancellation token here
-                        hasNext = await e.MoveNextAsync().ConfigureAwait(false);
-                        if (hasNext)
-                            value = e.Current;
-                    }
-                    catch (Exception ex)
-                    {
-                        if (!ctd.Token.IsCancellationRequested)
-                            observer.OnError(ex);
-                        return;
-                    }
-                    if (!hasNext)
-                    {
-                        observer.OnCompleted();
-                        return;
-                    }
-                    observer.OnNext(value);
-                }
-                while (!ctd.Token.IsCancellationRequested);
-            }
-
-            Core(); // Fire and forget ?!
-
-            return ctd;
-        }
-    }
-
-    internal sealed class CancellationTokenDisposable : IDisposable
-    {
-        private readonly CancellationTokenSource _cts = new ();
-        public CancellationToken Token => _cts.Token;
-        public void Dispose()
-        {
-            if (!_cts.IsCancellationRequested)
-                _cts.Cancel();
-        }
-    }
-    */
 }

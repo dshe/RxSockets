@@ -89,33 +89,4 @@ public class Socket_Disposer_Tests : TestBase
         await disposer.DisposeAsync(); // dispose disposed
         Assert.True(disposer.DisposeRequested);
     }
-
-    /*
-    [Fact]
-    public async Task T06_Disposal_Temp()
-    {
-        var ipEndPoint = Utilities.GetEndPointOnRandomLoopbackPort();
-        var serverSocket = Utilities.CreateSocket();
-        serverSocket.Bind(ipEndPoint);
-        serverSocket.Listen(10);
-
-        var client = await ipEndPoint.CreateRxSocketClientAsync();
-
-        var observable = Observable.Create<byte>(async observer =>
-        {
-            await foreach (var xx in client.ReceiveAllAsync())
-                observer.OnNext(xx);
-
-            return Disposable.Create(() =>
-            {
-                client.Send(new byte[] { 1, 2, 3 });
-            });
-
-        });
-
-        await observable;
-
-        await client.DisposeAsync();
-    }
-    */
 }

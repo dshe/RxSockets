@@ -9,23 +9,24 @@ namespace RxSockets;
 
 public interface IRxSocketServer : IAsyncDisposable
 {
-    IPEndPoint IPEndPoint { get; }
+    IPEndPoint LocalIPEndPoint { get; }
     IAsyncEnumerable<IRxSocketClient> AcceptAllAsync();
 }
 
 public sealed class RxSocketServer : IRxSocketServer
 {
     private readonly CancellationTokenSource Cts = new();
+    private readonly Socket Socket;
     private readonly SocketAcceptor Acceptor;
     private readonly SocketDisposer Disposer;
-    public IPEndPoint IPEndPoint { get; }
+    public IPEndPoint LocalIPEndPoint => Socket.LocalEndPoint as IPEndPoint ?? throw new InvalidOperationException();
 
     private RxSocketServer(Socket socket, ILogger logger)
     {
-        IPEndPoint = (IPEndPoint)(socket.LocalEndPoint ?? throw new ArgumentException("LocalEndPoint"));
+        Socket = socket;
         Acceptor = new SocketAcceptor(socket, logger);
         Disposer = new SocketDisposer(socket, Cts, logger, "Server", Acceptor);
-        logger.LogDebug("Server created on {IPEndPoint}.", IPEndPoint);
+        logger.LogDebug("Server on {LocalIPEndPoint} created.", LocalIPEndPoint);
     }
 
     public IAsyncEnumerable<IRxSocketClient> AcceptAllAsync() => Acceptor.AcceptAllAsync(Cts.Token);
@@ -66,11 +67,11 @@ public sealed class RxSocketServer : IRxSocketServer
     /// Create an RxSocketServer on an available port on the localhost.
     /// </summary>
     public static IRxSocketServer Create(int backLog = 10) =>
-        Create(new IPEndPoint(IPAddress.IPv6Loopback, 0), NullLogger.Instance, backLog);
+        Create(Utilities.CreateIPEndPointOnPortZero(), NullLogger.Instance, backLog);
 
     /// <summary>
     /// Create an RxSocketServer on an available port on the localhost.
     /// </summary>
     public static IRxSocketServer Create(ILogger logger, int backLog = 10) =>
-        Create(new IPEndPoint(IPAddress.IPv6Loopback, 0), logger, backLog);
+        Create(Utilities.CreateIPEndPointOnPortZero(), logger, backLog);
 }

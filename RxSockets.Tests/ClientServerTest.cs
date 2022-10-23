@@ -15,7 +15,6 @@ public class ClientServerTest : TestBase
     public async Task T01_Handshake()
     {
         var server = RxSocketServer.Create(SocketServerLogger);
-        var endPoint = server.IPEndPoint;
 
         server.AcceptAllAsync().ToObservableFromAsyncEnumerable().Subscribe(async acceptClient =>
         {
@@ -32,7 +31,7 @@ public class ClientServerTest : TestBase
             acceptClient.Send(new[] { "Hello3FromServer" }.ToByteArray().ToByteArrayWithLengthPrefix());
         });
 
-        var client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        var client = await server.LocalIPEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
 
         // Send the first message without prefix.
         client.Send("Hello1FromClient".ToByteArray());

@@ -20,7 +20,7 @@ internal sealed class SocketAcceptor : IAsyncDisposable
         Logger = logger;
     }
 
-    internal async IAsyncEnumerable<IRxSocketClient> AcceptAllAsync([EnumeratorCancellation] CancellationToken ct = default)
+    internal async IAsyncEnumerable<IRxSocketClient> AcceptAllAsync([EnumeratorCancellation] CancellationToken ct)
     {
         while (!ct.IsCancellationRequested)
         {
@@ -43,43 +43,6 @@ internal sealed class SocketAcceptor : IAsyncDisposable
             AcceptedClients.Add(client);
             yield return client;
         }
-    }
-
-    internal IObservable<IRxSocketClient> CreateAcceptObservable(CancellationToken ct1)
-    {
-        return Observable.Create<IRxSocketClient>(async (observer, ct2) =>
-        {
-            CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct1, ct2);
-            CancellationToken ct = cts.Token;
-            try
-            {
-                while (true)
-                {
-                    cts.Token.ThrowIfCancellationRequested();
-                    Socket acceptSocket = await Socket.AcceptAsync(ct).ConfigureAwait(false);
-
-                    Logger.LogDebug("AcceptClient on {LocalEndPoint} connected to {RemoteEndPoint}.", Socket.LocalEndPoint, acceptSocket.RemoteEndPoint);
-
-                    RxSocketClient client = new(acceptSocket, Logger, "AcceptClient");
-                    AcceptedClients.Add(client);
-                    observer.OnNext(client);
-                }
-            }
-            catch (Exception e)
-            {
-                if (ct.IsCancellationRequested)
-                    observer.OnCompleted();
-                else
-                {
-                    Logger.LogError(e, "SocketAcceptor on {LocalEndPoint}. {Message}", Socket.LocalEndPoint, e.Message);
-                    observer.OnError(e);
-                }
-            }
-            finally
-            {
-                cts.Dispose();
-            }
-        });
     }
 
     public async ValueTask DisposeAsync()

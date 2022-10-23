@@ -55,7 +55,9 @@ internal sealed class SocketDisposer : IAsyncDisposable
             if (Disposable is not null) // SocketAcceptor
                 await Disposable.DisposeAsync().ConfigureAwait(false);
         }
+#pragma warning disable CA1031
         catch (Exception e)
+#pragma warning restore CA1031
         {
             Logger.LogWarning(e, "DisposeAsync.");
         }

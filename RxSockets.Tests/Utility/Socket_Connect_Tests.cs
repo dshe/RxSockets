@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,12 +15,13 @@ public class SocketConnectTests : TestBase
     [Fact]
     public async Task T00_Success()
     {
-        var endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
+        var endPoint = Utilities.CreateIPEndPointOnPortZero();
         var serverSocket = Utilities.CreateSocket();
         serverSocket.Bind(endPoint);
         serverSocket.Listen(10);
+        var actualServerIPEndpoint = serverSocket.LocalEndPoint as IPEndPoint ?? throw new InvalidOperationException();
 
-        var client = await endPoint.CreateRxSocketClientAsync(Logger);
+        var client = await actualServerIPEndpoint.CreateRxSocketClientAsync(Logger);
         Assert.True(client.Connected);
 
         await client.DisposeAsync();
