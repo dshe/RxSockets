@@ -26,7 +26,7 @@ using RxSockets;
 ```csharp
 interface IRxSocketServer : IAsyncDisposable
 {
-    IPEndPoint IPEndPoint { get; }
+    IPEndPoint LocalIPEndPoint { get; }
     IAsyncEnumerable<IRxSocketClient> AcceptAllAsync();
 }
 ```
@@ -48,7 +48,7 @@ server
             .ToStrings()
             .Subscribe(onNext: message =>
             {
-                // echo each message received back to the client.
+                // Echo each message received back to the client.
                 acceptClient.Send(message.ToByteArray());
             });
     });
@@ -57,6 +57,7 @@ server
 ```csharp
 interface IRxSocketClient : IAsyncDisposable
 {
+    IPEndPoint RemoteIPEndPoint { get; }
     bool Connected { get; }
     int Send(ReadOnlySpan<byte> buffer);
     IAsyncEnumerable<byte> ReceiveAllAsync();
