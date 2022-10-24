@@ -64,7 +64,7 @@ interface IRxSocketClient : IAsyncDisposable
 }
 ```
 ```csharp
-// Create a client connected to the IPEndPoint of the server.
+// Create a client connected to IPEndPoint of the server.
 IRxSocketClient client = await server.LocalIPEndPoint.CreateRxSocketClientAsync();
 
 // Send the message "Hello!" to the server,
@@ -79,7 +79,10 @@ await client.DisposeAsync();
 await server.DisposeAsync();
 ```
 ### notes
-The extension method ```ToObservableFromAsyncEnumerable()``` may be used to create observables from the async enumerables ```IRxSocketClient.ReceiveAllAsync()``` and ```IRxSocketServer.AcceptAllAsync()```.
+```csharp
+IObservable<T> ToObservableFromAsyncEnumerable<T>(this IAsyncEnumerable<T> source)
+```
+The extension method ```ToObservableFromAsyncEnumerable()``` may be used to create observables from the async enumerables returned by ```IRxSocketClient.ReceiveAllAsync()``` and ```IRxSocketServer.AcceptAllAsync()```.
 
 ```Observable.Publish()[.RefCount() | .AutoConnect()]``` may be used to support multiple simultaneous observers.
 
