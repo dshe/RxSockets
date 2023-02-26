@@ -1,13 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Reactive.Linq;
-using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
-using Xunit.Abstractions;
 using System.Reactive.Concurrency;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RxSockets.Tests;
 
@@ -37,10 +33,10 @@ public class ToObservableFromAsyncEnumerableTest : TestBase
     {
         Logger.LogInformation("start");
 
-        var observable = GetSource().ToObservableFromAsyncEnumerable(TaskPoolScheduler.Default);
+        IObservable<string> observable = GetSource().ToObservableFromAsyncEnumerable(TaskPoolScheduler.Default);
         //var observable = GetSource().ToObservable();
 
-        var subscription = observable.Subscribe(x =>
+        IDisposable subscription = observable.Subscribe(x =>
         {
             Logger.LogInformation(x);
         });

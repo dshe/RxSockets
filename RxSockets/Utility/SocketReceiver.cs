@@ -1,21 +1,17 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Net.Sockets;
-using System.Runtime.CompilerServices;
-using System.Threading;
+﻿using System.Runtime.CompilerServices;
+
 namespace RxSockets;
 
 internal sealed class SocketReceiver
 {
-    public const int BufferLength = 0x1000;
-    private readonly Memory<byte> Memory = new(new byte[BufferLength]);
+    private readonly Memory<byte> Memory = new(new byte[0x1000]);
     private readonly ILogger Logger;
     private readonly Socket Socket;
     private readonly string Name;
     private int Position;
     private int BytesReceived;
 
-    internal SocketReceiver(Socket socket, ILogger logger, string name)
+    internal SocketReceiver(Socket socket, string name, ILogger logger)
     {
         Socket = socket;
         Name = name;

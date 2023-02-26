@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Reactive.Linq;
 using System.Text;
+
 namespace RxSockets;
 
 public static partial class Xtensions
@@ -28,7 +27,7 @@ public static partial class Xtensions
     /// <summary>
     /// Transform a byte array into an array of strings.
     /// </summary>
-    internal static string[] ToStringArray(this byte[] buffer)
+    private static string[] ToStringArray(this byte[] buffer)
     {
         int length = buffer.Length;
         if (length == 0 || buffer[length - 1] != 0)

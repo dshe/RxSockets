@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Net;
+﻿using System.IO;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
+
 namespace RxSockets;
 
 public static partial class Xtensions
@@ -102,7 +100,7 @@ public static partial class Xtensions
                     else if (length == ms.Length)
                     {
                         observer.OnNext(ms.ToArray()); // array copy
-                            length = -1;
+                        length = -1;
                         ms.SetLength(0);
                     }
                 },

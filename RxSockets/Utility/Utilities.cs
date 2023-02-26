@@ -1,10 +1,8 @@
-﻿using System.Net;
-using System.Net.Sockets;
-namespace RxSockets;
+﻿namespace RxSockets;
 
 internal static class Utilities
 {
-    internal static IPEndPoint CreateIPEndPointOnPortZero() => new(IPAddress.IPv6Loopback, 0);
+    internal static IPEndPoint CreateIPEndPointOnPort(int port) => new(IPAddress.Loopback, port);
 
     internal static Socket CreateSocket() => new(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
 }

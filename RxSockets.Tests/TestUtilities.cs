@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net;
-using System.Net.NetworkInformation;
+﻿using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 
 namespace RxSockets.Tests;
@@ -12,7 +9,7 @@ public static class TestUtilities
     private static readonly object Locker = new();
 
     public static IPEndPoint GetEndPointOnRandomLoopbackPort() =>
-        new(IPAddress.IPv6Loopback, GetRandomAvailablePort());
+        new(IPAddress.Loopback, GetRandomAvailablePort());
 
     private static int GetRandomAvailablePort()
     {

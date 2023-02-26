@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Concurrency;
+﻿using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
+
 namespace RxSockets;
 
 public static partial class Xtensions
@@ -10,19 +8,21 @@ public static partial class Xtensions
     /// <summary>
     /// Converts an async enumerable sequence into an observable sequence.
     /// </summary>
-    public static IObservable<T> ToObservableFromAsyncEnumerable<T>(this IAsyncEnumerable<T> source, IScheduler? scheduler = null)
+    public static IObservable<T> ToObservableFromAsyncEnumerable<T>(this IAsyncEnumerable<T> source) =>
+        ToObservableFromAsyncEnumerable(source, Scheduler.Default);
+
+    public static IObservable<T> ToObservableFromAsyncEnumerable<T>(this IAsyncEnumerable<T> source, IScheduler scheduler)
     {
         ArgumentNullException.ThrowIfNull(source);
-
-        scheduler ??= Scheduler.Default;
+        ArgumentNullException.ThrowIfNull(scheduler);
 
         return Observable.Create<T>(observer =>
         {
-            return scheduler.ScheduleAsync(async (_, ct) =>
+            return scheduler.ScheduleAsync(source, async (sch, src, ct) =>
             {
                 try
                 {
-                    await foreach (T item in source.WithCancellation(ct).ConfigureAwait(false))
+                    await foreach (T item in src.WithCancellation(ct).ConfigureAwait(false))
                     {
                         observer.OnNext(item);
                         if (ct.IsCancellationRequested)
@@ -34,8 +34,9 @@ public static partial class Xtensions
                 catch (Exception e)
 #pragma warning restore CA1031
                 {
-                    if (!ct.IsCancellationRequested)
-                        observer.OnError(e);
+                    if (ct.IsCancellationRequested)
+                        return;
+                    observer.OnError(e);
                 }
             });
         });

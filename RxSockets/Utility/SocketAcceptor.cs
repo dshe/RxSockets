@@ -1,11 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using System.Runtime.CompilerServices;
+
 namespace RxSockets;
 
 internal sealed class SocketAcceptor : IAsyncDisposable
@@ -33,11 +27,11 @@ internal sealed class SocketAcceptor : IAsyncDisposable
             {
                 if (ct.IsCancellationRequested)
                     yield break;
-                Logger.LogError(e, "SocketAcceptor on {LocalEndPoint}. {Message}", Socket.LocalEndPoint, e.Message);
+                Logger.LogError("SocketAcceptor on {LocalEndPoint}. {Message}", Socket.LocalEndPoint, e.Message);
                 throw; // ??
             }
 
-            Logger.LogDebug("AcceptClient on {LocalEndPoint} connected to {RemoteEndPoint}.", Socket.LocalEndPoint, acceptSocket.RemoteEndPoint);
+            Logger.LogInformation("AcceptClient on {LocalEndPoint} connected to {RemoteEndPoint}.", Socket.LocalEndPoint, acceptSocket.RemoteEndPoint);
 
             RxSocketClient client = new(acceptSocket, Logger, "AcceptClient");
             AcceptedClients.Add(client);

@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using Xunit.Abstractions;
 
 namespace RxSockets.Tests;
 
@@ -12,8 +10,13 @@ public abstract class TestBase
     protected TestBase(ITestOutputHelper output)
     {
         Write = output.WriteLine;
-        var loggerFactory = new LoggerFactory().AddMXLogger(Write);
+
+        ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder
+            .AddMXLogger(Write)
+            .SetMinimumLevel(LogLevel.Debug));
+
         Logger = loggerFactory.CreateLogger("Test");
+
         SocketServerLogger = loggerFactory.CreateLogger("RxSocketServer");
         SocketClientLogger = loggerFactory.CreateLogger("RxSocketClient");
     }

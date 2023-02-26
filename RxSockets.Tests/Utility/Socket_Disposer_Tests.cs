@@ -1,9 +1,5 @@
-﻿using System.Linq;
-using System.Reactive.Linq;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace RxSockets.Tests;
 
@@ -15,8 +11,8 @@ public class Socket_Disposer_Tests : TestBase
     [Fact]
     public async Task T01_Dispose_Not_Connected_Socket()
     {
-        var socket = Utilities.CreateSocket();
-        var disposer = new SocketDisposer(socket, Cts, Logger, "?");
+        Socket socket = Utilities.CreateSocket();
+        SocketDisposer disposer = new(socket, "?", Cts, Logger);
         await disposer.DisposeAsync();
         Assert.True(disposer.DisposeRequested);
         Assert.False(socket.Connected);
@@ -25,15 +21,15 @@ public class Socket_Disposer_Tests : TestBase
     [Fact]
     public async Task T02_Dispose_Connected_Socket()
     {
-        var ipEndPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
-        var serverSocket = Utilities.CreateSocket();
-        var serverDisposer = new SocketDisposer(serverSocket, Cts, Logger, "?");
-        serverSocket.Bind(ipEndPoint);
+        EndPoint endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
+        Socket serverSocket = Utilities.CreateSocket();
+        SocketDisposer serverDisposer = new(serverSocket, "?", Cts, Logger);
+        serverSocket.Bind(endPoint);
         serverSocket.Listen(10);
 
-        var clientSocket = Utilities.CreateSocket();
-        var clientDisposer = new SocketDisposer(clientSocket, Cts, Logger, "?");
-        clientSocket.Connect(ipEndPoint);
+        Socket clientSocket = Utilities.CreateSocket();
+        SocketDisposer clientDisposer = new(clientSocket, "?", Cts, Logger);
+        await clientSocket.ConnectAsync(endPoint);
         Assert.False(clientDisposer.DisposeRequested);
         Assert.True(clientSocket.Connected);
 
@@ -54,18 +50,18 @@ public class Socket_Disposer_Tests : TestBase
     [Fact]
     public async Task T04_Dispose_Multi()
     {
-        var ipEndPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
-        var serverSocket = Utilities.CreateSocket();
-        serverSocket.Bind(ipEndPoint);
+        EndPoint endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
+        Socket serverSocket = Utilities.CreateSocket();
+        serverSocket.Bind(endPoint);
         serverSocket.Listen(10);
 
-        var socket = Utilities.CreateSocket();
-        var disposer = new SocketDisposer(socket, Cts, Logger, "?");
-        socket.Connect(ipEndPoint);
+        Socket socket = Utilities.CreateSocket();
+        SocketDisposer disposer = new(socket, "?", Cts, Logger);
+        await socket.ConnectAsync(endPoint);
         Assert.True(socket.Connected);
         Assert.False(disposer.DisposeRequested);
 
-        var disposeTasks = Enumerable.Range(1, 8).Select((_) => disposer.DisposeAsync().AsTask()).ToList();
+        System.Collections.Generic.List<Task> disposeTasks = Enumerable.Range(1, 8).Select((_) => disposer.DisposeAsync().AsTask()).ToList();
         await Task.WhenAll(disposeTasks);
         Assert.True(disposer.DisposeRequested);
     }
@@ -73,16 +69,16 @@ public class Socket_Disposer_Tests : TestBase
     [Fact]
     public async Task T05_Dispose_Disposed_Socket()
     {
-        var ipEndPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
-        var serverSocket = Utilities.CreateSocket();
-        serverSocket.Bind(ipEndPoint);
+        EndPoint endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
+        Socket serverSocket = Utilities.CreateSocket();
+        serverSocket.Bind(endPoint);
         serverSocket.Listen(10);
 
-        var clientSocket = Utilities.CreateSocket();
-        var disposer = new SocketDisposer(clientSocket, Cts, Logger, "?");
+        Socket clientSocket = Utilities.CreateSocket();
+        SocketDisposer disposer = new(clientSocket, "?", Cts, Logger);
         Assert.False(disposer.DisposeRequested);
 
-        clientSocket.Connect(ipEndPoint);
+        await clientSocket.ConnectAsync(endPoint);
         Assert.True(clientSocket.Connected);
 
         clientSocket.Dispose();

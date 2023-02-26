@@ -1,14 +1,8 @@
-﻿using System;
-using System.Linq;
-using System.Net.Sockets;
-using System.Threading.Tasks;
-using Xunit;
-using Xunit.Abstractions;
-using System.Net;
+﻿using System.Threading.Tasks;
 
 namespace RxSockets.Tests;
 
-public class Socket_Recieve_Tests : TestBase, IDisposable
+public sealed class Socket_Recieve_Tests : TestBase, IDisposable
 {
     private readonly Socket ServerSocket = Utilities.CreateSocket();
     private readonly Socket Socket = Utilities.CreateSocket();
@@ -22,14 +16,15 @@ public class Socket_Recieve_Tests : TestBase, IDisposable
 
     [Fact]
     public void T01_Disconnect()
-    {
-        var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
-        ServerSocket.Bind(endPoint);
+    {   
+        IPEndPoint ipEndPoint = new(IPAddress.Loopback, 0);
+        ServerSocket.Bind(ipEndPoint);
         ServerSocket.Listen(10);
-        endPoint = (IPEndPoint)(ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint"));
+
+        EndPoint endPoint = ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint");
         Socket.Connect(endPoint);
 
-        var accepted = ServerSocket.Accept();
+        Socket accepted = ServerSocket.Accept();
         accepted.Disconnect(false);
 
         byte[] buffer = new byte[10];
@@ -41,41 +36,43 @@ public class Socket_Recieve_Tests : TestBase, IDisposable
     [Fact]
     public async Task T02_Disconnect_ReceiveBytesAsync()
     {
-        var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
-        ServerSocket.Bind(endPoint);
+        IPEndPoint ipEndPoint = new(IPAddress.Loopback, 0);
+        ServerSocket.Bind(ipEndPoint);
         ServerSocket.Listen(10);
-        endPoint = (IPEndPoint)(ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint"));
-        Socket.Connect(endPoint);
 
-        var accepted = ServerSocket.Accept();
-        accepted.Disconnect(false);
+        EndPoint endPoint = ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint");
+        await Socket.ConnectAsync(endPoint);
 
-        var reader = new SocketReceiver(Socket, Logger, "?");
+        Socket accepted = await ServerSocket.AcceptAsync();
+        await accepted.DisconnectAsync(false);
+
+        SocketReceiver reader = new(Socket, "?", Logger);
 
         // after the remote socket disconnects, reader.ReceiveByteAsync() returns nothing
-        var any = await reader.ReceiveAllAsync(default).AnyAsync();
+        bool any = await reader.ReceiveAllAsync(default).AnyAsync();
         Assert.False(any);
     }
 
     [Fact]
     public async Task T03_Disconnect_SocketReceiver()
     {
-        var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
-        ServerSocket.Bind(endPoint);
+        IPEndPoint ipEndPoint = new(IPAddress.Loopback, 0);
+        ServerSocket.Bind(ipEndPoint);
         ServerSocket.Listen(10);
-        endPoint = (IPEndPoint)(ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint"));
-        Socket.Connect(endPoint);
-        var accepted = ServerSocket.Accept();
 
-        var reader = new SocketReceiver(Socket, Logger, "?");
+        EndPoint endPoint = ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint");
+        await Socket.ConnectAsync(endPoint);
+        Socket accepted = await ServerSocket.AcceptAsync();
+
+        SocketReceiver reader = new(Socket, "?", Logger);
         //var observable = reader.ReceiveObservable;
-        var xxx = reader.ReceiveAllAsync(default);
+        System.Collections.Generic.IAsyncEnumerable<byte> xxx = reader.ReceiveAllAsync(default);
 
         accepted.Close();
 
         // after the remote socket disconnects, the observable completes
         //var result = await observable.SingleOrDefaultAsync();
-        var result = await xxx.SingleOrDefaultAsync();
+        byte result = await xxx.SingleOrDefaultAsync();
 
         Assert.Equal(0, result); // default
     }
@@ -83,12 +80,13 @@ public class Socket_Recieve_Tests : TestBase, IDisposable
     [Fact]
     public async Task T04_Disconnect_And_Send()
     {
-        var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
-        ServerSocket.Bind(endPoint);
+        IPEndPoint ipEndPoint = new(IPAddress.Loopback, 0);
+        ServerSocket.Bind(ipEndPoint);
         ServerSocket.Listen(10);
-        endPoint = (IPEndPoint)(ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint"));
-        Socket.Connect(endPoint);
-        var accepted = ServerSocket.Accept();
+
+        EndPoint endPoint = ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint");
+        await Socket.ConnectAsync(endPoint);
+        Socket accepted = await ServerSocket.AcceptAsync();
         Assert.True(Socket.Connected);
         Assert.True(accepted.Connected);
 
@@ -105,19 +103,19 @@ public class Socket_Recieve_Tests : TestBase, IDisposable
     [Fact]
     public async Task T05_Receive()
     {
-        var endPoint = new IPEndPoint(IPAddress.IPv6Loopback, 0);
-        ServerSocket.Bind(endPoint);
+        IPEndPoint ipEndPoint = new(IPAddress.Loopback, 0);
+        ServerSocket.Bind(ipEndPoint);
         ServerSocket.Listen(10);
-        endPoint = (IPEndPoint)(ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint"));
-        Socket.Connect(endPoint);
-        var accepted = ServerSocket.Accept();
+
+        EndPoint endPoint = ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint");
+        await Socket.ConnectAsync(endPoint);
+        Socket accepted = await ServerSocket.AcceptAsync();
         accepted.Send(new byte[] { 1 });
 
-        var reader = new SocketReceiver(Socket, Logger, "?");
-        var xxx = reader.ReceiveAllAsync(default);
-        var result = await xxx.FirstAsync();
+        SocketReceiver reader = new(Socket, "?", Logger);
+        System.Collections.Generic.IAsyncEnumerable<byte> xxx = reader.ReceiveAllAsync(default);
+        byte result = await xxx.FirstAsync();
         Assert.Equal(1, result);
         accepted.Close();
     }
-
 }

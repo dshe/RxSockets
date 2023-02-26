@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using Xunit;
+﻿using System.Threading.Tasks;
 
 namespace RxSockets.Tests;
 
@@ -14,11 +10,11 @@ public class SimpleExample
         // Create a server on the local machine using a random available port.
         IRxSocketServer server = RxSocketServer.Create();
 
-        Task task = Task.Run(async() =>
+        Task task = Task.Run(async () =>
         {
-            await foreach (IRxSocketClient acceptClient in server.AcceptAllAsync())
+            await foreach (IRxSocketClient acceptClient in server.AcceptAllAsync)
             {
-                await foreach (string msg in acceptClient.ReceiveAllAsync().ToStrings())
+                await foreach (string msg in acceptClient.ReceiveAllAsync.ToStrings())
                 {
                     // Echo each message received back to the client.
                     acceptClient.Send(msg.ToByteArray());
@@ -27,13 +23,13 @@ public class SimpleExample
         });
 
         // Create a client by connecting to the server.
-        IRxSocketClient client = await server.LocalIPEndPoint.CreateRxSocketClientAsync();
+        IRxSocketClient client = await server.LocalEndPoint.CreateRxSocketClientAsync();
 
         // Send the message "Hello" to the server, which the server will then echo back to the client.
         client.Send("Hello!".ToByteArray());
 
         // Receive the message from the server.
-        string message = await client.ReceiveAllAsync().ToStrings().FirstAsync();
+        string message = await client.ReceiveAllAsync.ToStrings().FirstAsync();
         Assert.Equal("Hello!", message);
 
         await client.DisposeAsync();
@@ -43,19 +39,19 @@ public class SimpleExample
     [Fact]
     public async Task Observable_Example()
     {
-        // Create a server on the local machine using a random available port.
+        // Create a server on an available port on the local machine.
         IRxSocketServer server = RxSocketServer.Create();
 
         // Start accepting connections from clients.
         server
-            .AcceptAllAsync()
+            .AcceptAllAsync
             .ToObservableFromAsyncEnumerable()
             .Subscribe(onNext: acceptClient =>
             {
                 // After the server accepts a client connection,
                 // start receiving messages from the client and ...
                 acceptClient
-                    .ReceiveAllAsync()
+                    .ReceiveAllAsync
                     .ToObservableFromAsyncEnumerable()
                     .ToStrings()
                     .Subscribe(onNext: message =>
@@ -65,14 +61,14 @@ public class SimpleExample
                     });
             });
 
-        // Create a client by connecting to the server.
-        IRxSocketClient client = await server.LocalIPEndPoint.CreateRxSocketClientAsync();
+        // Create a client connected to the EndPoint of the server.
+        IRxSocketClient client = await server.LocalEndPoint.CreateRxSocketClientAsync();
 
         // Send the message "Hello" to the server, which the server will then echo back to the client.
         client.Send("Hello!".ToByteArray());
 
         // Receive the message from the server.
-        string message = await client.ReceiveAllAsync().ToObservableFromAsyncEnumerable().ToStrings().FirstAsync();
+        string message = await client.ReceiveAllAsync.ToObservableFromAsyncEnumerable().ToStrings().FirstAsync();
 
         Assert.Equal("Hello!", message);
 

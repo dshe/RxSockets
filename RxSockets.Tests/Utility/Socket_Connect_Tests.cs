@@ -1,10 +1,5 @@
-﻿using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace RxSockets.Tests;
 
@@ -15,13 +10,13 @@ public class SocketConnectTests : TestBase
     [Fact]
     public async Task T00_Success()
     {
-        var endPoint = Utilities.CreateIPEndPointOnPortZero();
-        var serverSocket = Utilities.CreateSocket();
+        EndPoint endPoint = Utilities.CreateIPEndPointOnPort(0);
+        Socket serverSocket = Utilities.CreateSocket();
         serverSocket.Bind(endPoint);
         serverSocket.Listen(10);
-        var actualServerIPEndpoint = serverSocket.LocalEndPoint as IPEndPoint ?? throw new InvalidOperationException();
+        EndPoint actualServerEndpoint = serverSocket.LocalEndPoint ?? throw new InvalidOperationException();
 
-        var client = await actualServerIPEndpoint.CreateRxSocketClientAsync(Logger);
+        IRxSocketClient client = await actualServerEndpoint.CreateRxSocketClientAsync(Logger);
         Assert.True(client.Connected);
 
         await client.DisposeAsync();
@@ -31,17 +26,17 @@ public class SocketConnectTests : TestBase
     [Fact]
     public async Task T01_Connection_Refused_Test()
     {
-        var endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
-        var e = await Assert.ThrowsAsync<SocketException>(async () => await endPoint.CreateRxSocketClientAsync(Logger));
+        IPEndPoint endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
+        SocketException e = await Assert.ThrowsAsync<SocketException>(async () => await endPoint.CreateRxSocketClientAsync(Logger));
         Assert.Equal((int)SocketError.ConnectionRefused, e.ErrorCode);
     }
 
     [Fact]
     public async Task T02_Timeout()
     {
-        var endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
-        var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
-        var ct = cts.Token;
+        IPEndPoint endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
+        CancellationTokenSource cts = new(TimeSpan.FromMilliseconds(1));
+        CancellationToken ct = cts.Token;
         //await Assert.ThrowsAsync<OperationCanceledException>(async () =>
         await Assert.ThrowsAnyAsync<Exception>(async () =>
            await endPoint.CreateRxSocketClientAsync(Logger, ct));
@@ -50,8 +45,8 @@ public class SocketConnectTests : TestBase
     [Fact]
     public async Task T03_Cancellation()
     {
-        var endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
-        var ct = new CancellationToken(true);
+        IPEndPoint endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
+        CancellationToken ct = new(true);
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
            await endPoint.CreateRxSocketClientAsync(Logger, ct));
     }

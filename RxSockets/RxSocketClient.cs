@@ -1,18 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Net;
-
-namespace RxSockets;
+﻿namespace RxSockets;
 
 public interface IRxSocketClient : IAsyncDisposable
 {
-    IPEndPoint RemoteIPEndPoint { get; }
+    EndPoint RemoteEndPoint { get; }
     bool Connected { get; }
     int Send(ReadOnlySpan<byte> buffer);
-    IAsyncEnumerable<byte> ReceiveAllAsync();
+    IAsyncEnumerable<byte> ReceiveAllAsync { get; }
 }
 
 public sealed class RxSocketClient : IRxSocketClient
@@ -21,30 +14,29 @@ public sealed class RxSocketClient : IRxSocketClient
     private readonly ILogger Logger;
     private readonly CancellationTokenSource ReceiveCts = new();
     private readonly Socket Socket;
-    private readonly SocketReceiver Receiver;
     private readonly SocketDisposer Disposer;
-    public IPEndPoint RemoteIPEndPoint => Socket.RemoteEndPoint as IPEndPoint ?? throw new InvalidOperationException();
+    public EndPoint RemoteEndPoint { get; }
     public bool Connected =>
-        !((Socket.Poll(1000, SelectMode.SelectRead) && (Socket.Available == 0)) || !Socket.Connected);
+        !((Socket.Poll(1000, SelectMode.SelectRead) && Socket.Available == 0) || !Socket.Connected);
+    public IAsyncEnumerable<byte> ReceiveAllAsync { get; }
 
     internal RxSocketClient(Socket socket, ILogger logger, string name)
     {
         Socket = socket;
         Logger = logger;
         Name = name;
-        Receiver = new SocketReceiver(socket, Logger, Name);
-        Disposer = new SocketDisposer(socket, ReceiveCts, Logger, Name);
+        RemoteEndPoint = Socket.RemoteEndPoint ?? throw new InvalidOperationException();
+        Disposer = new SocketDisposer(socket, Name, ReceiveCts, Logger);
+        SocketReceiver receiver = new(socket, Name, Logger);
+        ReceiveAllAsync = receiver.ReceiveAllAsync(ReceiveCts.Token);
     }
 
     public int Send(ReadOnlySpan<byte> buffer)
     {
-        int bytes = Socket.Send(buffer);
         if (Logger.IsEnabled(LogLevel.Trace))
-            Logger.LogTrace("{Name} on {LocalEndPoint} sent {Bytes} bytes to {RemoteEndPoint}.", Name, Socket.LocalEndPoint, bytes, Socket.RemoteEndPoint);
-        return bytes;
+            Logger.LogTrace("{Name} on {LocalEndPoint} sending {Bytes} bytes to {RemoteEndPoint}.", Name, Socket.LocalEndPoint, buffer.Length, Socket.RemoteEndPoint);
+        return Socket.Send(buffer);
     }
-
-    public IAsyncEnumerable<byte> ReceiveAllAsync() => Receiver.ReceiveAllAsync(ReceiveCts.Token);
 
     public async ValueTask DisposeAsync()
     {

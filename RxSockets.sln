@@ -10,7 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		appveyor.yml = appveyor.yml
 		~\notes.txt = ~\notes.txt
 		README.md = README.md
-		~\update.ps1 = ~\update.ps1
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RxSockets.Tests", "RxSockets.Tests\RxSockets.Tests.csproj", "{B84F0916-D034-4CBD-8EA3-9B934F5D398D}"

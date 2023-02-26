@@ -1,9 +1,5 @@
-﻿using System.Net;
-using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging.Abstractions;
+
 namespace RxSockets;
 
 public static partial class Xtensions
@@ -11,13 +7,13 @@ public static partial class Xtensions
     /// <summary>
     ///  Create a connected RxSocketClient.
     /// </summary>
-    public static async Task<IRxSocketClient> CreateRxSocketClientAsync(this IPEndPoint endPoint, CancellationToken ct = default) =>
+    public static async Task<IRxSocketClient> CreateRxSocketClientAsync(this EndPoint endPoint, CancellationToken ct = default) =>
             await CreateRxSocketClientAsync(endPoint, NullLogger.Instance, ct).ConfigureAwait(false);
 
     /// <summary>
     ///  Create a connected RxSocketClient.
     /// </summary>
-    public static async Task<IRxSocketClient> CreateRxSocketClientAsync(this IPEndPoint endPoint, ILogger logger, CancellationToken ct = default)
+    public static async Task<IRxSocketClient> CreateRxSocketClientAsync(this EndPoint endPoint, ILogger logger, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(endPoint);
 
@@ -25,38 +21,37 @@ public static partial class Xtensions
         return new RxSocketClient(socket, logger, "Client");
     }
 
-    private static async Task<Socket> ConnectAsync(IPEndPoint endPoint, ILogger logger, CancellationToken ct)
+    private static async Task<Socket> ConnectAsync(EndPoint endPoint, ILogger logger, CancellationToken ct)
     {
         Socket socket = Utilities.CreateSocket();
         try
         {
             await socket.ConnectAsync(endPoint, ct).ConfigureAwait(false);
-            logger.LogDebug("Client on {LocalEndPoint} connected to {EndPoint}.", socket.LocalEndPoint, endPoint);
+            logger.LogInformation("Client on {LocalEndPoint} connected to {EndPoint}.", socket.LocalEndPoint, endPoint);
             return socket;
         }
         catch (Exception e)
         {
             if (e is SocketException se)
             {
-                string errorName = "SocketException: " + Enum.GetName(typeof(SocketError), se.ErrorCode);
-                logger.LogWarning(e, "Socket could not connect to {EndPoint}. {Message} {ErrorName}.", endPoint, e.Message, errorName);
+                string errorName = $"SocketException: {Enum.GetName(typeof(SocketError), se.ErrorCode)}";
+                logger.LogWarning("Socket could not connect to {EndPoint}. {Message} {ErrorName}.", endPoint, e.Message, errorName);
             }
             else
-                logger.LogWarning(e, "Socket could not connect to {EndPoint}. {Message}", endPoint, e.Message);
+                logger.LogWarning("Socket could not connect to {EndPoint}. {Message}", endPoint, e.Message);
             throw;
         }
     }
 
     /// <summary>
-    /// Create an RxSocketServer on IPEndPoint.
+    /// Create an RxSocketServer on EndPoint.
     /// </summary>
-    public static IRxSocketServer CreateRxSocketServer(this IPEndPoint ipEndPoint, int backLog = 10) =>
-        RxSocketServer.Create(ipEndPoint, NullLogger.Instance, backLog);
+    public static IRxSocketServer CreateRxSocketServer(this EndPoint endPoint, int backLog = 10) =>
+        RxSocketServer.Create(endPoint, NullLogger.Instance, backLog);
 
     /// <summary>
-    /// Create an RxSocketServer on IPEndPoint.
+    /// Create an RxSocketServer on EndPoint.
     /// </summary>
-    public static IRxSocketServer CreateRxSocketServer(this IPEndPoint ipEndPoint, ILogger logger, int backLog = 10) =>
-        RxSocketServer.Create(ipEndPoint, logger, backLog);
-
+    public static IRxSocketServer CreateRxSocketServer(this EndPoint endPoint, ILogger logger, int backLog = 10) =>
+        RxSocketServer.Create(endPoint, logger, backLog);
 }

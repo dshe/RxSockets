@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Xunit;
 
 namespace RxSockets.Tests;
 
@@ -24,14 +20,14 @@ public class StringExtensionsTests
         await Assert.ThrowsAsync<ArgumentNullException>(async () =>
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
             await ((byte[]?)null).ToObservable().ToStrings().ToList()); // should have warning?
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning restore CS8625
 
         // no termination
         Assert.Throws<InvalidDataException>(() => new byte[] { 65 }.ToStrings().ToList());
         await Assert.ThrowsAsync<InvalidDataException>(async () =>
             await new byte[] { 65 }.ToObservable().ToStrings().ToList());
 
-        var observable = Observable.Throw<byte>(new ArithmeticException()).ToStrings();
+        IObservable<string> observable = Observable.Throw<byte>(new ArithmeticException()).ToStrings();
         await Assert.ThrowsAsync<ArithmeticException>(async () => await observable);
     }
 

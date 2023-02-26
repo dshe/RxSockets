@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Reactive.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 namespace RxSockets;
 
 public static partial class Xtensions
@@ -12,13 +10,13 @@ public static partial class Xtensions
     /// Convert a string to a byte array.
     /// </summary>
     public static byte[] ToByteArray(this string source) =>
-        Encoding.UTF8.GetBytes(source + "\0");
+        Encoding.UTF8.GetBytes(source + '\0');
 
     /// <summary>
     /// Convert a sequence of strings to a byte array.
     /// </summary>
     public static byte[] ToByteArray(this IEnumerable<string> source) =>
-        source.Select(s => s.ToByteArray()).SelectMany(x => x).ToArray();
+        source.SelectMany(s => s.ToByteArray()).ToArray();
 
     ///////////////////////////////////////////////////////////////
 

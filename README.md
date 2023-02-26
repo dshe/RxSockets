@@ -26,7 +26,7 @@ using RxSockets;
 ```csharp
 interface IRxSocketServer : IAsyncDisposable
 {
-    IPEndPoint IPEndPoint { get; }
+    EndPoint EndPoint { get; }
     IAsyncEnumerable<IRxSocketClient> AcceptAllAsync();
 }
 ```
@@ -63,8 +63,8 @@ interface IRxSocketClient : IAsyncDisposable
 }
 ```
 ```csharp
-// Create a client connected to the IPEndPoint of the server.
-IRxSocketClient client = await server.IPEndPoint.CreateRxSocketClientAsync();
+// Create a client connected to the EndPoint of the server.
+IRxSocketClient client = await server.EndPoint.CreateRxSocketClientAsync();
 
 // Send the message "Hello!" to the server,
 // which the server will then echo back to the client.
