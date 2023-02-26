@@ -1,5 +1,5 @@
-# RxSockets&nbsp;&nbsp; [![Build status](https://ci.appveyor.com/api/projects/status/rfxxbpx2agq8r93n?svg=true)](https://ci.appveyor.com/project/dshe/RxSockets) [![NuGet](https://img.shields.io/nuget/vpre/RxSockets.svg)](https://www.nuget.org/packages/RxSockets/) [![NuGet](https://img.shields.io/nuget/dt/RxSockets?color=orange)](https://www.nuget.org/packages/RxSockets/) [![License](https://img.shields.io/badge/license-Apache%202.0-7755BB.svg)](https://opensource.org/licenses/Apache-2.0)
-***Minimal Reactive Socket Implementation***
+# RxSockets&nbsp;&nbsp; [![Build status](https://ci.appveyor.com/api/projects/status/rfxxbpx2agq8r93n?svg=true)](https://ci.appveyor.com/project/dshe/RxSockets) [![NuGet](https://img.shields.io/nuget/vpre/RxSockets.svg)](https://www.nuget.org/packages/RxSockets/) [![NuGet](https://img.shields.io/nuget/dt/RxSockets?color=orange)](https://www.nuget.org/packages/RxSockets/) [![License](https://img.shields.io/badge/license-Apache%202.0-7755BB.svg)](https://opensource.org/licenses/Apache-2.0) [![Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
+***Minimal Reactive / Async Streams Socket Implementation***
 - **.NET 6.0** library
 - connect: *asynchronous*
 - send: *synchronous*
@@ -26,7 +26,7 @@ using RxSockets;
 ```csharp
 interface IRxSocketServer : IAsyncDisposable
 {
-    EndPoint EndPoint { get; }
+    IPEndPoint LocalIPEndPoint { get; }
     IAsyncEnumerable<IRxSocketClient> AcceptAllAsync();
 }
 ```
@@ -48,7 +48,7 @@ server
             .ToStrings()
             .Subscribe(onNext: message =>
             {
-                // echo each message received back to the client.
+                // Echo each message received back to the client.
                 acceptClient.Send(message.ToByteArray());
             });
     });
@@ -57,14 +57,15 @@ server
 ```csharp
 interface IRxSocketClient : IAsyncDisposable
 {
+    IPEndPoint RemoteIPEndPoint { get; }
     bool Connected { get; }
     int Send(ReadOnlySpan<byte> buffer);
     IAsyncEnumerable<byte> ReceiveAllAsync();
 }
 ```
 ```csharp
-// Create a client connected to the EndPoint of the server.
-IRxSocketClient client = await server.EndPoint.CreateRxSocketClientAsync();
+// Create a client connected to IPEndPoint of the server.
+IRxSocketClient client = await server.LocalIPEndPoint.CreateRxSocketClientAsync();
 
 // Send the message "Hello!" to the server,
 // which the server will then echo back to the client.
@@ -78,7 +79,10 @@ await client.DisposeAsync();
 await server.DisposeAsync();
 ```
 ### notes
-The extension method ```ToObservableFromAsyncEnumerable()``` may be used to create observables from the async enumerables ```IRxSocketClient.ReceiveAllAsync()``` and ```IRxSocketServer.AcceptAllAsync()```.
+```csharp
+IObservable<T> ToObservableFromAsyncEnumerable<T>(this IAsyncEnumerable<T> source)
+```
+The extension method ```ToObservableFromAsyncEnumerable()``` may be used to create observables from the async enumerables returned by ```IRxSocketClient.ReceiveAllAsync()``` and ```IRxSocketServer.AcceptAllAsync()```.
 
 ```Observable.Publish()[.RefCount() | .AutoConnect()]``` may be used to support multiple simultaneous observers.
 
