@@ -12,21 +12,24 @@ public class ClientServerTest : TestBase
     {
         IRxSocketServer server = RxSocketServer.Create(SocketServerLogger);
 
-        server.AcceptAllAsync.ToObservableFromAsyncEnumerable().Subscribe(async acceptClient =>
-        {
-            string message1 = await acceptClient.ReceiveAllAsync.ToStrings().FirstAsync();
-            Assert.Equal("Hello1FromClient", message1);
+        server.AcceptAllAsync.ToObservableFromAsyncEnumerable()
+            .Select(acceptClient => Observable.FromAsync(async ct =>
+            {
+                string message1 = await acceptClient.ReceiveAllAsync.ToStrings().FirstAsync();
+                Assert.Equal("Hello1FromClient", message1);
 
-            acceptClient.Send(new[] { "Hello1FromServer" }.ToByteArray());
+                acceptClient.Send(new[] { "Hello1FromServer" }.ToByteArray());
 
-            string[] messages = await acceptClient.ReceiveAllAsync.ToArraysFromBytesWithLengthPrefix().ToStringArrays().FirstAsync();
-            Assert.Equal("Hello2FromClient", messages[0]);
+                string[] messages = await acceptClient.ReceiveAllAsync.ToArraysFromBytesWithLengthPrefix().ToStringArrays().FirstAsync();
+                Assert.Equal("Hello2FromClient", messages[0]);
 
-            acceptClient.Send(new[] { "Hello2FromServer" }.ToByteArray().ToByteArrayWithLengthPrefix());
+                acceptClient.Send(new[] { "Hello2FromServer" }.ToByteArray().ToByteArrayWithLengthPrefix());
 
-            acceptClient.Send(new[] { "Hello3FromServer" }.ToByteArray().ToByteArrayWithLengthPrefix());
-        });
-
+                acceptClient.Send(new[] { "Hello3FromServer" }.ToByteArray().ToByteArrayWithLengthPrefix());
+            }))
+            .Concat()
+            .Subscribe();
+            
         IRxSocketClient client = await server.LocalEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
 
         // Send the first message without prefix.
