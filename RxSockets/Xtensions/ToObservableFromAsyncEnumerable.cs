@@ -13,8 +13,8 @@ public static partial class Xtensions
 
     public static IObservable<T> ToObservableFromAsyncEnumerable<T>(this IAsyncEnumerable<T> source, IScheduler scheduler)
     {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(scheduler);
+        if (source == null) throw new ArgumentNullException(nameof(source));
+        if (scheduler == null) throw new ArgumentNullException(nameof(scheduler));
 
         return Observable.Create<T>(observer =>
         {

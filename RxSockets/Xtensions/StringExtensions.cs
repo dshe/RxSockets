@@ -25,7 +25,7 @@ public static partial class Xtensions
     /// </summary>
     public static IEnumerable<string> ToStrings(this IEnumerable<byte> source)
     {
-        ArgumentNullException.ThrowIfNull(source);
+        if (source == null) throw new ArgumentNullException(nameof(source));
 
         using MemoryStream ms = new();
         foreach (byte b in source)

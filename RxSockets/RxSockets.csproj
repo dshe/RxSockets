@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/dshe/RxSockets</PackageProjectUrl>
@@ -19,7 +19,8 @@
     <DebugSymbols>true</DebugSymbols>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 	<AnalysisMode>All</AnalysisMode>
-	<NoWarn>CA1848</NoWarn>	  
+	<NoWarn>CA1848</NoWarn>
+      <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

@@ -15,7 +15,7 @@ public static partial class Xtensions
     /// </summary>
     public static async Task<IRxSocketClient> CreateRxSocketClientAsync(this EndPoint endPoint, ILogger logger, CancellationToken ct = default)
     {
-        ArgumentNullException.ThrowIfNull(endPoint);
+        if (endPoint == null) throw new ArgumentNullException(nameof(endPoint));
 
         Socket socket = await ConnectAsync(endPoint, logger, ct).ConfigureAwait(false);
         return new RxSocketClient(socket, logger, "Client");

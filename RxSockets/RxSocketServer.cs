@@ -37,7 +37,7 @@ public sealed class RxSocketServer : IRxSocketServer
     /// </summary>
     public static IRxSocketServer Create(Socket socket, ILogger logger)
     {
-        ArgumentNullException.ThrowIfNull(socket);
+        if (socket is null) throw new ArgumentNullException(nameof(socket));
         return new RxSocketServer(socket, logger);
     }
 
@@ -46,7 +46,7 @@ public sealed class RxSocketServer : IRxSocketServer
     /// </summary>
     public static IRxSocketServer Create(EndPoint endPoint, ILogger logger, int backLog = 10)
     {
-        ArgumentNullException.ThrowIfNull(endPoint);
+        if (endPoint is null) throw new ArgumentNullException(nameof(endPoint));
         // Backlog specifies the number of pending connections allowed before a busy error is returned.
         if (backLog < 0)
             throw new ArgumentException($"Invalid backLog: {backLog}.");

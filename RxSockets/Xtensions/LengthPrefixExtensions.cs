@@ -10,7 +10,7 @@ public static partial class Xtensions
     /// </summary>
     public static byte[] ToByteArrayWithLengthPrefix(this byte[] source)
     {
-        ArgumentNullException.ThrowIfNull(source);
+        if (source == null) throw new ArgumentNullException(nameof(source));
 
         byte[] buffer = new byte[source.Length + 4];
         source.CopyTo(buffer, 4);
@@ -25,7 +25,7 @@ public static partial class Xtensions
     /// </summary>
     public static IEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IEnumerable<byte> source)
     {
-        ArgumentNullException.ThrowIfNull(source);
+        if (source == null) throw new ArgumentNullException(nameof(source));
 
         int length = -1;
         using MemoryStream ms = new();
@@ -53,7 +53,7 @@ public static partial class Xtensions
     /// </summary>
     public static async IAsyncEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IAsyncEnumerable<byte> source)
     {
-        ArgumentNullException.ThrowIfNull(source);
+        if (source == null) throw new ArgumentNullException(nameof(source));
 
         int length = -1;
         using MemoryStream ms = new();
@@ -81,7 +81,7 @@ public static partial class Xtensions
     /// </summary>
     public static IObservable<byte[]> ToArraysFromBytesWithLengthPrefix(this IObservable<byte> source)
     {
-        ArgumentNullException.ThrowIfNull(source);
+        if (source == null) throw new ArgumentNullException(nameof(source));
 
         return Observable.Create<byte[]>(observer =>
         {

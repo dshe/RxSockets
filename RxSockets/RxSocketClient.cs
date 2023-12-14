@@ -35,7 +35,11 @@ public sealed class RxSocketClient : IRxSocketClient
     {
         if (Logger.IsEnabled(LogLevel.Trace))
             Logger.LogTrace("{Name} on {LocalEndPoint} sending {Bytes} bytes to {RemoteEndPoint}.", Name, Socket.LocalEndPoint, buffer.Length, Socket.RemoteEndPoint);
+#if NETSTANDARD2_0
+        return Socket.Send(buffer.ToArray());
+#else
         return Socket.Send(buffer);
+#endif
     }
 
     public async ValueTask DisposeAsync()

@@ -8,5 +8,9 @@ public sealed class NullRxSocketClient : IRxSocketClient
     public bool Connected { get; }
     public int Send(ReadOnlySpan<byte> buffer) => throw new InvalidOperationException();
     public IAsyncEnumerable<byte> ReceiveAllAsync => throw new InvalidOperationException();
+#if NETSTANDARD2_0
+    public ValueTask DisposeAsync() => new(Task.CompletedTask);
+#else
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+#endif
 }
