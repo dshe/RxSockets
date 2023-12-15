@@ -44,7 +44,11 @@ public sealed class Socket_Recieve_Tests : TestBase, IDisposable
         await Socket.ConnectAsync(endPoint);
 
         Socket accepted = await ServerSocket.AcceptAsync();
+#if NET47_OR_GREATER
+        accepted.Disconnect(false);
+#else
         await accepted.DisconnectAsync(false);
+#endif
 
         SocketReceiver reader = new(Socket, "?", Logger);
 

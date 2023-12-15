@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
+using System.Net.Sockets;
 
 namespace RxSockets;
 
@@ -26,7 +27,11 @@ public static partial class Xtensions
         Socket socket = Utilities.CreateSocket();
         try
         {
+#if NETSTANDARD2_0
+            await Task.Run(() => socket.Connect(endPoint), ct).ConfigureAwait(false);
+#else
             await socket.ConnectAsync(endPoint, ct).ConfigureAwait(false);
+#endif
             logger.LogInformation("Client on {LocalEndPoint} connected to {EndPoint}.", socket.LocalEndPoint, endPoint);
             return socket;
         }

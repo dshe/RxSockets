@@ -103,14 +103,6 @@ public class Examples : TestBase
     [Fact]
     public async Task T20_Accept_Observable()
     {
-        string s = String.Create<double>(10, 99, (span, state) =>
-        {
-            //Span<char> xxx;
-            span[1] = 's';
-            //span.
-            return;
-        });
-
         IRxSocketServer server = RxSocketServer.Create(SocketServerLogger);
         EndPoint endPoint = server.LocalEndPoint;
 

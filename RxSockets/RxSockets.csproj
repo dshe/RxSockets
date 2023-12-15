@@ -20,7 +20,7 @@
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 	<AnalysisMode>All</AnalysisMode>
 	<NoWarn>CA1848</NoWarn>
-      <LangVersion>latest</LangVersion>
+	  <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,5 +1,7 @@
 ﻿using System.IO;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace RxSockets;
 
@@ -126,8 +128,15 @@ public static partial class Xtensions
     {
         int length = buffer.Length - 4;
         int i = IPAddress.HostToNetworkOrder(length);
+#if NETSTANDARD2_0
+        // copied from bitconverter source at https://github.com/dotnet/corert/blob/c6af4cfc8b625851b91823d9be746c4f7abdc667/src/System.Private.CoreLib/shared/System/BitConverter.cs#L95
+        if (buffer.Length < sizeof(int))
+            throw new InvalidDataException($"TryWriteBytes.");
+        Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference<byte>(buffer), i);
+#else
         if (!BitConverter.TryWriteBytes(buffer, i))
             throw new InvalidDataException($"TryWriteBytes.");
+#endif
     }
 
     private static int DecodeMessageLength(MemoryStream ms)

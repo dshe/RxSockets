@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Reactive.Concurrency;
+using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
 namespace RxSockets.Tests;
@@ -13,6 +14,7 @@ public class ClientServerTest : TestBase
         IRxSocketServer server = RxSocketServer.Create(SocketServerLogger);
 
         server.AcceptAllAsync.ToObservableFromAsyncEnumerable()
+            .ObserveOn(TaskPoolScheduler.Default)
             .Select(acceptClient => Observable.FromAsync(async ct =>
             {
                 string message1 = await acceptClient.ReceiveAllAsync.ToStrings().FirstAsync();

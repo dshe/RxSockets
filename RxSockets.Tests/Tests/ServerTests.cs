@@ -28,7 +28,11 @@ public class ServerTest : TestBase
 
         Assert.True(clientSocket.Connected && acceptedSocket.Connected);
 
+        #if NET47_OR_GREATER
+        clientSocket.Disconnect(false);
+        #else
         await clientSocket.DisconnectAsync(false);
+        #endif
         await server.DisposeAsync();
     }
 

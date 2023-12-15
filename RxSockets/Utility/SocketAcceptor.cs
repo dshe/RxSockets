@@ -21,7 +21,11 @@ internal sealed class SocketAcceptor : IAsyncDisposable
             Socket acceptSocket;
             try
             {
+#if NETSTANDARD2_0
+                acceptSocket = await Task.Run(() => Socket.Accept(), ct);
+#else
                 acceptSocket = await Socket.AcceptAsync(ct).ConfigureAwait(false);
+#endif
             }
             catch (Exception e)
             {
