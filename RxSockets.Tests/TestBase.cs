@@ -5,19 +5,17 @@ namespace RxSockets.Tests;
 public abstract class TestBase
 {
     protected readonly Action<string> Write;
-    protected readonly ILogger Logger, SocketServerLogger, SocketClientLogger;
+    protected readonly ILoggerFactory LogFactory;
+    protected readonly ILogger Logger;
 
     protected TestBase(ITestOutputHelper output)
     {
         Write = output.WriteLine;
 
-        ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder
+        LogFactory = LoggerFactory.Create(builder => builder
             .AddMXLogger(Write)
             .SetMinimumLevel(LogLevel.Debug));
 
-        Logger = loggerFactory.CreateLogger("Test");
-
-        SocketServerLogger = loggerFactory.CreateLogger("RxSocketServer");
-        SocketClientLogger = loggerFactory.CreateLogger("RxSocketClient");
+        Logger = LogFactory.CreateLogger("Test");
     }
 }

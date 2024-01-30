@@ -35,16 +35,16 @@ public sealed class RxSocketServer : IRxSocketServer
     /// <summary>
     /// Create a RxSocketServer.
     /// </summary>
-    public static IRxSocketServer Create(Socket socket, ILogger logger)
+    public static IRxSocketServer Create(Socket socket, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(socket);
-        return new RxSocketServer(socket, logger);
+        return new RxSocketServer(socket, loggerFactory.CreateLogger<RxSocketServer>());
     }
 
     /// <summary>
     /// Create an RxSocketServer on EndPoint.
     /// </summary>
-    public static IRxSocketServer Create(EndPoint endPoint, ILogger logger, int backLog = 10)
+    public static IRxSocketServer Create(EndPoint endPoint, ILoggerFactory loggerFactory, int backLog = 10)
     {
         ArgumentNullException.ThrowIfNull(endPoint);
         // Backlog specifies the number of pending connections allowed before a busy error is returned.
@@ -53,18 +53,18 @@ public sealed class RxSocketServer : IRxSocketServer
         Socket socket = Utilities.CreateSocket();
         socket.Bind(endPoint);
         socket.Listen(backLog);
-        return Create(socket, logger);
+        return Create(socket, loggerFactory);
     }
 
     /// <summary>
     /// Create a RxSocketServer on an available port on the localhost.
     /// </summary>
     public static IRxSocketServer Create(int backLog = 10) =>
-        Create(Utilities.CreateIPEndPointOnPort(0), NullLogger.Instance, backLog);
+        Create(Utilities.CreateIPEndPointOnPort(0), NullLoggerFactory.Instance, backLog);
 
     /// <summary>
     /// Create a RxSocketServer on an available port on the localhost.
     /// </summary>
-    public static IRxSocketServer Create(ILogger logger, int backLog = 10) =>
-        Create(Utilities.CreateIPEndPointOnPort(0), logger, backLog);
+    public static IRxSocketServer Create(ILoggerFactory loggerFactory, int backLog = 10) =>
+        Create(Utilities.CreateIPEndPointOnPort(0), loggerFactory, backLog);
 }

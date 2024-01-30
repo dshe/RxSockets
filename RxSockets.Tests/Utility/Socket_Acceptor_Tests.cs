@@ -18,14 +18,14 @@ public class Socket_Acceptor_Tests : TestBase
 
         Task task = Task.Run(async () =>
         {
-            SocketAcceptor acceptor = new(serverSocket, SocketServerLogger);
+            SocketAcceptor acceptor = new(serverSocket, LogFactory.CreateLogger<SocketAcceptor>());
             await foreach (IRxSocketClient cli in acceptor.AcceptAllAsync(default))
             {
                 Logger.LogDebug("client");
             }
         });
 
-        IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger, default);
+        IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(LogFactory, default);
         Assert.True(client.Connected);
 
         await Task.Delay(100);

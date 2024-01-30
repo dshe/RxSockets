@@ -9,9 +9,9 @@
     <PackageTags>sockets reactive-extensions reactive observable async-enumerable linq</PackageTags>
     <Description>A minimal reactive socket implementation.</Description>
     <Authors>DavidS</Authors>
-    <Version>5.0.2</Version>
-    <AssemblyVersion>5.0.2</AssemblyVersion>
-    <FileVersion>5.0.2</FileVersion>
+    <Version>5.0.3</Version>
+    <AssemblyVersion>5.0.3</AssemblyVersion>
+    <FileVersion>5.0.3</FileVersion>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/dshe/RxSockets</RepositoryUrl>
     <RepositoryType>github</RepositoryType>

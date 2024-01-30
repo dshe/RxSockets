@@ -10,17 +10,17 @@ public class ClientServerTest : TestBase
     [Fact]
     public async Task T01_Handshake()
     {
-        IRxSocketServer server = RxSocketServer.Create(SocketServerLogger);
+        IRxSocketServer server = RxSocketServer.Create(LogFactory);
 
         server.AcceptAllAsync.ToObservableFromAsyncEnumerable()
             .Select(acceptClient => Observable.FromAsync(async ct =>
             {
-                string message1 = await acceptClient.ReceiveAllAsync.ToStrings().FirstAsync();
+                string message1 = await acceptClient.ReceiveAllAsync.ToStrings().FirstAsync(ct);
                 Assert.Equal("Hello1FromClient", message1);
 
                 acceptClient.Send(new[] { "Hello1FromServer" }.ToByteArray());
 
-                string[] messages = await acceptClient.ReceiveAllAsync.ToArraysFromBytesWithLengthPrefix().ToStringArrays().FirstAsync();
+                string[] messages = await acceptClient.ReceiveAllAsync.ToArraysFromBytesWithLengthPrefix().ToStringArrays().FirstAsync(ct);
                 Assert.Equal("Hello2FromClient", messages[0]);
 
                 acceptClient.Send(new[] { "Hello2FromServer" }.ToByteArray().ToByteArrayWithLengthPrefix());
@@ -30,7 +30,7 @@ public class ClientServerTest : TestBase
             .Concat()
             .Subscribe();
             
-        IRxSocketClient client = await server.LocalEndPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        IRxSocketClient client = await server.LocalEndPoint.CreateRxSocketClientAsync(LogFactory);
 
         // Send the first message without prefix.
         client.Send("Hello1FromClient".ToByteArray());

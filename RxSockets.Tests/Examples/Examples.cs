@@ -13,7 +13,7 @@ public class Examples : TestBase
     public async Task T00_Example()
     {
         // Create a socket server on an available port on the local host.
-        IRxSocketServer server = RxSocketServer.Create(SocketServerLogger);
+        IRxSocketServer server = RxSocketServer.Create(LogFactory);
         EndPoint endPoint = server.LocalEndPoint;
 
         // Start accepting connections from clients.
@@ -28,7 +28,7 @@ public class Examples : TestBase
         });
 
         // Create a socket client by first connecting to the server at the EndPoint.
-        IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(LogFactory);
 
         // Start receiving messages from the server.
         client.ReceiveAllAsync.ToStrings().ToObservableFromAsyncEnumerable().Subscribe(onNext: message =>
@@ -50,14 +50,14 @@ public class Examples : TestBase
     [Fact]
     public async Task T01_Send_And_Receive_String_Message()
     {
-        IRxSocketServer server = RxSocketServer.Create(SocketServerLogger);
+        IRxSocketServer server = RxSocketServer.Create(LogFactory);
         EndPoint endPoint = server.LocalEndPoint;
 
         // Start a task to allow the server to accept the next client connection.
         ValueTask<IRxSocketClient> acceptTask = server.AcceptAllAsync.FirstAsync();
 
         // Create a socket client by successfully connecting to the server at EndPoint.
-        IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(LogFactory);
 
         // Get the client socket accepted by the server.
         IRxSocketClient accept = await acceptTask;
@@ -77,11 +77,11 @@ public class Examples : TestBase
     [Fact]
     public async Task T10_Receive_Observable()
     {
-        IRxSocketServer server = RxSocketServer.Create(SocketServerLogger);
+        IRxSocketServer server = RxSocketServer.Create(LogFactory);
         EndPoint endPoint = server.LocalEndPoint;
 
         ValueTask<IRxSocketClient> acceptTask = server.AcceptAllAsync.FirstAsync();
-        IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(LogFactory);
         IRxSocketClient accept = await acceptTask;
 
         IDisposable sub = client.ReceiveAllAsync.ToStrings().ToObservableFromAsyncEnumerable().Subscribe(str =>
@@ -111,15 +111,15 @@ public class Examples : TestBase
             return;
         });
 
-        IRxSocketServer server = RxSocketServer.Create(SocketServerLogger);
+        IRxSocketServer server = RxSocketServer.Create(LogFactory);
         EndPoint endPoint = server.LocalEndPoint;
 
         server.AcceptAllAsync.ToObservableFromAsyncEnumerable()
             .Subscribe(accepted => accepted.Send("Welcome!".ToByteArray()));
 
-        IRxSocketClient client1 = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
-        IRxSocketClient client2 = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
-        IRxSocketClient client3 = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        IRxSocketClient client1 = await endPoint.CreateRxSocketClientAsync(LogFactory);
+        IRxSocketClient client2 = await endPoint.CreateRxSocketClientAsync(LogFactory);
+        IRxSocketClient client3 = await endPoint.CreateRxSocketClientAsync(LogFactory);
 
         Assert.Equal("Welcome!", await client1.ReceiveAllAsync.ToStrings().ToObservableFromAsyncEnumerable().Take(1).FirstAsync());
         Assert.Equal("Welcome!", await client2.ReceiveAllAsync.ToStrings().ToObservableFromAsyncEnumerable().Take(1).FirstAsync());
@@ -134,7 +134,7 @@ public class Examples : TestBase
     [Fact]
     public async Task T30_Both()
     {
-        IRxSocketServer server = RxSocketServer.Create(SocketServerLogger);
+        IRxSocketServer server = RxSocketServer.Create(LogFactory);
         EndPoint endPoint = server.LocalEndPoint;
 
         server.AcceptAllAsync.ToObservableFromAsyncEnumerable().Subscribe(accepted =>
@@ -151,7 +151,7 @@ public class Examples : TestBase
         List<IRxSocketClient> clients = new();
         for (int i = 0; i < 3; i++)
         {
-            IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+            IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(LogFactory);
             client.Send("Hello".ToByteArray());
             clients.Add(client);
         }
@@ -169,7 +169,7 @@ public class Examples : TestBase
     {
         SemaphoreSlim semaphore = new(0, 1);
 
-        IRxSocketServer server = RxSocketServer.Create(SocketServerLogger);
+        IRxSocketServer server = RxSocketServer.Create(LogFactory);
         EndPoint endPoint = server.LocalEndPoint;
 
         IRxSocketClient? acceptClient = null;
@@ -183,7 +183,7 @@ public class Examples : TestBase
             });
         });
 
-        IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(LogFactory);
         client.ReceiveAllAsync.ToObservableFromAsyncEnumerable().ToStrings().Subscribe(onNext: message =>
         {
             Write(message);
@@ -206,7 +206,7 @@ public class Examples : TestBase
     {
         SemaphoreSlim semaphore = new(0, 1);
 
-        IRxSocketServer server = RxSocketServer.Create(SocketServerLogger);
+        IRxSocketServer server = RxSocketServer.Create(LogFactory);
         EndPoint endPoint = server.LocalEndPoint;
 
         IRxSocketClient? acceptClient = null;
@@ -220,7 +220,7 @@ public class Examples : TestBase
             });
         });
 
-        IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(SocketClientLogger);
+        IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(LogFactory);
         client.ReceiveAllAsync.ToObservableFromAsyncEnumerable().ToStrings().Subscribe(onNext: message =>
         {
             Write(message);

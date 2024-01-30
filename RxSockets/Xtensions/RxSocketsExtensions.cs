@@ -5,18 +5,23 @@ namespace RxSockets;
 public static partial class Xtensions
 {
     /// <summary>
-    ///  Create a connected RxSocketClient.
+    /// Create a connected RxSocketClient.
     /// </summary>
     public static async Task<IRxSocketClient> CreateRxSocketClientAsync(this EndPoint endPoint, CancellationToken ct = default) =>
             await CreateRxSocketClientAsync(endPoint, NullLogger.Instance, ct).ConfigureAwait(false);
 
     /// <summary>
-    ///  Create a connected RxSocketClient.
+    /// Create a connected RxSocketClient.
+    /// </summary>
+    public static async Task<IRxSocketClient> CreateRxSocketClientAsync(this EndPoint endPoint, ILoggerFactory factoryLogger, CancellationToken ct = default) =>
+            await CreateRxSocketClientAsync(endPoint, factoryLogger.CreateLogger<RxSocketClient>(), ct).ConfigureAwait(false);
+
+    /// <summary>
+    /// Create a connected RxSocketClient.
     /// </summary>
     public static async Task<IRxSocketClient> CreateRxSocketClientAsync(this EndPoint endPoint, ILogger logger, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(endPoint);
-
         Socket socket = await ConnectAsync(endPoint, logger, ct).ConfigureAwait(false);
         return new RxSocketClient(socket, logger, "Client");
     }
@@ -47,11 +52,11 @@ public static partial class Xtensions
     /// Create an RxSocketServer on EndPoint.
     /// </summary>
     public static IRxSocketServer CreateRxSocketServer(this EndPoint endPoint, int backLog = 10) =>
-        RxSocketServer.Create(endPoint, NullLogger.Instance, backLog);
+        RxSocketServer.Create(endPoint, NullLoggerFactory.Instance, backLog);
 
     /// <summary>
     /// Create an RxSocketServer on EndPoint.
     /// </summary>
-    public static IRxSocketServer CreateRxSocketServer(this EndPoint endPoint, ILogger logger, int backLog = 10) =>
-        RxSocketServer.Create(endPoint, logger, backLog);
+    public static IRxSocketServer CreateRxSocketServer(this EndPoint endPoint, ILoggerFactory loggerFactory, int backLog = 10) =>
+        RxSocketServer.Create(endPoint, loggerFactory, backLog);
 }
