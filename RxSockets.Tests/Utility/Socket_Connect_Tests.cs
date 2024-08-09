@@ -3,10 +3,8 @@ using System.Threading.Tasks;
 
 namespace RxSockets.Tests;
 
-public class SocketConnectTests : TestBase
+public class SocketConnectTests(ITestOutputHelper output) : TestBase(output)
 {
-    public SocketConnectTests(ITestOutputHelper output) : base(output) { }
-
     [Fact]
     public async Task T00_Success()
     {

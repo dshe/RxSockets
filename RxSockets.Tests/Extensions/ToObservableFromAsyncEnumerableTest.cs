@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace RxSockets.Tests;
 
-public class ToObservableFromAsyncEnumerableTest : TestBase
+public class ToObservableFromAsyncEnumerableTest(ITestOutputHelper output) : TestBase(output)
 {
-    public ToObservableFromAsyncEnumerableTest(ITestOutputHelper output) : base(output) { }
-
     private static async IAsyncEnumerable<string> GetSource([EnumeratorCancellation] CancellationToken ct = default)
     {
         for (int i = 0; i < 10; i++)
@@ -34,7 +32,6 @@ public class ToObservableFromAsyncEnumerableTest : TestBase
         Logger.LogInformation("start");
 
         IObservable<string> observable = GetSource().ToObservableFromAsyncEnumerable(TaskPoolScheduler.Default);
-        //var observable = GetSource().ToObservable();
 
         IDisposable subscription = observable.Subscribe(x =>
         {
@@ -44,5 +41,4 @@ public class ToObservableFromAsyncEnumerableTest : TestBase
         await Task.Delay(70);
         subscription.Dispose();
     }
-
 }

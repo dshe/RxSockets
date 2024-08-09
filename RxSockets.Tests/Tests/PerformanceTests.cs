@@ -3,9 +3,8 @@ using System.Threading.Tasks;
 
 namespace RxSockets.Tests;
 
-public class PerformanceTest1 : TestBase
+public class PerformanceTest1(ITestOutputHelper output) : TestBase(output)
 {
-    public PerformanceTest1(ITestOutputHelper output) : base(output) { }
     const int numberOfMessages = 100_000;
 
     [Fact]
@@ -42,9 +41,8 @@ public class PerformanceTest1 : TestBase
     }
 }
 
-public class PerformanceTest2 : TestBase
+public class PerformanceTest2(ITestOutputHelper output) : TestBase(output)
 {
-    public PerformanceTest2(ITestOutputHelper output) : base(output) { }
     const int numberOfMessages = 100_000;
 
     [Fact]

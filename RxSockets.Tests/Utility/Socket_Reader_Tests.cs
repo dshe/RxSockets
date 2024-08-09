@@ -2,11 +2,10 @@
 
 namespace RxSockets.Tests;
 
-public sealed class Socket_Recieve_Tests : TestBase, IDisposable
+public sealed class Socket_Recieve_Tests(ITestOutputHelper output) : TestBase(output), IDisposable
 {
     private readonly Socket ServerSocket = Utilities.CreateSocket();
     private readonly Socket Socket = Utilities.CreateSocket();
-    public Socket_Recieve_Tests(ITestOutputHelper output) : base(output) { }
 
     public void Dispose()
     {

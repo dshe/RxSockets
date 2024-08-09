@@ -3,10 +3,8 @@ using System.Threading.Tasks;
 
 namespace RxSockets.Tests;
 
-public class ClientServerTest : TestBase
+public class ClientServerTest(ITestOutputHelper output) : TestBase(output)
 {
-    public ClientServerTest(ITestOutputHelper output) : base(output) { }
-
     [Fact]
     public async Task T01_Handshake()
     {

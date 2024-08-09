@@ -12,9 +12,6 @@ public class ToByteArrayWithLengthPrefixTest
     [InlineData(new byte[] { 0, 0, 0, 4, 65, 0, 66, 0 }, new[] { "A", "B" })]
     public void T01(byte[] encoded, IEnumerable<string> strings)
     {
-        //Assert.Equal(encoded, str.ToByteArrayWithLengthPrefix());
         Assert.Equal(encoded, strings.ToArray().ToByteArray().ToByteArrayWithLengthPrefix());
-
-        //ToByteArrayWithLengthPrefix());
     }
 }

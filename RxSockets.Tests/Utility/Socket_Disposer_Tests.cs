@@ -3,10 +3,9 @@ using System.Threading.Tasks;
 
 namespace RxSockets.Tests;
 
-public class Socket_Disposer_Tests : TestBase
+public class Socket_Disposer_Tests(ITestOutputHelper output) : TestBase(output)
 {
     private readonly CancellationTokenSource Cts = new();
-    public Socket_Disposer_Tests(ITestOutputHelper output) : base(output) { }
 
     [Fact]
     public async Task T01_Dispose_Not_Connected_Socket()

@@ -2,10 +2,8 @@
 
 namespace RxSockets.Tests;
 
-public class ServerTest : TestBase
+public class ServerTest(ITestOutputHelper output) : TestBase(output)
 {
-    public ServerTest(ITestOutputHelper output) : base(output) { }
-
     [Fact]
     public void T01_Invalid_EndPoint()
     {

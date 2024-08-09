@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 
 namespace RxSockets.Tests;
 
-public class Examples : TestBase
+public class Examples(ITestOutputHelper output) : TestBase(output)
 {
-    public Examples(ITestOutputHelper output) : base(output) { }
-
     [Fact]
     public async Task T00_Example()
     {
@@ -105,9 +103,7 @@ public class Examples : TestBase
     {
         string s = String.Create<double>(10, 99, (span, state) =>
         {
-            //Span<char> xxx;
             span[1] = 's';
-            //span.
             return;
         });
 

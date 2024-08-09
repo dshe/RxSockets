@@ -32,7 +32,7 @@ internal sealed class SocketDisposer : IAsyncDisposable
 
         try
         {
-            ReceiveCts.Cancel();
+            await ReceiveCts.CancelAsync().ConfigureAwait(false);
 
             EndPoint? localEndPoint = Socket.LocalEndPoint;
             EndPoint? remoteEndPoint = Socket.RemoteEndPoint;
