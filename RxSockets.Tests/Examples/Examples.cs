@@ -144,7 +144,7 @@ public class Examples(ITestOutputHelper output) : TestBase(output)
         });
 
 
-        List<IRxSocketClient> clients = new();
+        List<IRxSocketClient> clients = [];
         for (int i = 0; i < 3; i++)
         {
             IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(LogFactory);
