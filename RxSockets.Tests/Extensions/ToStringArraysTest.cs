@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Text;
-
 namespace RxSockets.Tests;
 
 public class ToStringArraysTest

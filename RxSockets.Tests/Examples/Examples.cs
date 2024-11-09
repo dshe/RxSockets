@@ -2,7 +2,6 @@
 using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
-
 namespace RxSockets.Tests;
 
 public class Examples(ITestOutputHelper output) : TestBase(output)
@@ -15,10 +14,10 @@ public class Examples(ITestOutputHelper output) : TestBase(output)
         EndPoint endPoint = server.LocalEndPoint;
 
         // Start accepting connections from clients.
-        server.AcceptAllAsync.ToObservableFromAsyncEnumerable().Subscribe(acceptClient =>
+        server.AcceptObservable.Subscribe(acceptClient =>
         {
             // After the server accepts a client connection...
-            acceptClient.ReceiveAllAsync.ToStrings().ToObservable().Subscribe(onNext: message =>
+            acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
             {
                 // Echo each message received back to the client.
                 acceptClient.Send(message.ToByteArray());
@@ -29,7 +28,7 @@ public class Examples(ITestOutputHelper output) : TestBase(output)
         IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(LogFactory);
 
         // Start receiving messages from the server.
-        client.ReceiveAllAsync.ToStrings().ToObservableFromAsyncEnumerable().Subscribe(onNext: message =>
+        client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
         {
             // The message received from the server is "Hello!".
             Assert.Equal("Hello!", message);
@@ -62,7 +61,7 @@ public class Examples(ITestOutputHelper output) : TestBase(output)
         Assert.True(accept.Connected && client.Connected);
 
         // start a task to receive the first string from the server.
-        Task<string> dataTask = client.ReceiveAllAsync.ToStrings().ToObservableFromAsyncEnumerable().FirstAsync().ToTask();
+        Task<string> dataTask = client.ReceiveObservable.ToStrings().FirstAsync().ToTask();
 
         // The server sends a string to the client.
         accept.Send("Welcome!".ToByteArray());
@@ -82,7 +81,7 @@ public class Examples(ITestOutputHelper output) : TestBase(output)
         IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(LogFactory);
         IRxSocketClient accept = await acceptTask;
 
-        IDisposable sub = client.ReceiveAllAsync.ToStrings().ToObservableFromAsyncEnumerable().Subscribe(str =>
+        IDisposable sub = client.ReceiveObservable.ToStrings().Subscribe(str =>
         {
             Write(str);
         });
@@ -110,16 +109,16 @@ public class Examples(ITestOutputHelper output) : TestBase(output)
         IRxSocketServer server = RxSocketServer.Create(LogFactory);
         EndPoint endPoint = server.LocalEndPoint;
 
-        server.AcceptAllAsync.ToObservableFromAsyncEnumerable()
+        server.AcceptObservable
             .Subscribe(accepted => accepted.Send("Welcome!".ToByteArray()));
 
         IRxSocketClient client1 = await endPoint.CreateRxSocketClientAsync(LogFactory);
         IRxSocketClient client2 = await endPoint.CreateRxSocketClientAsync(LogFactory);
         IRxSocketClient client3 = await endPoint.CreateRxSocketClientAsync(LogFactory);
 
-        Assert.Equal("Welcome!", await client1.ReceiveAllAsync.ToStrings().ToObservableFromAsyncEnumerable().Take(1).FirstAsync());
-        Assert.Equal("Welcome!", await client2.ReceiveAllAsync.ToStrings().ToObservableFromAsyncEnumerable().Take(1).FirstAsync());
-        Assert.Equal("Welcome!", await client3.ReceiveAllAsync.ToStrings().ToObservableFromAsyncEnumerable().Take(1).FirstAsync());
+        Assert.Equal("Welcome!", await client1.ReceiveObservable.ToStrings().Take(1).FirstAsync());
+        Assert.Equal("Welcome!", await client2.ReceiveObservable.ToStrings().Take(1).FirstAsync());
+        Assert.Equal("Welcome!", await client3.ReceiveObservable.ToStrings().Take(1).FirstAsync());
 
         await client1.DisposeAsync();
         await client2.DisposeAsync();
@@ -133,12 +132,11 @@ public class Examples(ITestOutputHelper output) : TestBase(output)
         IRxSocketServer server = RxSocketServer.Create(LogFactory);
         EndPoint endPoint = server.LocalEndPoint;
 
-        server.AcceptAllAsync.ToObservableFromAsyncEnumerable().Subscribe(accepted =>
+        server.AcceptObservable.Subscribe(accepted =>
         {
             accepted.Send("Welcome!".ToByteArray());
             accepted
-                .ReceiveAllAsync
-                .ToObservableFromAsyncEnumerable()
+                .ReceiveObservable
                 .ToStrings()
                 .Subscribe(s => accepted.Send(s.ToByteArray()));
         });
@@ -153,7 +151,7 @@ public class Examples(ITestOutputHelper output) : TestBase(output)
         }
 
         foreach (IRxSocketClient client in clients)
-            Assert.Equal("Hello", await client.ReceiveAllAsync.ToObservableFromAsyncEnumerable().ToStrings().Skip(1).Take(1).FirstAsync());
+            Assert.Equal("Hello", await client.ReceiveObservable.ToStrings().Skip(1).Take(1).FirstAsync());
 
         foreach (IRxSocketClient client in clients)
             await client.DisposeAsync();
@@ -169,18 +167,18 @@ public class Examples(ITestOutputHelper output) : TestBase(output)
         EndPoint endPoint = server.LocalEndPoint;
 
         IRxSocketClient? acceptClient = null;
-        server.AcceptAllAsync.ToObservableFromAsyncEnumerable().Subscribe(ac =>
+        server.AcceptObservable.Subscribe(ac =>
         {
             acceptClient = ac;
             semaphore.Release();
-            acceptClient.ReceiveAllAsync.ToObservableFromAsyncEnumerable().ToStrings().Subscribe(onNext: message =>
+            acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
             {
                 acceptClient.Send(message.ToByteArray());
             });
         });
 
         IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(LogFactory);
-        client.ReceiveAllAsync.ToObservableFromAsyncEnumerable().ToStrings().Subscribe(onNext: message =>
+        client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
         {
             Write(message);
         });
@@ -206,18 +204,18 @@ public class Examples(ITestOutputHelper output) : TestBase(output)
         EndPoint endPoint = server.LocalEndPoint;
 
         IRxSocketClient? acceptClient = null;
-        server.AcceptAllAsync.ToObservableFromAsyncEnumerable().Subscribe(ac =>
+        server.AcceptObservable.Subscribe(ac =>
         {
             acceptClient = ac;
             semaphore.Release();
-            acceptClient.ReceiveAllAsync.ToObservableFromAsyncEnumerable().ToStrings().Subscribe(onNext: message =>
+            acceptClient.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
             {
                 acceptClient.Send(message.ToByteArray());
             });
         });
 
         IRxSocketClient client = await endPoint.CreateRxSocketClientAsync(LogFactory);
-        client.ReceiveAllAsync.ToObservableFromAsyncEnumerable().ToStrings().Subscribe(onNext: message =>
+        client.ReceiveObservable.ToStrings().Subscribe(onNext: message =>
         {
             Write(message);
         });

@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
-
 namespace RxSockets;
 
-public static partial class Xtensions
+public static partial class Extension
 {
     /// <summary>
     /// Create a connected RxSocketClient.
@@ -48,15 +47,9 @@ public static partial class Xtensions
         }
     }
 
-    /// <summary>
-    /// Create an RxSocketServer on EndPoint.
-    /// </summary>
     public static IRxSocketServer CreateRxSocketServer(this EndPoint endPoint, int backLog = 10) =>
         RxSocketServer.Create(endPoint, NullLoggerFactory.Instance, backLog);
 
-    /// <summary>
-    /// Create an RxSocketServer on EndPoint.
-    /// </summary>
     public static IRxSocketServer CreateRxSocketServer(this EndPoint endPoint, ILoggerFactory loggerFactory, int backLog = 10) =>
         RxSocketServer.Create(endPoint, loggerFactory, backLog);
 }

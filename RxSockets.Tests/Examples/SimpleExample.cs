@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-
 namespace RxSockets.Tests;
 
 public class SimpleExample
@@ -44,15 +43,13 @@ public class SimpleExample
 
         // Start accepting connections from clients.
         server
-            .AcceptAllAsync
-            .ToObservableFromAsyncEnumerable()
+            .AcceptObservable
             .Subscribe(onNext: acceptClient =>
             {
                 // After the server accepts a client connection,
                 // start receiving messages from the client and ...
                 acceptClient
-                    .ReceiveAllAsync
-                    .ToObservableFromAsyncEnumerable()
+                    .ReceiveObservable
                     .ToStrings()
                     .Subscribe(onNext: message =>
                     {
@@ -68,7 +65,7 @@ public class SimpleExample
         client.Send("Hello!".ToByteArray());
 
         // Receive the message from the server.
-        string message = await client.ReceiveAllAsync.ToObservableFromAsyncEnumerable().ToStrings().FirstAsync();
+        string message = await client.ReceiveObservable.ToStrings().FirstAsync();
 
         Assert.Equal("Hello!", message);
 

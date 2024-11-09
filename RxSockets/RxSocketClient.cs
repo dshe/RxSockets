@@ -5,6 +5,7 @@ public interface IRxSocketClient : IAsyncDisposable
     EndPoint RemoteEndPoint { get; }
     bool Connected { get; }
     int Send(ReadOnlySpan<byte> buffer);
+    IObservable<byte> ReceiveObservable { get; }
     IAsyncEnumerable<byte> ReceiveAllAsync { get; }
 }
 
@@ -18,6 +19,7 @@ public sealed class RxSocketClient : IRxSocketClient
     public EndPoint RemoteEndPoint { get; }
     public bool Connected =>
         !((Socket.Poll(1000, SelectMode.SelectRead) && Socket.Available == 0) || !Socket.Connected);
+    public IObservable<byte> ReceiveObservable { get; }
     public IAsyncEnumerable<byte> ReceiveAllAsync { get; }
 
     internal RxSocketClient(Socket socket, ILogger logger, string name)
@@ -28,13 +30,13 @@ public sealed class RxSocketClient : IRxSocketClient
         RemoteEndPoint = Socket.RemoteEndPoint ?? throw new InvalidOperationException();
         Disposer = new SocketDisposer(socket, Name, ReceiveCts, Logger);
         SocketReceiver receiver = new(socket, Name, Logger);
-        ReceiveAllAsync = receiver.ReceiveAllAsync(ReceiveCts.Token);
+        ReceiveObservable = receiver.CreateReceiveObservable();
+        ReceiveAllAsync = receiver.ReceiveAllAsync();
     }
 
     public int Send(ReadOnlySpan<byte> buffer)
     {
-        if (Logger.IsEnabled(LogLevel.Trace))
-            Logger.LogTrace("{Name} on {LocalEndPoint} sending {Bytes} bytes to {RemoteEndPoint}.", Name, Socket.LocalEndPoint, buffer.Length, Socket.RemoteEndPoint);
+        Logger.LogSend(Name, Socket.LocalEndPoint, buffer.Length, Socket.RemoteEndPoint);
         return Socket.Send(buffer);
     }
 

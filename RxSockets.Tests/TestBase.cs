@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-
 namespace RxSockets.Tests;
 
 public abstract class TestBase

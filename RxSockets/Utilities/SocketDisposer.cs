@@ -42,11 +42,11 @@ internal sealed class SocketDisposer : IAsyncDisposable
                 // disables Send method and queues up a zero-byte send packet in the send buffer
                 Socket.Shutdown(SocketShutdown.Send);
                 await Socket.DisconnectAsync(false).ConfigureAwait(false);
-                Logger.LogInformation("{Name} on {LocalEndPoint} disconnected from {RemoteEndPoint} and disposed.", Name, localEndPoint, remoteEndPoint);
+                Logger.LogDebug("{Name} on {LocalEndPoint} disconnected from {RemoteEndPoint} and disposed.", Name, localEndPoint, remoteEndPoint);
             }
             else
             {
-                Logger.LogInformation("{Name} on {LocalEndPoint} disposed.", Name, localEndPoint);
+                Logger.LogDebug("{Name} on {LocalEndPoint} disposed.", Name, localEndPoint);
             }
 
             // SocketAcceptor or AsyncEmptyDisposable

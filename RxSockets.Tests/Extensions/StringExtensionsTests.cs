@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-
 namespace RxSockets.Tests;
 
 public class StringExtensionsTests
@@ -23,9 +22,9 @@ public class StringExtensionsTests
 #pragma warning restore CS8625
 
         // no termination
-        Assert.Throws<InvalidDataException>(() => new byte[] { 65 }.ToStrings().ToList());
+        Assert.Throws<InvalidDataException>(() => "A"u8.ToArray().ToStrings().ToList());
         await Assert.ThrowsAsync<InvalidDataException>(async () =>
-            await new byte[] { 65 }.ToObservable().ToStrings().ToList());
+            await "A"u8.ToArray().ToObservable().ToStrings().ToList());
 
         IObservable<string> observable = Observable.Throw<byte>(new ArithmeticException()).ToStrings();
         await Assert.ThrowsAsync<ArithmeticException>(async () => await observable);

@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-
 namespace RxSockets.Tests;
 
 public class ToArraysFromBytesWithLengthPrefix
@@ -25,8 +24,8 @@ public class ToArraysFromBytesWithLengthPrefix
     [Fact]
     public void T03()
     {
-        Assert.Throws<InvalidOperationException>(() => Xtensions.ToArraysFromBytesWithLengthPrefix(Array.Empty<byte>()).First());
-        Assert.Throws<InvalidDataException>(() => Xtensions.ToArraysFromBytesWithLengthPrefix(new byte[] { 65 }).First());
-        Assert.Throws<InvalidDataException>(() => Xtensions.ToArraysFromBytesWithLengthPrefix(new byte[] { 65, 0, 65 }).First());
+        Assert.Throws<InvalidOperationException>(() => Extension.ToArraysFromBytesWithLengthPrefix([]).First());
+        Assert.Throws<InvalidDataException>(() => Extension.ToArraysFromBytesWithLengthPrefix([65]).First());
+        Assert.Throws<InvalidDataException>(() => Extension.ToArraysFromBytesWithLengthPrefix([65, 0, 65]).First());
     }
 }

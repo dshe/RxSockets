@@ -26,6 +26,7 @@ using RxSockets;
 interface IRxSocketServer : IAsyncDisposable
 {
     EndPoint LocalEndPoint { get; }
+    IObservable<IRxSocketClient> AcceptObservable { get; }
     IAsyncEnumerable<IRxSocketClient> AcceptAllAsync { get; }
 }
 ```
@@ -35,15 +36,13 @@ IRxSocketServer server = RxSocketServer.Create();
 
 // Prepare to start accepting connections from clients.
 server
-    .AcceptAllAsync
-    .ToObservableFromAsyncEnumerable()
+    .AcceptObservable
     .Subscribe(onNext: acceptClient =>
     {
         // After the server accepts a client connection,
         // start receiving messages from the client and ...
         acceptClient
-            .ReceiveAllAsync
-            .ToObservableFromAsyncEnumerable()
+            .ReceiveObservable
             .ToStrings()
             .Subscribe(onNext: message =>
             {
@@ -59,6 +58,7 @@ interface IRxSocketClient : IAsyncDisposable
     EndPoint RemoteEndPoint { get; }
     bool Connected { get; }
     int Send(ReadOnlySpan<byte> buffer);
+    IObservable<byte> ReceiveObservable { get; }
     IAsyncEnumerable<byte> ReceiveAllAsync { get; }
 }
 ```
@@ -79,9 +79,6 @@ await server.DisposeAsync();
 ```
 ### notes
 ```csharp
-IObservable<T> ToObservableFromAsyncEnumerable<T>(this IAsyncEnumerable<T> source)
-```
-The extension method ```ToObservableFromAsyncEnumerable()``` may be used to create observables from the async enumerables ```IRxSocketClient.ReceiveAllAsync``` and ```IRxSocketServer.AcceptAllAsync```.
 
 ```Observable.Publish()[.RefCount() | .AutoConnect()]``` may be used to support multiple simultaneous observers.
 
@@ -91,14 +88,14 @@ byte[] ToByteArray(this string source);
 byte[] ToByteArray(this IEnumerable<string> source)
 
 IEnumerable<string>      ToStrings(this IEnumerable<byte> source)
-IAsyncEnumerable<string> ToStrings(this IAsyncEnumerable<byte> source)
 IObservable<string>      ToStrings(this IObservable<byte> source)
+IAsyncEnumerable<string> ToStrings(this IAsyncEnumerable<byte> source)
 ```
 To communicate using byte arrays with a 4 byte BigEndian integer length prefix, the following extension methods are provided:
 ```csharp
 byte[] ToByteArrayWithLengthPrefix(this byte[] source)
 
 IEnumerable<byte[]>      ToArraysFromBytesWithLengthPrefix(this IEnumerable<byte> source)
-IAsyncEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IAsyncEnumerable<byte> source)
 IObservable<byte[]>      ToArraysFromBytesWithLengthPrefix(this IObservable<byte> source)
+IAsyncEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IAsyncEnumerable<byte> source)
 ```

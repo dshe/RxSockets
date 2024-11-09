@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-
 namespace RxSockets.Tests;
 
 public class ToByteArrayWithLengthPrefixTest

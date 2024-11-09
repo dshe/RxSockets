@@ -1,9 +1,8 @@
 ﻿using System.IO;
 using System.Reactive.Linq;
-
 namespace RxSockets;
 
-public static partial class Xtensions
+public static partial class Extension
 {
     /// <summary>
     /// Prepend a 4 byte payload length to a byte array.

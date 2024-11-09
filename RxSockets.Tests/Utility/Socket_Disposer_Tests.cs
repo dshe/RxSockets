@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-
 namespace RxSockets.Tests;
 
 public class Socket_Disposer_Tests(ITestOutputHelper output) : TestBase(output)

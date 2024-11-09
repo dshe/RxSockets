@@ -1,10 +1,9 @@
 ﻿using System.IO;
 using System.Reactive.Linq;
 using System.Text;
-
 namespace RxSockets;
 
-public static partial class Xtensions
+public static partial class Extension
 {
     /// <summary>
     /// Transform a sequence of byte arrays into a sequence of string arrays.

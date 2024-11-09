@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-
 namespace RxSockets.Tests;
 
 public class ClientTests(ITestOutputHelper output) : TestBase(output)
@@ -9,12 +8,8 @@ public class ClientTests(ITestOutputHelper output) : TestBase(output)
     public async Task T00_All_Ok()
     {
         IRxSocketServer server = RxSocketServer.Create(LogFactory);
-
         IRxSocketClient client = await server.LocalEndPoint.CreateRxSocketClientAsync(Logger);
-
-        //await server.AcceptAllAsync().ToObservableFromAsyncEnumerable().FirstAsync();
         await server.AcceptAllAsync.FirstAsync();
-
         await client.DisposeAsync();
         await server.DisposeAsync();
     }
@@ -41,7 +36,7 @@ public class ClientTests(ITestOutputHelper output) : TestBase(output)
         IRxSocketServer server = RxSocketServer.Create(LogFactory);
         IRxSocketClient client = await server.LocalEndPoint.CreateRxSocketClientAsync(LogFactory);
         await client.DisposeAsync();
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.ReceiveAllAsync.FirstAsync());
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await client.ReceiveAllAsync.FirstAsync());
         await server.DisposeAsync();
     }
 
@@ -54,9 +49,9 @@ public class ClientTests(ITestOutputHelper output) : TestBase(output)
         ValueTask<byte> receiveTask = client.ReceiveAllAsync.LastOrDefaultAsync();
         await client.DisposeAsync();
 
-        //await Assert.ThrowsAsync<SocketException>(async () =>
-        //    await receiveTask);
-        await receiveTask;
+        await Assert.ThrowsAsync<SocketException>(async () =>
+            await receiveTask);
+        //await receiveTask;
 
         await server.DisposeAsync();
     }
@@ -92,7 +87,7 @@ public class ClientTests(ITestOutputHelper output) : TestBase(output)
         IRxSocketServer server = RxSocketServer.Create(LogFactory);
         IRxSocketClient client = await server.LocalEndPoint.CreateRxSocketClientAsync(LogFactory);
         await client.DisposeAsync();
-        Assert.ThrowsAny<Exception>(() => client.Send(new byte[] { 0 }));
+        Assert.ThrowsAny<Exception>(() => client.Send([0]));
         await server.DisposeAsync();
     }
 

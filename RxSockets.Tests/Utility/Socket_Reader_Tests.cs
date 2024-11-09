@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-
 namespace RxSockets.Tests;
 
 public sealed class Socket_Recieve_Tests(ITestOutputHelper output) : TestBase(output), IDisposable
@@ -29,7 +28,7 @@ public sealed class Socket_Recieve_Tests(ITestOutputHelper output) : TestBase(ou
         byte[] buffer = new byte[10];
         int bytes = Socket.Receive(buffer, SocketFlags.None);
         // after the remote socket disconnects, Socket.Receive() returns 0 bytes
-        Assert.True(bytes == 0);
+        Assert.Equal(0, bytes);
     }
 
     [Fact]

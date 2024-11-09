@@ -1,10 +1,9 @@
 ﻿using System.IO;
 using System.Reactive.Linq;
 using System.Text;
-
 namespace RxSockets;
 
-public static partial class Xtensions
+public static partial class Extension
 {
     /// <summary>
     /// Convert a string to a byte array.
@@ -69,10 +68,10 @@ public static partial class Xtensions
     /// </summary>
     public static IObservable<string> ToStrings(this IObservable<byte> source)
     {
+        MemoryStream ms = new();
+
         return Observable.Create<string>(observer =>
         {
-            MemoryStream ms = new();
-
             return source.Subscribe(
                 onNext: b =>
                 {
@@ -82,8 +81,8 @@ public static partial class Xtensions
                         return;
                     }
                     string s = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Position);
-                    observer.OnNext(s);
                     ms.SetLength(0);
+                    observer.OnNext(s);
                 },
                 onError: (e) =>
                 {

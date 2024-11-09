@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
-
 namespace RxSockets;
 
 public interface IRxSocketServer : IAsyncDisposable
 {
     EndPoint LocalEndPoint { get; }
+    IObservable<IRxSocketClient> AcceptObservable { get; }
     IAsyncEnumerable<IRxSocketClient> AcceptAllAsync { get; }
 }
 
@@ -14,6 +14,7 @@ public sealed class RxSocketServer : IRxSocketServer
     private readonly SocketAcceptor Acceptor;
     private readonly SocketDisposer Disposer;
     public EndPoint LocalEndPoint { get; }
+    public IObservable<IRxSocketClient> AcceptObservable { get; }
     public IAsyncEnumerable<IRxSocketClient> AcceptAllAsync { get; }
 
     private RxSocketServer(Socket socket, ILogger logger)
@@ -21,7 +22,8 @@ public sealed class RxSocketServer : IRxSocketServer
         LocalEndPoint = socket.LocalEndPoint ?? throw new InvalidOperationException();
         Acceptor = new SocketAcceptor(socket, logger);
         Disposer = new SocketDisposer(socket, Acceptor, "Server", Cts, logger);
-        AcceptAllAsync = Acceptor.AcceptAllAsync(Cts.Token);
+        AcceptObservable = Acceptor.CreateAcceptObservable();
+        AcceptAllAsync = Acceptor.CreateAcceptAllAsync(Cts.Token);
         logger.LogInformation("Server on {LocalEndPoint} created.", LocalEndPoint);
     }
 

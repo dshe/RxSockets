@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
-
 namespace RxSockets.Tests;
 
 public class Socket_Acceptor_Tests(ITestOutputHelper output) : TestBase(output)
@@ -17,7 +16,7 @@ public class Socket_Acceptor_Tests(ITestOutputHelper output) : TestBase(output)
         Task task = Task.Run(async () =>
         {
             SocketAcceptor acceptor = new(serverSocket, LogFactory.CreateLogger<SocketAcceptor>());
-            await foreach (IRxSocketClient cli in acceptor.AcceptAllAsync(default))
+            await foreach (IRxSocketClient cli in acceptor.CreateAcceptAllAsync(default))
             {
                 Logger.LogDebug("client");
             }
