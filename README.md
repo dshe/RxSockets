@@ -3,10 +3,10 @@
 - **.NET 8.0** library
 - connect: *asynchronous*
 - send: *synchronous*
-- receive: *async enumerable* or *observable*
-- accept:  *async enumerable* or *observable*
+- receive: *observable* or *async enumerable*
+- accept:  *observable* or *async enumerable*
 - simple and intuitive API
-- dependencies: System.Reactive, Microsoft.Extensions.Logging
+- major dependencies: System.Reactive
 
 ### installation
 ```csharp
@@ -78,10 +78,6 @@ await client.DisposeAsync();
 await server.DisposeAsync();
 ```
 ### notes
-```csharp
-
-```Observable.Publish()[.RefCount() | .AutoConnect()]``` may be used to support multiple simultaneous observers.
-
 To communicate using strings (see example above), the following extension methods are provided:
 ```csharp
 byte[] ToByteArray(this string source);
@@ -99,3 +95,8 @@ IEnumerable<byte[]>      ToArraysFromBytesWithLengthPrefix(this IEnumerable<byte
 IObservable<byte[]>      ToArraysFromBytesWithLengthPrefix(this IObservable<byte> source)
 IAsyncEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IAsyncEnumerable<byte> source)
 ```
+To support multiple simultaneous observers, use:
+```csharp
+Observable.Publish()[.RefCount() | AutoConnect()] 
+```
+
