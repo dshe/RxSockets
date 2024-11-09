@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 using Xunit;
 using RxSockets;
 ```
-#### server
+#### Server
 ```csharp
 interface IRxSocketServer : IAsyncDisposable
 {
@@ -51,7 +51,7 @@ server
             });
     });
 ```
-#### client
+#### Client
 ```csharp
 interface IRxSocketClient : IAsyncDisposable
 {
