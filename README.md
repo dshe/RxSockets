@@ -97,6 +97,6 @@ IAsyncEnumerable<byte[]> ToArraysFromBytesWithLengthPrefix(this IAsyncEnumerable
 ```
 To support multiple simultaneous observers, use:
 ```csharp
-Observable.Publish()[.RefCount() | AutoConnect()] 
+Observable.Publish().[RefCount() | AutoConnect()] 
 ```
 
