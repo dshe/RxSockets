@@ -15,7 +15,7 @@ public static partial class Extension
     /// Convert a sequence of strings to a byte array.
     /// </summary>
     public static byte[] ToByteArray(this IEnumerable<string> source) =>
-        source.SelectMany(s => s.ToByteArray()).ToArray();
+        [.. source.SelectMany(s => s.ToByteArray())];
 
     ///////////////////////////////////////////////////////////////
 

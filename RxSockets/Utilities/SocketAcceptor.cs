@@ -4,19 +4,21 @@ using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 namespace RxSockets;
 
-[SuppressMessage("Usage", "CA1031:Catch more specific exception type.")]
 internal sealed class SocketAcceptor : IAsyncDisposable
 {
     private readonly ILogger Logger;
     private readonly Socket Socket;
+    private readonly CancellationToken serverCt;
     private readonly List<IRxSocketClient> Connections = []; // state
 
-    internal SocketAcceptor(Socket socket, ILogger logger)
+    internal SocketAcceptor(Socket socket, ILogger logger, CancellationToken ct)
     {
         Socket = socket;
         Logger = logger;
+        serverCt = ct;
     }
 
+    [SuppressMessage("Usage", "CA1031:Catch more specific exception type.")]
     internal IObservable<IRxSocketClient> CreateAcceptObservable()
     {
         return Observable.Create<IRxSocketClient>(async (observer, ct) =>
@@ -32,9 +34,14 @@ internal sealed class SocketAcceptor : IAsyncDisposable
                 }
                 catch (Exception e)
                 {
+                    if (serverCt.IsCancellationRequested)
+                    { 
+                        observer.OnCompleted(); 
+                        return; 
+                    }
                     if (ct.IsCancellationRequested)
                         return;
-                    Logger.LogError("SocketAcceptor on {LocalEndPoint}. {Message}", Socket.LocalEndPoint, e.Message);
+                    Logger.LogError("SocketAcceptor: {Message}", e.Message);
                     observer.OnError(e);
                     return;
                 }
@@ -59,7 +66,7 @@ internal sealed class SocketAcceptor : IAsyncDisposable
             {
                 if (ct.IsCancellationRequested)
                     yield break;
-                Logger.LogError("SocketAcceptor on {LocalEndPoint}. {Message}", Socket.LocalEndPoint, e.Message);
+                Logger.LogError("SocketAcceptor: {Message}", e.Message);
                 throw;
             }
             yield return CreateClient(acceptSocket);
@@ -76,7 +83,7 @@ internal sealed class SocketAcceptor : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        List<Task> tasks = Connections.Select(client => client.DisposeAsync().AsTask()).ToList();
+        IEnumerable<Task> tasks = Connections.Select(client => client.DisposeAsync().AsTask());
         await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 }

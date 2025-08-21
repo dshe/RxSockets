@@ -13,7 +13,7 @@ public sealed class RxSocketClient : IRxSocketClient
 {
     private readonly string Name;
     private readonly ILogger Logger;
-    private readonly CancellationTokenSource ReceiveCts = new();
+    private readonly CancellationTokenSource DisposalCts = new();
     private readonly Socket Socket;
     private readonly SocketDisposer Disposer;
     public EndPoint RemoteEndPoint { get; }
@@ -28,8 +28,8 @@ public sealed class RxSocketClient : IRxSocketClient
         Logger = logger;
         Name = name;
         RemoteEndPoint = Socket.RemoteEndPoint ?? throw new InvalidOperationException();
-        Disposer = new SocketDisposer(socket, Name, ReceiveCts, Logger);
-        SocketReceiver receiver = new(socket, Name, Logger);
+        Disposer = new SocketDisposer(socket, Name, Logger, DisposalCts);
+        SocketReceiver receiver = new(socket, Name, Logger, DisposalCts.Token);
         ReceiveObservable = receiver.CreateReceiveObservable();
         ReceiveAllAsync = receiver.ReceiveAllAsync();
     }
@@ -43,6 +43,6 @@ public sealed class RxSocketClient : IRxSocketClient
     public async ValueTask DisposeAsync()
     {
         await Disposer.DisposeAsync().ConfigureAwait(false);
-        ReceiveCts.Dispose();
+        DisposalCts.Dispose();
     }
 }

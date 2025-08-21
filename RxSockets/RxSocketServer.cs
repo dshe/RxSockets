@@ -20,8 +20,8 @@ public sealed class RxSocketServer : IRxSocketServer
     private RxSocketServer(Socket socket, ILogger logger)
     {
         LocalEndPoint = socket.LocalEndPoint ?? throw new InvalidOperationException();
-        Acceptor = new SocketAcceptor(socket, logger);
-        Disposer = new SocketDisposer(socket, Acceptor, "Server", Cts, logger);
+        Acceptor = new SocketAcceptor(socket, logger, Cts.Token);
+        Disposer = new SocketDisposer(socket, Acceptor, "Server", logger, Cts);
         AcceptObservable = Acceptor.CreateAcceptObservable();
         AcceptAllAsync = Acceptor.CreateAcceptAllAsync(Cts.Token);
         logger.LogInformation("Server on {LocalEndPoint} created.", LocalEndPoint);

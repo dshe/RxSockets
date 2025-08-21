@@ -44,7 +44,7 @@ public sealed class Socket_Recieve_Tests(ITestOutputHelper output) : TestBase(ou
         Socket accepted = await ServerSocket.AcceptAsync();
         await accepted.DisconnectAsync(false);
 
-        SocketReceiver reader = new(Socket, "?", Logger);
+        SocketReceiver reader = new(Socket, "?", Logger, default);
 
         // after the remote socket disconnects, reader.ReceiveByteAsync() returns nothing
         bool any = await reader.ReceiveAllAsync(default).AnyAsync();
@@ -62,7 +62,7 @@ public sealed class Socket_Recieve_Tests(ITestOutputHelper output) : TestBase(ou
         await Socket.ConnectAsync(endPoint);
         Socket accepted = await ServerSocket.AcceptAsync();
 
-        SocketReceiver reader = new(Socket, "?", Logger);
+        SocketReceiver reader = new(Socket, "?", Logger, default);
         //var observable = reader.ReceiveObservable;
         System.Collections.Generic.IAsyncEnumerable<byte> xxx = reader.ReceiveAllAsync(default);
 
@@ -90,12 +90,12 @@ public sealed class Socket_Recieve_Tests(ITestOutputHelper output) : TestBase(ou
 
         accepted.Close();
 
-        Socket.Send(new byte[1] { 1 });
+        Socket.Send([1]);
 
         await Task.Yield();
 
         // after the remote socket disconnects, Send() throws on second usage
-        Assert.Throws<SocketException>(() => Socket.Send(new byte[1] { 1 }));
+        Assert.Throws<SocketException>(() => Socket.Send([1]));
     }
 
     [Fact]
@@ -108,9 +108,9 @@ public sealed class Socket_Recieve_Tests(ITestOutputHelper output) : TestBase(ou
         EndPoint endPoint = ServerSocket.LocalEndPoint ?? throw new InvalidOperationException("EndPoint");
         await Socket.ConnectAsync(endPoint);
         Socket accepted = await ServerSocket.AcceptAsync();
-        accepted.Send(new byte[] { 1 });
+        accepted.Send([1]);
 
-        SocketReceiver reader = new(Socket, "?", Logger);
+        SocketReceiver reader = new(Socket, "?", Logger, default);
         System.Collections.Generic.IAsyncEnumerable<byte> xxx = reader.ReceiveAllAsync(default);
         byte result = await xxx.FirstAsync();
         Assert.Equal(1, result);

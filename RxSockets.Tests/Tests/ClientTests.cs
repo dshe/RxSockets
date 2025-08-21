@@ -36,7 +36,7 @@ public class ClientTests(ITestOutputHelper output) : TestBase(output)
         IRxSocketServer server = RxSocketServer.Create(LogFactory);
         IRxSocketClient client = await server.LocalEndPoint.CreateRxSocketClientAsync(LogFactory);
         await client.DisposeAsync();
-        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await client.ReceiveAllAsync.FirstAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.ReceiveAllAsync.FirstAsync());
         await server.DisposeAsync();
     }
 
@@ -49,9 +49,7 @@ public class ClientTests(ITestOutputHelper output) : TestBase(output)
         ValueTask<byte> receiveTask = client.ReceiveAllAsync.LastOrDefaultAsync();
         await client.DisposeAsync();
 
-        await Assert.ThrowsAsync<SocketException>(async () =>
-            await receiveTask);
-        //await receiveTask;
+        await receiveTask; // does not throw
 
         await server.DisposeAsync();
     }

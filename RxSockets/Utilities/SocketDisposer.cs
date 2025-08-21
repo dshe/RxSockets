@@ -1,4 +1,6 @@
-﻿namespace RxSockets;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace RxSockets;
 
 internal sealed class SocketDisposer : IAsyncDisposable
 {
@@ -11,9 +13,9 @@ internal sealed class SocketDisposer : IAsyncDisposable
     private int Disposals; // state
     internal bool DisposeRequested => Disposals > 0;
 
-    internal SocketDisposer(Socket socket, string name, CancellationTokenSource receiveCts, ILogger logger) :
-        this(socket, AsyncEmptyDisposable.Instance, name, receiveCts, logger) { }
-    internal SocketDisposer(Socket socket, IAsyncDisposable disposable, string name, CancellationTokenSource receiveCts, ILogger logger)
+    internal SocketDisposer(Socket socket, string name, ILogger logger, CancellationTokenSource receiveCts) :
+        this(socket, AsyncEmptyDisposable.Instance, name, logger, receiveCts)  { }
+    internal SocketDisposer(Socket socket, IAsyncDisposable disposable, string name, ILogger logger, CancellationTokenSource receiveCts)
     {
         Socket = socket;
         ReceiveCts = receiveCts;
@@ -22,6 +24,7 @@ internal sealed class SocketDisposer : IAsyncDisposable
         Disposable = disposable;
     }
 
+    [SuppressMessage("Usage", "CA1031:Catch more specific exception type.")]
     public async ValueTask DisposeAsync()
     {
         if (Interlocked.Increment(ref Disposals) > 1)
@@ -52,17 +55,19 @@ internal sealed class SocketDisposer : IAsyncDisposable
             // SocketAcceptor or AsyncEmptyDisposable
             await Disposable.DisposeAsync().ConfigureAwait(false);
         }
-#pragma warning disable CA1031
         catch (Exception e)
-#pragma warning restore CA1031
         {
             Logger.LogWarning(e, "DisposeAsync.");
         }
-        finally
+
+        try
         {
-            Tcs.SetResult(true);
             Socket.Dispose();
-            ReceiveCts.Dispose();
+            Tcs.SetResult(true);
+        }
+        catch (Exception e)
+        {
+            Logger.LogWarning(e, "DisposeAsync.");
         }
     }
 }

@@ -15,7 +15,7 @@ public class Socket_Acceptor_Tests(ITestOutputHelper output) : TestBase(output)
 
         Task task = Task.Run(async () =>
         {
-            SocketAcceptor acceptor = new(serverSocket, LogFactory.CreateLogger<SocketAcceptor>());
+            SocketAcceptor acceptor = new(serverSocket, LogFactory.CreateLogger<SocketAcceptor>(), default);
             await foreach (IRxSocketClient cli in acceptor.CreateAcceptAllAsync(default))
             {
                 Logger.LogDebug("client");

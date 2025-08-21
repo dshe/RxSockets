@@ -10,7 +10,7 @@ public class Socket_Disposer_Tests(ITestOutputHelper output) : TestBase(output)
     public async Task T01_Dispose_Not_Connected_Socket()
     {
         Socket socket = Utilities.CreateSocket();
-        SocketDisposer disposer = new(socket, "?", Cts, Logger);
+        SocketDisposer disposer = new(socket, "?", Logger, Cts);
         await disposer.DisposeAsync();
         Assert.True(disposer.DisposeRequested);
         Assert.False(socket.Connected);
@@ -21,12 +21,12 @@ public class Socket_Disposer_Tests(ITestOutputHelper output) : TestBase(output)
     {
         EndPoint endPoint = TestUtilities.GetEndPointOnRandomLoopbackPort();
         Socket serverSocket = Utilities.CreateSocket();
-        SocketDisposer serverDisposer = new(serverSocket, "?", Cts, Logger);
+        SocketDisposer serverDisposer = new(serverSocket, "?", Logger, Cts);
         serverSocket.Bind(endPoint);
         serverSocket.Listen(10);
 
         Socket clientSocket = Utilities.CreateSocket();
-        SocketDisposer clientDisposer = new(clientSocket, "?", Cts, Logger);
+        SocketDisposer clientDisposer = new(clientSocket, "?", Logger, Cts);
         await clientSocket.ConnectAsync(endPoint);
         Assert.False(clientDisposer.DisposeRequested);
         Assert.True(clientSocket.Connected);
@@ -54,7 +54,7 @@ public class Socket_Disposer_Tests(ITestOutputHelper output) : TestBase(output)
         serverSocket.Listen(10);
 
         Socket socket = Utilities.CreateSocket();
-        SocketDisposer disposer = new(socket, "?", Cts, Logger);
+        SocketDisposer disposer = new(socket, "?", Logger, Cts);
         await socket.ConnectAsync(endPoint);
         Assert.True(socket.Connected);
         Assert.False(disposer.DisposeRequested);
@@ -73,7 +73,7 @@ public class Socket_Disposer_Tests(ITestOutputHelper output) : TestBase(output)
         serverSocket.Listen(10);
 
         Socket clientSocket = Utilities.CreateSocket();
-        SocketDisposer disposer = new(clientSocket, "?", Cts, Logger);
+        SocketDisposer disposer = new(clientSocket, "?", Logger, Cts);
         Assert.False(disposer.DisposeRequested);
 
         await clientSocket.ConnectAsync(endPoint);
