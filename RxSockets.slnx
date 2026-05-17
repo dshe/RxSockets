@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+    <File Path="~/notes.txt" />
+  </Folder>
+  <Project Path="RxSockets.Tests/RxSockets.Tests.csproj" />
+  <Project Path="RxSockets/RxSockets.csproj">
+    <Platform Solution="Release|x64" Project="x64" />
+  </Project>
+</Solution>
