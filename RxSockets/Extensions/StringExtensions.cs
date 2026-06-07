@@ -8,14 +8,29 @@ public static partial class Extension
     /// <summary>
     /// Convert a string to a byte array.
     /// </summary>
-    public static byte[] ToByteArray(this string source) =>
-        Encoding.UTF8.GetBytes(source + '\0');
+    public static byte[] ToByteArray(this string source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        byte[] bytes = Encoding.UTF8.GetBytes(source);
+        Array.Resize(ref bytes, bytes.Length + 1); // null terminator
+        return bytes;
+    }
 
     /// <summary>
     /// Convert a sequence of strings to a byte array.
     /// </summary>
-    public static byte[] ToByteArray(this IEnumerable<string> source) =>
-        [.. source.SelectMany(s => s.ToByteArray())];
+    public static byte[] ToByteArray(this IEnumerable<string> source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        return
+        [
+            ..source.SelectMany(s =>
+            {
+                ArgumentNullException.ThrowIfNull(s);
+                return s.ToByteArray();
+            })
+        ];
+    }
 
     ///////////////////////////////////////////////////////////////
 

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 namespace RxSockets.Tests;
 
 public class StringExtensionsTests

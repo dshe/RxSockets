@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
-namespace RxSockets;
+﻿namespace RxSockets;
 
 public interface IRxSocketServer : IAsyncDisposable
 {

@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-namespace RxSockets.Tests;
+﻿namespace RxSockets.Tests;
 
 public class Socket_Acceptor_Tests(ITestOutputHelper output) : TestBase(output)
 {

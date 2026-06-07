@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/dshe/RxSockets</PackageProjectUrl>
@@ -9,9 +9,9 @@
     <PackageTags>sockets reactive-extensions reactive observable async-enumerable linq</PackageTags>
     <Description>A minimal reactive socket implementation.</Description>
     <Authors>DavidS</Authors>
-    <Version>7.1.1</Version>
-    <AssemblyVersion>7.1.1</AssemblyVersion>
-    <FileVersion>7.1.1</FileVersion>
+    <Version>7.1.2</Version>
+    <AssemblyVersion>7.1.2</AssemblyVersion>
+    <FileVersion>7.1.2</FileVersion>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/dshe/RxSockets</RepositoryUrl>
     <RepositoryType>github</RepositoryType>

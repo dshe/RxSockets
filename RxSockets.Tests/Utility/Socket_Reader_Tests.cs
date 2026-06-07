@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-namespace RxSockets.Tests;
+﻿namespace RxSockets.Tests;
 
 public sealed class Socket_Recieve_Tests(ITestOutputHelper output) : TestBase(output), IDisposable
 {

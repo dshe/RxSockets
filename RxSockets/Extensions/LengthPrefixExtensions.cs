@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Buffers.Binary;
+using System.IO;
 using System.Reactive.Linq;
 namespace RxSockets;
 
@@ -10,10 +11,10 @@ public static partial class Extension
     public static byte[] ToByteArrayWithLengthPrefix(this byte[] source)
     {
         ArgumentNullException.ThrowIfNull(source);
-
         byte[] buffer = new byte[source.Length + 4];
+        // Encode 4 byte BigEndian integer length prefix. 
+        BinaryPrimitives.WriteInt32BigEndian(buffer, source.Length);
         source.CopyTo(buffer, 4);
-        EncodeMessageLength(buffer);
         return buffer;
     }
 
@@ -118,15 +119,6 @@ public static partial class Extension
                     ms.Dispose();
                 });
         });
-    }
-
-    // Encode 4 byte BigEndian integer length prefix. 
-    private static void EncodeMessageLength(byte[] buffer)
-    {
-        int length = buffer.Length - 4;
-        int i = IPAddress.HostToNetworkOrder(length);
-        if (!BitConverter.TryWriteBytes(buffer, i))
-            throw new InvalidDataException($"TryWriteBytes.");
     }
 
     private static int DecodeMessageLength(MemoryStream ms)

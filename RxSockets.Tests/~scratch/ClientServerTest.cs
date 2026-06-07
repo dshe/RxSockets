@@ -1,10 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using System.Diagnostics;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Reactive.Concurrency;
 namespace RxSockets.Tests;
 
 public class SomeTest(ITestOutputHelper output) : TestBase(output)

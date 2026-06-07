@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace RxSockets;
+﻿namespace RxSockets;
 
 internal sealed class SocketDisposer : IAsyncDisposable
 {
@@ -24,7 +22,6 @@ internal sealed class SocketDisposer : IAsyncDisposable
         Disposable = disposable;
     }
 
-    [SuppressMessage("Usage", "CA1031:Catch more specific exception type.")]
     public async ValueTask DisposeAsync()
     {
         if (Interlocked.Increment(ref Disposals) > 1)

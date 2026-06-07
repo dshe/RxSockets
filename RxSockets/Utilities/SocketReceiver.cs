@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 namespace RxSockets;
@@ -11,8 +10,7 @@ internal sealed class SocketReceiver
     private readonly CancellationToken ReceiveCt;
     private readonly string Name;
     private readonly byte[] Buffer = new byte[0x10000];
-    private int Position;
-    private int BytesReceived;
+    private int Position, BytesReceived;
 
     internal SocketReceiver(Socket socket, string name, ILogger logger, CancellationToken receiveCt)
     {
@@ -22,8 +20,7 @@ internal sealed class SocketReceiver
         Name = name;
     }
 
-    [SuppressMessage("Usage", "CA1031:Catch more specific exception type.")]
-    internal IObservable<byte> CreateReceiveObservable()
+    internal IObservable<byte> CreateReceiveObservable0()
     {
         return Observable.Create<byte>(async (observer, ct) =>
         {
@@ -60,6 +57,56 @@ internal sealed class SocketReceiver
                 if (ct.IsCancellationRequested)
                     return;
                 Logger.LogDebug(ex, "{Name}: SocketReceiverObservable Exception: {Message}", Name, ex.Message);
+                observer.OnError(ex);
+            }
+        });
+    }
+
+    internal IObservable<byte> CreateReceiveObservable()
+    {
+        return Observable.Create<byte>(async (observer, ct) =>
+        {
+            try
+            {
+                while (!ct.IsCancellationRequested)
+                {
+                    if (Position >= BytesReceived)
+                    {
+                        BytesReceived = await Socket.ReceiveAsync(Buffer, ct).ConfigureAwait(false);
+                        Position = 0;
+                        if (BytesReceived <= 0)
+                        {
+                            observer.OnCompleted();
+                            return;
+                        }
+
+                        Logger.LogReceive(Name, Socket.LocalEndPoint, BytesReceived, Socket.RemoteEndPoint);
+                    }
+
+                    observer.OnNext(Buffer[Position]);
+                    Position++;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                observer.OnCompleted();
+            }
+            catch (ObjectDisposedException)
+            {
+                observer.OnCompleted();
+            }
+            catch (SocketException) when (ct.IsCancellationRequested)
+            {
+                observer.OnCompleted();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogDebug(
+                    ex,
+                    "{Name}: SocketReceiverObservable Exception: {Message}",
+                    Name,
+                    ex.Message);
+
                 observer.OnError(ex);
             }
         });

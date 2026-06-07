@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Reactive.Threading.Tasks;
-using System.Threading;
-using System.Threading.Tasks;
 namespace RxSockets.Tests;
 
 public class Examples(ITestOutputHelper output) : TestBase(output)

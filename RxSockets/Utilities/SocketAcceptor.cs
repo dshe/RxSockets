@@ -18,7 +18,6 @@ internal sealed class SocketAcceptor : IAsyncDisposable
         serverCt = ct;
     }
 
-    [SuppressMessage("Usage", "CA1031:Catch more specific exception type.")]
     internal IObservable<IRxSocketClient> CreateAcceptObservable()
     {
         return Observable.Create<IRxSocketClient>(async (observer, ct) =>

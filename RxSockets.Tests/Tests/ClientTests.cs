@@ -1,6 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-namespace RxSockets.Tests;
+﻿namespace RxSockets.Tests;
 
 public class ClientTests(ITestOutputHelper output) : TestBase(output)
 {
