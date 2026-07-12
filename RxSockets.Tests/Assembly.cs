@@ -12,3 +12,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Usage", "IDE0130:Namespace does not match folder structure,")]
 [assembly: SuppressMessage("Usage", "CA2254:The logging message template should not vary between calls")]
 [assembly: SuppressMessage("Usage", "CA1861:Prefer static readonbly fields over constant arrays passed as arguments")]
+[assembly: SuppressMessage("Style", "IDE1006:Naming Styles, Async")]

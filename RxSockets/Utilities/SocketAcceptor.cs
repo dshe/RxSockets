@@ -6,16 +6,16 @@ namespace RxSockets;
 
 internal sealed class SocketAcceptor : IAsyncDisposable
 {
-    private readonly ILogger Logger;
-    private readonly Socket Socket;
-    private readonly CancellationToken serverCt;
-    private readonly List<IRxSocketClient> Connections = []; // state
+    private readonly ILogger _logger;
+    private readonly Socket _socket;
+    private readonly CancellationToken _serverCt;
+    private readonly List<IRxSocketClient> _connections = []; // state
 
     internal SocketAcceptor(Socket socket, ILogger logger, CancellationToken ct)
     {
-        Socket = socket;
-        Logger = logger;
-        serverCt = ct;
+        _socket = socket;
+        _logger = logger;
+        _serverCt = ct;
     }
 
     internal IObservable<IRxSocketClient> CreateAcceptObservable()
@@ -28,19 +28,19 @@ internal sealed class SocketAcceptor : IAsyncDisposable
             {
                 try
                 {
-                    Socket acceptSocket = await Socket.AcceptAsync(ct).ConfigureAwait(false);
+                    Socket acceptSocket = await _socket.AcceptAsync(ct).ConfigureAwait(false);
                     observer.OnNext(CreateClient(acceptSocket));
                 }
                 catch (Exception e)
                 {
-                    if (serverCt.IsCancellationRequested)
+                    if (_serverCt.IsCancellationRequested)
                     { 
                         observer.OnCompleted(); 
                         return; 
                     }
                     if (ct.IsCancellationRequested)
                         return;
-                    Logger.LogError("SocketAcceptor: {Message}", e.Message);
+                    _logger.LogError("SocketAcceptor: {Message}", e.Message);
                     observer.OnError(e);
                     return;
                 }
@@ -59,13 +59,13 @@ internal sealed class SocketAcceptor : IAsyncDisposable
         {
             try
             {
-                acceptSocket = await Socket.AcceptAsync(ct).ConfigureAwait(false);
+                acceptSocket = await _socket.AcceptAsync(ct).ConfigureAwait(false);
             }
             catch (Exception e)
             {
                 if (ct.IsCancellationRequested)
                     yield break;
-                Logger.LogError("SocketAcceptor: {Message}", e.Message);
+                _logger.LogError("SocketAcceptor: {Message}", e.Message);
                 throw;
             }
             yield return CreateClient(acceptSocket);
@@ -74,15 +74,15 @@ internal sealed class SocketAcceptor : IAsyncDisposable
 
     private RxSocketClient CreateClient(Socket acceptSocket)
     {
-        Logger.LogDebug("AcceptClient on {LocalEndPoint} connected to {RemoteEndPoint}.", Socket.LocalEndPoint, acceptSocket.RemoteEndPoint);
-        RxSocketClient client = new(acceptSocket, Logger, "AcceptClient");
-        Connections.Add(client);
+        _logger.LogDebug("AcceptClient on {LocalEndPoint} connected to {RemoteEndPoint}.", _socket.LocalEndPoint, acceptSocket.RemoteEndPoint);
+        RxSocketClient client = new(acceptSocket, _logger, "AcceptClient");
+        _connections.Add(client);
         return client;
     }
 
     public async ValueTask DisposeAsync()
     {
-        IEnumerable<Task> tasks = Connections.Select(client => client.DisposeAsync().AsTask());
+        IEnumerable<Task> tasks = _connections.Select(client => client.DisposeAsync().AsTask());
         await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 }

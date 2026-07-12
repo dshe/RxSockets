@@ -2,69 +2,69 @@
 
 internal sealed class SocketDisposer : IAsyncDisposable
 {
-    private readonly ILogger Logger;
-    private readonly Socket Socket;
-    private readonly IAsyncDisposable Disposable;
-    private readonly string Name;
-    private readonly TaskCompletionSource<bool> Tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    private readonly CancellationTokenSource ReceiveCts;
-    private int Disposals; // state
-    internal bool DisposeRequested => Disposals > 0;
+    private readonly ILogger _logger;
+    private readonly Socket _socket;
+    private readonly IAsyncDisposable _disposable;
+    private readonly string _name;
+    private readonly TaskCompletionSource<bool> _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly CancellationTokenSource _receiveCts;
+    private int _disposals; // state
+    internal bool DisposeRequested => _disposals > 0;
 
     internal SocketDisposer(Socket socket, string name, ILogger logger, CancellationTokenSource receiveCts) :
         this(socket, AsyncEmptyDisposable.Instance, name, logger, receiveCts)  { }
     internal SocketDisposer(Socket socket, IAsyncDisposable disposable, string name, ILogger logger, CancellationTokenSource receiveCts)
     {
-        Socket = socket;
-        ReceiveCts = receiveCts;
-        Logger = logger;
-        Name = name;
-        Disposable = disposable;
+        _socket = socket;
+        _receiveCts = receiveCts;
+        _logger = logger;
+        _name = name;
+        _disposable = disposable;
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (Interlocked.Increment(ref Disposals) > 1)
+        if (Interlocked.Increment(ref _disposals) > 1)
         {
-            await Tcs.Task.ConfigureAwait(false);
+            await _tcs.Task.ConfigureAwait(false);
             return;
         }
 
         try
         {
-            await ReceiveCts.CancelAsync().ConfigureAwait(false);
+            await _receiveCts.CancelAsync().ConfigureAwait(false);
 
-            EndPoint? localEndPoint = Socket.LocalEndPoint;
-            EndPoint? remoteEndPoint = Socket.RemoteEndPoint;
+            EndPoint? localEndPoint = _socket.LocalEndPoint;
+            EndPoint? remoteEndPoint = _socket.RemoteEndPoint;
 
-            if (Socket.Connected)
+            if (_socket.Connected)
             {
                 // disables Send method and queues up a zero-byte send packet in the send buffer
-                Socket.Shutdown(SocketShutdown.Send);
-                await Socket.DisconnectAsync(false).ConfigureAwait(false);
-                Logger.LogDebug("{Name} on {LocalEndPoint} disconnected from {RemoteEndPoint} and disposed.", Name, localEndPoint, remoteEndPoint);
+                _socket.Shutdown(SocketShutdown.Send);
+                await _socket.DisconnectAsync(false).ConfigureAwait(false);
+                _logger.LogDebug("{Name} on {LocalEndPoint} disconnected from {RemoteEndPoint} and disposed.", _name, localEndPoint, remoteEndPoint);
             }
             else
             {
-                Logger.LogDebug("{Name} on {LocalEndPoint} disposed.", Name, localEndPoint);
+                _logger.LogDebug("{Name} on {LocalEndPoint} disposed.", _name, localEndPoint);
             }
 
             // SocketAcceptor or AsyncEmptyDisposable
-            await Disposable.DisposeAsync().ConfigureAwait(false);
+            await _disposable.DisposeAsync().ConfigureAwait(false);
         }
         catch (Exception e)
         {
-            Logger.LogWarning(e, "DisposeAsync.");
+            _logger.LogWarning(e, "DisposeAsync.");
         }
 
         try
         {
-            Socket.Dispose();
-            Tcs.SetResult(true);
+            _socket.Dispose();
+            _tcs.SetResult(true);
         }
         catch (Exception e)
         {
-            Logger.LogWarning(e, "DisposeAsync.");
+            _logger.LogWarning(e, "DisposeAsync.");
         }
     }
 }

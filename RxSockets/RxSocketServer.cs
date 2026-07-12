@@ -9,9 +9,9 @@ public interface IRxSocketServer : IAsyncDisposable
 
 public sealed class RxSocketServer : IRxSocketServer
 {
-    private readonly CancellationTokenSource Cts = new();
-    private readonly SocketAcceptor Acceptor;
-    private readonly SocketDisposer Disposer;
+    private readonly CancellationTokenSource _cts = new();
+    private readonly SocketAcceptor _acceptor;
+    private readonly SocketDisposer _disposer;
     public EndPoint LocalEndPoint { get; }
     public IObservable<IRxSocketClient> AcceptObservable { get; }
     public IAsyncEnumerable<IRxSocketClient> AcceptAllAsync { get; }
@@ -19,18 +19,18 @@ public sealed class RxSocketServer : IRxSocketServer
     private RxSocketServer(Socket socket, ILogger logger)
     {
         LocalEndPoint = socket.LocalEndPoint ?? throw new InvalidOperationException();
-        Acceptor = new SocketAcceptor(socket, logger, Cts.Token);
-        Disposer = new SocketDisposer(socket, Acceptor, "Server", logger, Cts);
-        AcceptObservable = Acceptor.CreateAcceptObservable();
-        AcceptAllAsync = Acceptor.CreateAcceptAllAsync(Cts.Token);
+        _acceptor = new SocketAcceptor(socket, logger, _cts.Token);
+        _disposer = new SocketDisposer(socket, _acceptor, "Server", logger, _cts);
+        AcceptObservable = _acceptor.CreateAcceptObservable();
+        AcceptAllAsync = _acceptor.CreateAcceptAllAsync(_cts.Token);
         logger.LogInformation("Server on {LocalEndPoint} created.", LocalEndPoint);
     }
 
     public async ValueTask DisposeAsync()
     {
-        await Acceptor.DisposeAsync().ConfigureAwait(false);
-        await Disposer.DisposeAsync().ConfigureAwait(false);
-        Cts.Dispose();
+        await _acceptor.DisposeAsync().ConfigureAwait(false);
+        await _disposer.DisposeAsync().ConfigureAwait(false);
+        _cts.Dispose();
     }
 
     /// <summary>

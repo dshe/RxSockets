@@ -5,7 +5,7 @@ namespace RxSockets.Tests;
 public static class TestUtilities
 {
     private static readonly RandomNumberGenerator RandomNumberGenerator = RandomNumberGenerator.Create();
-    private static readonly object Locker = new();
+    private static readonly Lock Locker = new();
 
     public static IPEndPoint GetEndPointOnRandomLoopbackPort() =>
         new(IPAddress.Loopback, GetRandomAvailablePort());

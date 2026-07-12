@@ -36,7 +36,7 @@ public class StringExtensionsTests
     [InlineData(new[] { "AB" }, new byte[] { 65, 66, 0 })]
     [InlineData(new[] { "", "" }, new byte[] { 0, 0 })]
     [InlineData(new[] { "A", "B" }, new byte[] { 65, 0, 66, 0 })]
-    public async Task T03_To_Strings(IEnumerable<string> strings, byte[] bytes)
+    public async Task T03_To_StringsAsync(IEnumerable<string> strings, byte[] bytes)
     {
         Assert.Equal(strings, bytes.ToStrings().ToList());
         Assert.Equal(strings, await bytes.ToObservable().ToStrings().ToList());

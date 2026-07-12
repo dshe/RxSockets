@@ -14,7 +14,7 @@ public class ToArraysFromBytesWithLengthPrefix
     [InlineData(new byte[] { 0 }, new byte[] { 0, 0, 0, 1, 0 })]
     [InlineData(new byte[] { 65, 0 }, new byte[] { 0, 0, 0, 2, 65, 0 })]
     [InlineData(new byte[] { 65, 0, 66, 0 }, new byte[] { 0, 0, 0, 4, 65, 0, 66, 0 })]
-    public async Task T02(byte[] result, byte[] bytes)
+    public async Task T02Async(byte[] result, byte[] bytes)
     {
         Assert.Equal(result, bytes.ToArraysFromBytesWithLengthPrefix().First());
         Assert.Equal(result, await bytes.ToObservable().ToArraysFromBytesWithLengthPrefix());

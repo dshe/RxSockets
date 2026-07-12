@@ -4,7 +4,7 @@ namespace RxSockets.Tests;
 public class ClientServerTest(ITestOutputHelper output) : TestBase(output)
 {
     [Fact]
-    public async Task T01_HandshakeAsync()
+    public async Task T01_Handshake()
     {
         IRxSocketServer server = RxSocketServer.Create(LogFactory);
 

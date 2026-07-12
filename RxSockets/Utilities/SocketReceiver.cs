@@ -5,58 +5,58 @@ namespace RxSockets;
 
 internal sealed class SocketReceiver
 {
-    private readonly ILogger Logger;
-    private readonly Socket Socket;
-    private readonly CancellationToken ReceiveCt;
-    private readonly string Name;
-    private readonly byte[] Buffer = new byte[0x10000];
-    private int Position, BytesReceived;
+    private readonly ILogger _logger;
+    private readonly Socket _socket;
+    private readonly CancellationToken _receiveCt;
+    private readonly string _name;
+    private readonly byte[] _buffer = new byte[0x10000];
+    private int _position, _bytesReceived;
 
     internal SocketReceiver(Socket socket, string name, ILogger logger, CancellationToken receiveCt)
     {
-        Logger = logger;
-        Socket = socket;
-        ReceiveCt = receiveCt;
-        Name = name;
+        _logger = logger;
+        _socket = socket;
+        _receiveCt = receiveCt;
+        _name = name;
     }
 
     internal IObservable<byte> CreateReceiveObservable0()
     {
         return Observable.Create<byte>(async (observer, ct) =>
         {
-            Logger.LogDebug("{Name}: SocketReceiverObservable subscribing.", Name);
+            _logger.LogDebug("{Name}: SocketReceiverObservable subscribing.", _name);
             Debug.Assert(Thread.CurrentThread.IsBackground, "Not a background thread.");
 
             try
             {
                 while (!ct.IsCancellationRequested)
                 {
-                    if (Position == BytesReceived)
+                    if (_position == _bytesReceived)
                     {
-                        BytesReceived = await Socket.ReceiveAsync(Buffer, ct).ConfigureAwait(false);
-                        Position = 0;
+                        _bytesReceived = await _socket.ReceiveAsync(_buffer, ct).ConfigureAwait(false);
+                        _position = 0;
 
-                        if (BytesReceived == 0)
+                        if (_bytesReceived == 0)
                         {
                             observer.OnCompleted();
                             return;
                         }
 
-                        Logger.LogReceive(Name, Socket.LocalEndPoint, BytesReceived, Socket.RemoteEndPoint);
+                        _logger.LogReceive(_name, _socket.LocalEndPoint, _bytesReceived, _socket.RemoteEndPoint);
                     }
-                    observer.OnNext(Buffer[Position++]);
+                    observer.OnNext(_buffer[_position++]);
                 }
             }
             catch (Exception ex)
             {
-                if (ReceiveCt.IsCancellationRequested)
+                if (_receiveCt.IsCancellationRequested)
                 {
                     observer.OnCompleted();
                     return;
                 }
                 if (ct.IsCancellationRequested)
                     return;
-                Logger.LogDebug(ex, "{Name}: SocketReceiverObservable Exception: {Message}", Name, ex.Message);
+                _logger.LogDebug(ex, "{Name}: SocketReceiverObservable Exception: {Message}", _name, ex.Message);
                 observer.OnError(ex);
             }
         });
@@ -70,21 +70,21 @@ internal sealed class SocketReceiver
             {
                 while (!ct.IsCancellationRequested)
                 {
-                    if (Position >= BytesReceived)
+                    if (_position >= _bytesReceived)
                     {
-                        BytesReceived = await Socket.ReceiveAsync(Buffer, ct).ConfigureAwait(false);
-                        Position = 0;
-                        if (BytesReceived <= 0)
+                        _bytesReceived = await _socket.ReceiveAsync(_buffer, ct).ConfigureAwait(false);
+                        _position = 0;
+                        if (_bytesReceived <= 0)
                         {
                             observer.OnCompleted();
                             return;
                         }
 
-                        Logger.LogReceive(Name, Socket.LocalEndPoint, BytesReceived, Socket.RemoteEndPoint);
+                        _logger.LogReceive(_name, _socket.LocalEndPoint, _bytesReceived, _socket.RemoteEndPoint);
                     }
 
-                    observer.OnNext(Buffer[Position]);
-                    Position++;
+                    observer.OnNext(_buffer[_position]);
+                    _position++;
                 }
             }
             catch (OperationCanceledException)
@@ -101,10 +101,10 @@ internal sealed class SocketReceiver
             }
             catch (Exception ex)
             {
-                Logger.LogDebug(
+                _logger.LogDebug(
                     ex,
                     "{Name}: SocketReceiverObservable Exception: {Message}",
-                    Name,
+                    _name,
                     ex.Message);
 
                 observer.OnError(ex);
@@ -116,26 +116,26 @@ internal sealed class SocketReceiver
     {
         while (!ct.IsCancellationRequested)
         {
-            if (Position == BytesReceived)
+            if (_position == _bytesReceived)
             {
                 try
                 {
-                    BytesReceived = await Socket.ReceiveAsync(Buffer, ct).ConfigureAwait(false);
-                    Position = 0;
+                    _bytesReceived = await _socket.ReceiveAsync(_buffer, ct).ConfigureAwait(false);
+                    _position = 0;
                 }
                 catch (Exception)
                 {
-                    if (ct.IsCancellationRequested || ReceiveCt.IsCancellationRequested)
+                    if (ct.IsCancellationRequested || _receiveCt.IsCancellationRequested)
                         yield break;
                     throw;
                 }
 
-                if (BytesReceived == 0)
+                if (_bytesReceived == 0)
                     yield break;
 
-                Logger.LogReceive(Name, Socket.LocalEndPoint, BytesReceived, Socket.RemoteEndPoint);
+                _logger.LogReceive(_name, _socket.LocalEndPoint, _bytesReceived, _socket.RemoteEndPoint);
             }
-            yield return Buffer[Position++];
+            yield return _buffer[_position++];
         }
     }
 }

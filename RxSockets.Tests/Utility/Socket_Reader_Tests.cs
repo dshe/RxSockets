@@ -31,7 +31,7 @@ public sealed class Socket_Recieve_Tests(ITestOutputHelper output) : TestBase(ou
     }
 
     [Fact]
-    public async Task T02_Disconnect_ReceiveBytesAsync()
+    public async Task T02_Disconnect_ReceiveBytes()
     {
         IPEndPoint ipEndPoint = new(IPAddress.Loopback, 0);
         ServerSocket.Bind(ipEndPoint);
